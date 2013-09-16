@@ -13,7 +13,7 @@ import java.util.{Map => JUMap}
 @RunWith(classOf[JUnitRunner])
 class RequestBuilderSpec extends FunSpec with MustMatchers {
 
-  class Open extends RequestBuilder("open") {
+  class OpenTestBuilder extends RequestBuilder("open") {
     def publicBuildXmlElement(name: String, value: AnyRef): String = {
       RequestBuilder.buildXMLElement(name, value)
     }
@@ -34,7 +34,7 @@ class RequestBuilderSpec extends FunSpec with MustMatchers {
 
   describe("publicBuildXmlElement") {
     it("converts lists to XML") {
-      val builder = new Open
+      val builder = new OpenTestBuilder
       val items: JUList[String] = new ArrayList[String]
       items.add("Chicken")
       items.add("Rabbit")
@@ -45,7 +45,7 @@ class RequestBuilderSpec extends FunSpec with MustMatchers {
 
   describe("formatMap") {
     it("converts maps to XML") {
-      val builder = new Open
+      val builder = new OpenTestBuilder
       val map: JUMap[String, AnyRef] = new JUHashMap[String, AnyRef]
       map.put("color", "green")
       map.put("insect", "bee")
