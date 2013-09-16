@@ -9,7 +9,7 @@ class BraintreeGatewaySpec extends FunSpec with MustMatchers {
   describe("base merchant urls") {
     it("matches for development") {
       val config = new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "publicKey", "privateKey")
-      val port = if (System.getenv.get("GATEWAY_PORT") == null) "3000" else System.getenv.get("GATEWAY_PORT")
+      val port = Option(System.getenv.get("GATEWAY_PORT")).getOrElse(3000)
       config.baseMerchantURL must be === "http://localhost:" + port + "/merchants/integration_merchant_id"
     }
     it("matches for sandbox") {

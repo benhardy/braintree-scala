@@ -1,11 +1,14 @@
 package com.braintreegateway.integrationtest
 
+import _root_.org.junit.runner.RunWith
+import _root_.org.scalatest.junit.JUnitRunner
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.exceptions.NotFoundException
 import java.util.Calendar
 
+@RunWith(classOf[JUnitRunner])
 class AddressSpec extends FunSpec with MustMatchers {
   def createGateway = {
     new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "integration_public_key", "integration_private_key")

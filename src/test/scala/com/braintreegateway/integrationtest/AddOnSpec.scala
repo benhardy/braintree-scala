@@ -8,8 +8,10 @@ import java.util.Random
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import scala.collection.JavaConversions._
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
-
+@RunWith(classOf[JUnitRunner])
 class AddOnSpec extends FunSpec with MustMatchers {
 
   private def fixtures = {
