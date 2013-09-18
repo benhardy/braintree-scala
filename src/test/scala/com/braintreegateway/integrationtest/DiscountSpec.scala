@@ -1,7 +1,6 @@
 package com.braintreegateway.integrationtest
 
-import com.braintreegateway.BraintreeGateway
-import com.braintreegateway.Environment
+import com.braintreegateway.{FakeModificationRequest, BraintreeGateway, Environment}
 import com.braintreegateway.util.Http
 import java.math.BigDecimal
 import java.util.Random
