@@ -4,7 +4,10 @@ import com.braintreegateway.BraintreeGateway
 import com.braintreegateway.Environment
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class BraintreeGatewaySpec extends FunSpec with MustMatchers {
   describe("base merchant urls") {
     it("matches for development") {

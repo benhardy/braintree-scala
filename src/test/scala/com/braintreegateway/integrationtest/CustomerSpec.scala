@@ -1,18 +1,17 @@
 package com.braintreegateway.integrationtest
 
 import org.junit.runner.RunWith
-import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
 import java.util.{Random, Calendar}
 import test.VenmoSdk
-import testhelpers.{CalendarHelper, TestHelper}
-import com.braintreegateway.testhelpers.GatewaySpec
+import testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
+
 
 @RunWith(classOf[JUnitRunner])
-class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper with GatewaySpec {
+class CustomerSpec extends GatewaySpec with MustMatchers with CalendarHelper {
 
   describe("transparentRedirect") {
     onGatewayIt("has the right url for Create") { gateway =>
