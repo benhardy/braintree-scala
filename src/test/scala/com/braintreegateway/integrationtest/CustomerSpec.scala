@@ -9,29 +9,24 @@ import exceptions.{NotFoundException, ForgedQueryStringException}
 import java.util.{Random, Calendar}
 import test.VenmoSdk
 import testhelpers.{CalendarHelper, TestHelper}
+import com.braintreegateway.testhelpers.GatewaySpec
 
 @RunWith(classOf[JUnitRunner])
-class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
-  def createGateway = {
-    new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "integration_public_key", "integration_private_key")
-  }
+class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper with GatewaySpec {
 
   describe("transparentRedirect") {
-    it("has the right url for Create") {
-      val gateway = createGateway
+    onGatewayIt("has the right url for Create") { gateway =>
       val expectedUrl = gateway.baseMerchantURL + "/customers/all/create_via_transparent_redirect_request"
       gateway.customer.transparentRedirectURLForCreate must be === expectedUrl
     }
-    it("has the right url for update") {
-      val gateway = createGateway
+    onGatewayIt("has the right url for update") { gateway =>
       val expectedUrl = gateway.baseMerchantURL + "/customers/all/update_via_transparent_redirect_request"
       gateway.customer.transparentRedirectURLForUpdate must be === expectedUrl
     }
   }
 
   describe("create") {
-    it("creates a customer") {
-      val gateway = createGateway
+    onGatewayIt("creates a customer") { gateway =>
       val request = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").
         email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com")
       val result = gateway.customer.create(request)
@@ -49,8 +44,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       customer.getUpdatedAt.get(Calendar.YEAR) must be === thisYear
     }
 
-    it("populates with blanks if given nothing") {
-      val gateway = createGateway
+    onGatewayIt("populates with blanks if given nothing") { gateway =>
       val request = new CustomerRequest
       val result = gateway.customer.create(request)
       result must be('success)
@@ -64,15 +58,13 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       customer.getWebsite must be === null
     }
 
-    it("it uses security params") {
-      val gateway = createGateway
+    onGatewayIt("it uses security params") { gateway =>
       val request = new CustomerRequest().creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").deviceSessionId("abc123").done
       val result = gateway.customer.create(request)
       result must be('success)
     }
 
-    it("populates custom fields") {
-      val gateway = createGateway
+    onGatewayIt("populates custom fields") { gateway =>
       val request = new CustomerRequest().customField("store_me", "custom value").customField("another_stored_field", "custom value2")
       val result = gateway.customer.create(request)
       result must be('success)
@@ -83,8 +75,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       customer.getCustomFields must be === expected
     }
 
-    it("createWithCreditCard") {
-      val gateway = createGateway
+    onGatewayIt("createWithCreditCard") { gateway =>
       val request = new CustomerRequest
       request.firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").done.lastName("Jones")
       val result = gateway.customer.create(request)
@@ -101,8 +92,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       creditCard.getUniqueNumberIdentifier must fullyMatch regex "\\A\\w{32}\\z"
     }
 
-    it("createWithDuplicateCreditCard") {
-      val gateway = createGateway
+    onGatewayIt("createWithDuplicateCreditCard") { gateway =>
       val customerRequest = new CustomerRequest
       customerRequest.firstName("Fred").creditCard.cardholderName("John Doe").number("4012000033330026").cvv("200").expirationDate("05/12").options.failOnDuplicatePaymentMethod(true).done.done.lastName("Jones")
       gateway.customer.create(customerRequest)
@@ -112,8 +102,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
     }
 
-    it("createWithValidCreditCardAndVerification") {
-      val gateway = createGateway
+    onGatewayIt("createWithValidCreditCardAndVerification") { gateway =>
       val request = new CustomerRequest
       request.firstName("Fred").creditCard.cardholderName("Fred Jones").number("4111111111111111").cvv("123").expirationDate("05/12").options.verifyCard(true).done.done.lastName("Jones")
       val result = gateway.customer.create(request)
@@ -129,8 +118,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       creditCard.getExpirationDate must be === "05/2012"
     }
 
-    it("createWithInvalidCreditCardAndVerification") {
-      val gateway = createGateway
+    onGatewayIt("createWithInvalidCreditCardAndVerification") { gateway =>
       val request = new CustomerRequest
       request.firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").options.verifyCard(true).done.done.lastName("Jones")
       val result = gateway.customer.create(request)
@@ -139,8 +127,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       verification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
     }
 
-    it("createWithCreditCardAndBillingAddress") {
-      val gateway = createGateway
+    onGatewayIt("createWithCreditCardAndBillingAddress") { gateway =>
       val request = new CustomerRequest
       request.firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").billingAddress.streetAddress("1 E Main St").extendedAddress("Unit 2").locality("Chicago").region("Illinois").postalCode("60607").countryName("United States of America").countryCodeAlpha2("US").countryCodeAlpha3("USA").countryCodeNumeric("840").done.done.lastName("Jones")
       val result = gateway.customer.create(request)
@@ -174,8 +161,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       address.getCountryName must be === "United States of America"
     }
 
-    it("createWithCreditCardAndBillingAddressWithErrors") {
-      val gateway = createGateway
+    onGatewayIt("createWithCreditCardAndBillingAddressWithErrors") { gateway =>
       val request = new CustomerRequest().firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").billingAddress.countryName("United States of America").countryCodeAlpha2("MX").done.done
       val result = gateway.customer.create(request)
       result must not be ('success)
@@ -185,16 +171,14 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("create with VenmoSdk") {
-    it("can create with PaymentMethodCode") {
-      val gateway = createGateway
+    onGatewayIt("can create with PaymentMethodCode") { gateway =>
       val request = new CustomerRequest().firstName("Fred").creditCard.venmoSdkPaymentMethodCode(VenmoSdk.generateTestPaymentMethodCode("5105105105105100")).done
       val result = gateway.customer.create(request)
       result must be('success)
       result.getTarget.getCreditCards.get(0).getBin must be === "510510"
     }
 
-    it("can create with session") {
-      val gateway = createGateway
+    onGatewayIt("can create with session") { gateway =>
       val request = new CustomerRequest().firstName("Fred").creditCard.number("5105105105105100").cvv("123").
         expirationDate("05/12").options.venmoSdkSession(VenmoSdk.Session.Valid.value).done.done
       val result = gateway.customer.create(request)
@@ -204,8 +188,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("create via TransparentRedirect") {
-    it("creates a customer") {
-      val gateway = createGateway
+    onGatewayIt("creates a customer") { gateway =>
       val trParams = new CustomerRequest
       val request = new CustomerRequest().firstName("John").lastName("Doe")
       val trCreateUrl = gateway.customer.transparentRedirectURLForCreate
@@ -217,8 +200,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       customer.getLastName must be === "Doe"
     }
 
-    it("ThrowsWhenQueryStringHasBeenTamperedWith") {
-      val gateway = createGateway
+    onGatewayIt("ThrowsWhenQueryStringHasBeenTamperedWith") { gateway =>
       val trCreateUrl = gateway.customer.transparentRedirectURLForCreate
       val queryString = TestHelper.simulateFormPostForTR(gateway, new CustomerRequest, new CustomerRequest, trCreateUrl)
       intercept[ForgedQueryStringException] {
@@ -226,8 +208,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       }
     }
 
-    it("supports nesting") {
-      val gateway = createGateway
+    onGatewayIt("supports nesting") { gateway =>
       val trParams = new CustomerRequest
       val request = new CustomerRequest().firstName("John").lastName("Doe").creditCard.number("4111111111111111").
         expirationDate("11/12").done
@@ -241,8 +222,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       customer.getCreditCards.get(0).getLast4 must be === "1111"
     }
 
-    it("can create customer") {
-      val gateway = createGateway
+    onGatewayIt("can create customer") { gateway =>
       val request = new CustomerRequest().firstName("John")
       val trParams = new CustomerRequest().lastName("Fred").creditCard.cardholderName("Fred Jones").
         number("5105105105105100").cvv("123").expirationDate("05/12").
@@ -260,8 +240,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       address.getCountryCodeNumeric must be === "840"
     }
 
-    it("detected validation errors") {
-      val gateway = createGateway
+    onGatewayIt("detected validation errors") { gateway =>
       val request = new CustomerRequest().firstName("John")
       val trParams = new CustomerRequest().lastName("Fred").creditCard.cardholderName("Fred Jones").
         number("5105105105105100").cvv("123").expirationDate("05/12").
@@ -276,22 +255,19 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("find") {
-    it("can find a single id") {
-      val gateway = createGateway
+    onGatewayIt("can find a single id") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val foundCustomer = gateway.customer.find(customer.getId)
       foundCustomer.getId must be === customer.getId
     }
 
-    it("throws NotFoundException with empty id list") {
-      val gateway = createGateway
+    onGatewayIt("throws NotFoundException with empty id list") { gateway =>
       intercept[NotFoundException] {
         gateway.customer.find(" ")
       }
     }
 
-    it("finds duplicate cards with paymentMethodTokenWithDuplicates ") {
-      val gateway = createGateway
+    onGatewayIt("finds duplicate cards with paymentMethodTokenWithDuplicates ") { gateway =>
       val request = new CustomerRequest().creditCard.number("4012000033330026").expirationDate("05/2010").done
       val jim = gateway.customer.create(request.firstName("Jim")).getTarget
       val joe = gateway.customer.create(request.firstName("Joe")).getTarget
@@ -305,8 +281,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("search") {
-    it("can search on all text fields") {
-      val gateway = createGateway
+    onGatewayIt("can search on all text fields") { gateway =>
       val creditCardToken = new Random().nextInt.toString
       val request = new CustomerRequest().firstName("Timmy").lastName("O'Toole").company("O'Toole and Sons").
         email("timmy@example.com").website("http://example.com").fax("3145551234").phone("5551231234").
@@ -329,8 +304,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       collection.getFirst.getId must be === customer.getId
     }
 
-    it("can search on createdAt") {
-      val gateway = createGateway
+    onGatewayIt("can search on createdAt") { gateway =>
       val request = new CustomerRequest
       val customer = gateway.customer.create(request).getTarget
       val createdAt = customer.getCreatedAt
@@ -356,8 +330,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("update") {
-    it("can update fields") {
-      val gateway = createGateway
+    onGatewayIt("can update fields") { gateway =>
       val request = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").
         email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com")
       val customer = gateway.customer.create(request).getTarget
@@ -375,8 +348,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       updatedCustomer.getWebsite must be === "http://getbraintree.com"
     }
 
-    it("can update with existing card and address") {
-      val gateway = createGateway
+    onGatewayIt("can update with existing card and address") { gateway =>
       val request = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").
         email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com").
         creditCard.number("4111111111111111").expirationDate("12/12").billingAddress.postalCode("44444").done.done
@@ -399,8 +371,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       updatedAddress.getCountryCodeNumeric must be === "296"
     }
 
-    it("updates With New Credit Card And Existing Address") {
-      val gateway = createGateway
+    onGatewayIt("updates With New Credit Card And Existing Address") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val addressRequest = new AddressRequest().firstName("John")
       val address = gateway.address.create(customer.getId, addressRequest).getTarget
@@ -412,8 +383,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       updatedAddress.getFirstName must be === "John"
     }
 
-    it("rejects invalid card updates with validation errors") {
-      val gateway = createGateway
+    onGatewayIt("rejects invalid card updates with validation errors") { gateway =>
       val request = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").
         email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com").
         creditCard.number("4111111111111111").expirationDate("12/12").billingAddress.postalCode("44444").done.done
@@ -429,8 +399,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("update via transparent redirect") {
-    it("works with existing CreditCard and Address") {
-      val gateway = createGateway
+    onGatewayIt("works with existing CreditCard and Address") { gateway =>
       val request = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com").creditCard.number("4111111111111111").expirationDate("12/12").billingAddress.postalCode("44444").done.done
       val customer = gateway.customer.create(request).getTarget
       val creditCard = customer.getCreditCards.get(0)
@@ -445,8 +414,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       updatedAddress.getPostalCode must be === "11111"
     }
 
-    it("can add update customer fields") {
-      val gateway = createGateway
+    onGatewayIt("can add update customer fields") { gateway =>
       val createRequest = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com")
       val createdCustomer = gateway.customer.create(createRequest).getTarget
       val request = new CustomerRequest().firstName("Drew").lastName("Olson").company("Braintree").email("drew.olson@example.com").fax("555-555-5555").phone("555-555-5554").website("http://getbraintree.com")
@@ -464,8 +432,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       customer.getWebsite must be === "http://getbraintree.com"
     }
 
-    it("can update customer address") {
-      val gateway = createGateway
+    onGatewayIt("can update customer address") { gateway =>
       val request = new CustomerRequest().firstName("John").lastName("Doe").
         creditCard.
           number("4111111111111111").expirationDate("12/12").
@@ -493,8 +460,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       address.getCountryCodeNumeric must be === "484"
     }
 
-    it("handles address validation errors on customer address updates") {
-      val gateway = createGateway
+    onGatewayIt("handles address validation errors on customer address updates") { gateway =>
       val request = new CustomerRequest().firstName("John").lastName("Doe").creditCard.number("4111111111111111").expirationDate("12/12").billingAddress.countryName("United States of America").countryCodeAlpha2("US").countryCodeAlpha3("USA").countryCodeNumeric("840").done.done
       val customer = gateway.customer.create(request).getTarget
       val updateRequest = new CustomerRequest().firstName("Jane")
@@ -508,8 +474,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("update misc cases") {
-    it("can update token") {
-      val gateway = createGateway
+    onGatewayIt("can update token") { gateway =>
       val rand = new Random
       val oldId = String.valueOf(rand.nextInt)
       val request = new CustomerRequest().id(oldId)
@@ -522,8 +487,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
       updatedCustomer.getId must be === newId
     }
 
-    it("can perform selective field updates") {
-      val gateway = createGateway
+    onGatewayIt("can perform selective field updates") { gateway =>
       val request = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com")
       val result = gateway.customer.create(request)
       result must be('success)
@@ -543,8 +507,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("delete") {
-    it("causes customer to become unfindable") {
-      val gateway = createGateway
+    onGatewayIt("causes customer to become unfindable") { gateway =>
       val request = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").
         email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com")
       val customer = gateway.customer.create(request).getTarget
@@ -557,8 +520,7 @@ class CustomerSpec extends FunSpec with MustMatchers with CalendarHelper {
   }
 
   describe("all") {
-    it("finds all customers") {
-      val gateway = createGateway
+    onGatewayIt("finds all customers") { gateway =>
       val resourceCollection = gateway.customer.all
       resourceCollection.getMaximumSize must be > 0
       resourceCollection.getFirst must not be null
