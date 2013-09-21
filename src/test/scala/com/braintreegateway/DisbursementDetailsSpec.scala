@@ -4,14 +4,14 @@ import _root_.org.mockito.Mockito.when
 import _root_.org.scalatest.FunSpec
 import _root_.org.scalatest.matchers.MustMatchers
 import _root_.org.scalatest.mock.MockitoSugar
-import com.braintreegateway.testhelpers.CalendarTestUtils
+import testhelpers.CalendarHelper
 import com.braintreegateway.util.NodeWrapper
 
 class DisbursementDetailsSpec extends FunSpec with MustMatchers with MockitoSugar {
   describe("isValid") {
     it("is true when disbursement date is present") {
       val wrapper = mock[NodeWrapper]
-      val disbursementDate = CalendarTestUtils.date("2013-04-10")
+      val disbursementDate = CalendarHelper.date("2013-04-10")
       when(wrapper.findDate("disbursement-date")).thenReturn(disbursementDate)
 
       val detail = new DisbursementDetails(wrapper)

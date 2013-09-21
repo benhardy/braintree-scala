@@ -17,9 +17,10 @@ import java.math.BigDecimal
 import MerchantAccountTestConstants._
 import scala.collection.JavaConversions._
 import java.util.Random
+import CalendarHelper._
 
 @RunWith(classOf[JUnitRunner])
-class TransactionSpec extends GatewaySpec with MustMatchers with CalendarHelper {
+class TransactionSpec extends GatewaySpec with MustMatchers {
   val DISBURSEMENT_TRANSACTION_ID = "deposittransaction"
 
   describe("transparent redirect") {
@@ -625,7 +626,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers with CalendarHelper 
     }
 
     onGatewayIt("findWithDisbursementDetails") { gateway =>
-      val disbursementDate = CalendarTestUtils.date("2013-04-10")
+      val disbursementDate = CalendarHelper.date("2013-04-10")
       val foundTransaction = gateway.transaction.find(DISBURSEMENT_TRANSACTION_ID)
       val disbursementDetails = foundTransaction.getDisbursementDetails
       foundTransaction.isDisbursed must be === true
@@ -895,7 +896,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers with CalendarHelper 
     }
 
     onGatewayIt("searchOnDisbursementDate") { gateway =>
-      val disbursementTime = CalendarTestUtils.dateTime("2013-04-10T00:00:00Z")
+      val disbursementTime = CalendarHelper.dateTime("2013-04-10T00:00:00Z")
       val threeDaysEarlier = 3.days before disbursementTime
       val oneDayEarlier = 1.days before disbursementTime
       val oneDayLater = 1.days after disbursementTime
@@ -910,8 +911,8 @@ class TransactionSpec extends GatewaySpec with MustMatchers with CalendarHelper 
     }
 
     onGatewayIt("searchOnDisbursementDateUsingLocalTime") { gateway =>
-      val oneDayEarlier = CalendarTestUtils.dateTime("2013-04-09T00:00:00Z", "CST")
-      val oneDayLater = CalendarTestUtils.dateTime("2013-04-11T00:00:00Z", "CST")
+      val oneDayEarlier = CalendarHelper.dateTime("2013-04-09T00:00:00Z", "CST")
+      val oneDayLater = CalendarHelper.dateTime("2013-04-11T00:00:00Z", "CST")
       val searchRequest = new TransactionSearchRequest().id.is(DISBURSEMENT_TRANSACTION_ID).disbursementDate.between(oneDayEarlier, oneDayLater)
       gateway.transaction.search(searchRequest).getMaximumSize must be === 1
     }

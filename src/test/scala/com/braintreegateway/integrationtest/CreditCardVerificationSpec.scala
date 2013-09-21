@@ -5,12 +5,12 @@ import org.scalatest.FunSpec
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
-import testhelpers.CalendarHelper
+import testhelpers.CalendarHelper._
 import com.braintreegateway.util.NodeWrapperFactory
 import testhelpers.XmlHelper._
 
 @RunWith(classOf[JUnitRunner])
-class CreditCardVerificationSpec extends FunSpec with MustMatchers with CalendarHelper {
+class CreditCardVerificationSpec extends FunSpec with MustMatchers {
   def createGateway = {
     new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "integration_public_key", "integration_private_key")
   }

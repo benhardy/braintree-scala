@@ -8,10 +8,11 @@ import exceptions.{NotFoundException, ForgedQueryStringException}
 import java.util.{Random, Calendar}
 import test.VenmoSdk
 import testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
+import CalendarHelper._
 
 
 @RunWith(classOf[JUnitRunner])
-class CustomerSpec extends GatewaySpec with MustMatchers with CalendarHelper {
+class CustomerSpec extends GatewaySpec with MustMatchers {
 
   describe("transparentRedirect") {
     onGatewayIt("has the right url for Create") { gateway =>

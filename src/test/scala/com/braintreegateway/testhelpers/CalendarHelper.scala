@@ -1,18 +1,15 @@
 package com.braintreegateway.testhelpers
 
-import java.util.Calendar
+import java.util.{TimeZone, Calendar}
+import com.braintreegateway.util.NodeWrapper
+import java.text.SimpleDateFormat
 
 /**
  * Helpers to decrease clutter on Calendar operations.
  */
-trait CalendarHelper {
+object CalendarHelper {
 
   def now = Calendar.getInstance
-
-  case class TimeDelta(calendarUnit:Int, quantity: Int) {
-    def before(when: Calendar) = when - this
-    def after(when: Calendar) = when + this
-  }
 
 
   class DateDelta(unitCount:Int) {
@@ -44,4 +41,26 @@ trait CalendarHelper {
 
   implicit def calendarOperations(c:Calendar) = CalendarOperations(c)
 
+  case class TimeDelta(calendarUnit:Int, quantity: Int) {
+    def before(when: Calendar): Calendar = when - this
+    def after(when: Calendar): Calendar = when + this
+  }
+
+  val UTC = "UTC"
+
+  def date(dateString: String) = {
+    getCalendar(dateString, NodeWrapper.DATE_FORMAT, UTC)
+  }
+
+  def dateTime(dateString: String, timeZoneName: String = UTC) = {
+    getCalendar(dateString, NodeWrapper.DATE_TIME_FORMAT, timeZoneName)
+  }
+
+  def getCalendar(dateString: String,  dateTimeFormat: String, timeZoneName: String) = {
+    val dateFormat = new SimpleDateFormat(dateTimeFormat)
+    dateFormat.setTimeZone(TimeZone.getTimeZone(timeZoneName))
+    val disbursementCalendar = Calendar.getInstance(TimeZone.getTimeZone(timeZoneName))
+    disbursementCalendar.setTime(dateFormat.parse(dateString))
+    disbursementCalendar
+  }
 }
