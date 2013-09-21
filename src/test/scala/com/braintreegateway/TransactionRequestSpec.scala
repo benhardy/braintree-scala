@@ -1,6 +1,5 @@
 package com.braintreegateway
 
-import com.braintreegateway.testhelpers.TestHelper
 
 import _root_.org.junit.runner.RunWith
 import _root_.org.scalatest.FunSpec
@@ -41,7 +40,6 @@ class TransactionRequestSpec extends FunSpec with MustMatchers {
       val  request = new TransactionRequest().deviceData("{\"device_session_id\": \"mydsid\"}")
       val xmlString = request.toXML
       xmlString must include ("mydsid")
-      println(xmlString)
       val root = XML.loadString(xmlString)
       val expectedBundleText = "{\"device_session_id\": \"mydsid\"}"
       (root \ "deviceData").head.text must be === expectedBundleText

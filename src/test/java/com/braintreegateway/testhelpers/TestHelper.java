@@ -13,7 +13,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.util.Calendar;
-import java.util.Comparator;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -21,12 +20,6 @@ import static org.junit.Assert.assertTrue;
 
 @Ignore("Testing utility class")
 public abstract class TestHelper {
-
-    public static final class CompareModificationsById implements Comparator<Modification> {
-        public int compare(Modification left, Modification right) {
-            return left.getId().compareTo(right.getId());
-        }
-    }
 
     public static void assertDatesEqual(Calendar first, Calendar second) {
         if (first == null && second != null) {
@@ -50,10 +43,6 @@ public abstract class TestHelper {
             }
             throw new AssertionError(buffer.toString());
         }
-    }
-
-    public static void assertIncludes(String expected, String all) {
-        assertTrue("Expected:\n" + all + "\nto include:\n" + expected, all.indexOf(expected) >= 0);
     }
 
     public static void assertValidTrData(Configuration configuration, String trData) {
