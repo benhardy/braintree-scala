@@ -7,7 +7,13 @@ import java.util.Calendar
  */
 trait CalendarHelper {
 
-  case class TimeDelta(calendarUnit:Int, quantity: Int)
+  def now = Calendar.getInstance
+
+  case class TimeDelta(calendarUnit:Int, quantity: Int) {
+    def before(when: Calendar) = when - this
+    def after(when: Calendar) = when + this
+  }
+
 
   class DateDelta(unitCount:Int) {
     def days = TimeDelta(Calendar.DAY_OF_MONTH, unitCount)
@@ -27,6 +33,9 @@ trait CalendarHelper {
       newCal.add(delta.calendarUnit, - delta.quantity)
       newCal
     }
+    def year = calendar.get(Calendar.YEAR)
+    def month = calendar.get(Calendar.MONTH)
+    def day = calendar.get(Calendar.DAY_OF_MONTH)
   }
 
   def copyOf(calendar: Calendar): Calendar = {
