@@ -10,7 +10,7 @@ import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 
 @RunWith(classOf[JUnitRunner])
-class TrUtilTest extends FunSpec with MustMatchers {
+class TrUtilSpec extends FunSpec with MustMatchers {
 
   val configuration = new Configuration("baseMerchantURL", "integration_public_key", "integration_private_key")
 

@@ -33,6 +33,10 @@ object CalendarHelper {
     def year = calendar.get(Calendar.YEAR)
     def month = calendar.get(Calendar.MONTH)
     def day = calendar.get(Calendar.DAY_OF_MONTH)
+    def hour = calendar.get(Calendar.HOUR_OF_DAY)
+    def minute = calendar.get(Calendar.MINUTE)
+    def second = calendar.get(Calendar.SECOND)
+    def timeZone = calendar.getTimeZone
   }
 
   def copyOf(calendar: Calendar): Calendar = {

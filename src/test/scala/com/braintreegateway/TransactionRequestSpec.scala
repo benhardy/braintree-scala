@@ -10,9 +10,10 @@ import scala.xml.XML
 
 @RunWith(classOf[JUnitRunner])
 class TransactionRequestSpec extends FunSpec with MustMatchers {
+
   describe("toQueryString") {
     it("includes nested customer fields") {
-      val  request = new TransactionRequest().
+      val request = new TransactionRequest().
         customer().
           firstName("Drew").
             done()
@@ -37,7 +38,7 @@ class TransactionRequestSpec extends FunSpec with MustMatchers {
     }
 
     it("includes deviceData bundle") {
-      val  request = new TransactionRequest().deviceData("{\"device_session_id\": \"mydsid\"}")
+      val request = new TransactionRequest().deviceData("{\"device_session_id\": \"mydsid\"}")
       val xmlString = request.toXML
       xmlString must include ("mydsid")
       val root = XML.loadString(xmlString)
