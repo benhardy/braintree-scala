@@ -7,7 +7,7 @@ import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
 import test.{CreditCardDefaults, CreditCardNumbers, VenmoSdk}
-import testhelpers.{MerchantAccountTestConstants, TestHelper}
+import testhelpers.{GatewaySpec, MerchantAccountTestConstants, TestHelper}
 import java.util.{Calendar, Random}
 import java.math.BigDecimal
 import scala.collection.JavaConversions._
@@ -15,41 +15,29 @@ import MerchantAccountTestConstants._
 import TestHelper._
 
 @RunWith(classOf[JUnitRunner])
-class CreditCardSpec extends FunSpec with MustMatchers {
-
-  def createGateway = {
-    new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "integration_public_key", "integration_private_key")
-  }
+class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
   def createProcessingRulesGateway = {
     new BraintreeGateway(Environment.DEVELOPMENT, "processing_rules_merchant_id", "processing_rules_public_key", "processing_rules_private_key")
   }
 
   describe("transparentRedirect") {
-    it("has correct URL For Create") {
-      val gateway = createGateway
-
+    onGatewayIt("has correct URL For Create") { gateway =>
       val url = gateway.creditCard.transparentRedirectURLForCreate
       url must be === gateway.baseMerchantURL + "/payment_methods/all/create_via_transparent_redirect_request"
     }
-    it("has correct URL For Update") {
-      val gateway = createGateway
-
+    onGatewayIt("has correct URL For Update") { gateway =>
       val url = gateway.creditCard.transparentRedirectURLForUpdate
       url must be === gateway.baseMerchantURL + "/payment_methods/all/update_via_transparent_redirect_request"
     }
-    it("trData") {
-      val gateway = createGateway
-
+    onGatewayIt("trData") { gateway =>
       val trData = gateway.trData(new CreditCardRequest, "http://example.com")
       trData must beValidTrData(gateway.getConfiguration)
     }
   }
 
   describe("create") {
-    it("populates expeted fields") {
-      val gateway = createGateway
-
+    onGatewayIt("populates expeted fields") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").number("5105105105105100").expirationDate("05/12")
 
@@ -76,9 +64,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       card.getImageUrl.matches(".*png.*") must be === true
     }
 
-    it("sets card expiration dates correctly") {
-      val gateway = createGateway
-
+    onGatewayIt("sets card expiration dates correctly") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
         cvv("123").number("5105105105105100").expirationMonth("06").expirationYear("13")
@@ -94,9 +80,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       card.getUpdatedAt.get(Calendar.YEAR) must be === thisYear
     }
 
-    it("reproduces XML chars in cardholder name") {
-      val gateway = createGateway
-
+    onGatewayIt("reproduces XML chars in cardholder name") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("Special Chars <>&\"'").
         number("5105105105105100").expirationDate("05/12")
@@ -108,9 +92,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       card.getCardholderName must be === "Special Chars <>&\"'"
     }
 
-    it("processes security parameters") {
-      val gateway = createGateway
-
+    onGatewayIt("processes security parameters") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("Special Chars").
         number("5105105105105100").expirationDate("05/12").deviceSessionId("abc123")
@@ -121,9 +103,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
     }
 
     describe("Address usage") {
-      it("can add address on card create") {
-        val gateway = createGateway
-
+      onGatewayIt("can add address on card create") { gateway =>
         val customer = gateway.customer.create(new CustomerRequest).getTarget
         val request = new CreditCardRequest().
           customerId(customer.getId).
@@ -159,9 +139,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
         billingAddress.getCountryCodeNumeric must be === "840"
       }
 
-      it("can create a new card with a previously existing address") {
-        val gateway = createGateway
-
+      onGatewayIt("can create a new card with a previously existing address") { gateway =>
         val customer = gateway.customer.create(new CustomerRequest).getTarget
         val address = gateway.address.create(customer.getId, new AddressRequest().postalCode("11111")).getTarget
         val request = new CreditCardRequest().customerId(customer.getId).billingAddressId(address.getId).
@@ -179,9 +157,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("default option") {
-    it("sets one card to be default") {
-      val gateway = createGateway
-
+    onGatewayIt("sets one card to be default") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request1 = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
         number("5105105105105100").expirationDate("05/12")
@@ -198,9 +174,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("Transparent redirect") {
-    it("can perform a basic card create") {
-      val gateway = createGateway
-
+    onGatewayIt("can perform a basic card create") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val trParams = new CreditCardRequest().customerId(customer.getId)
       val request = new CreditCardRequest().cardholderName("John Doe").number("5105105105105100").expirationDate("05/12")
@@ -220,9 +194,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       card.getToken must not be null
     }
 
-    it("can create card with country") {
-      val gateway = createGateway
-
+    onGatewayIt("can create card with country") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest
       val trParams = new CreditCardRequest().customerId(customer.getId).number("4111111111111111").expirationDate("10/10").billingAddress.countryName("Aruba").countryCodeAlpha2("AW").countryCodeAlpha3("ABW").countryCodeNumeric("533").done
@@ -238,9 +210,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       result.getTarget.getBillingAddress.getCountryCodeNumeric must be === "533"
     }
 
-    it("can set an existing card to be default") {
-      val gateway = createGateway
-
+    onGatewayIt("can set an existing card to be default") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request1 = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
       gateway.creditCard.create(request1)
@@ -251,9 +221,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       card must be('default)
     }
 
-    it("can make a card default as it's created") {
-      val gateway = createGateway
-
+    onGatewayIt("can make a card default as it's created") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request1 = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
       gateway.creditCard.create(request1)
@@ -265,9 +233,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       card must be('default)
     }
 
-    it("rejects inconsistent country data") {
-      val gateway = createGateway
-
+    onGatewayIt("rejects inconsistent country data") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest
       val trParams = new CreditCardRequest().customerId(customer.getId).number("4111111111111111").expirationDate("10/10").billingAddress.countryName("Aruba").countryCodeAlpha2("US").done
@@ -290,9 +256,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("venmoSdkPaymentMethodCode") {
-    it("creates with valid code") {
-      val gateway = createGateway
-
+    onGatewayIt("creates with valid code") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Visa.code)
       val result = gateway.creditCard.create(request)
@@ -302,9 +266,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       card must be('venmoSdk)
     }
 
-    it("fails on invalid code") {
-      val gateway = createGateway
-
+    onGatewayIt("fails on invalid code") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Invalid.code)
       val result = gateway.creditCard.create(request)
@@ -316,9 +278,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("venmoSdkSession") {
-    it("creates with valid session") {
-      val gateway = createGateway
-
+    onGatewayIt("creates with valid session") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
         number("5105105105105100").expirationDate("05/12").
@@ -330,9 +290,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       card must be('venmoSdk)
     }
 
-    it("fails with invalid session") {
-      val gateway = createGateway
-
+    onGatewayIt("fails with invalid session") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
         number("5105105105105100").expirationDate("05/12").
@@ -346,9 +304,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("update") {
-    it("updates expeted card fields") {
-      val gateway = createGateway
-
+    onGatewayIt("updates expeted card fields") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("5105105105105100").expirationDate("05/12")
@@ -377,9 +333,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       updatedCard.getBillingAddress.getCountryCodeNumeric must be === "380"
     }
 
-    it("can set a card to be the default") {
-      val gateway = createGateway
-
+    onGatewayIt("can set a card to be the default") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
       val card1 = gateway.creditCard.create(request).getTarget
@@ -396,9 +350,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("update via TransparentRedirect") {
-    it("updates basic fields") {
-      val gateway = createGateway
-
+    onGatewayIt("updates basic fields") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val createRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
         cvv("123").number("5105105105105100").expirationDate("05/12")
@@ -415,9 +367,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       updatedCard.getCardholderName must be === "joe cool"
     }
 
-    it("updates country") {
-      val gateway = createGateway
-
+    onGatewayIt("updates country") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).
         number("5105105105105100").expirationDate("05/12")
@@ -439,9 +389,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       updatedCreditCard.getBillingAddress.getCountryCodeNumeric must be === "832"
     }
 
-    it("rejects invalid country updates") {
-      val gateway = createGateway
-
+    onGatewayIt("rejects invalid country updates") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
       val card = gateway.creditCard.create(request).getTarget
@@ -456,9 +404,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
     }
 
-    it("updates card tokens") {
-      val gateway = createGateway
-
+    onGatewayIt("updates card tokens") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("5105105105105100").expirationDate("05/12")
@@ -475,9 +421,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       updatedCard.getToken must be === newToken
     }
 
-    it("can update a small number of attributes") {
-      val gateway = createGateway
-
+    onGatewayIt("can update a small number of attributes") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("5105105105105100").expirationDate("05/12")
@@ -500,9 +444,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("update with billing address") {
-    it("creates new address by default") {
-      val gateway = createGateway
-
+    onGatewayIt("creates new address by default") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").
         expirationDate("05/12").billingAddress.firstName("John").done
@@ -516,9 +458,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       creditCard.getBillingAddress.getId must not be ===(updatedCreditCard.getBillingAddress.getId)
     }
 
-    it("updates existing address if updateExisting option is used") {
-      val gateway = createGateway
-
+    onGatewayIt("updates existing address if updateExisting option is used") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").
         expirationDate("05/12").billingAddress.firstName("John").done
@@ -533,9 +473,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       updatedCreditCard.getBillingAddress.getId must be === creditCard.getBillingAddress.getId
     }
 
-    it("updates existing address if updateExisting option is used with Transparent Redirect too") {
-      val gateway = createGateway
-
+    onGatewayIt("updates existing address if updateExisting option is used with Transparent Redirect too") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").
         expirationDate("05/12").
@@ -556,9 +494,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("find") {
-    it("can find card by token") {
-      val gateway = createGateway
-
+    onGatewayIt("can find card by token") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("5105105105105100").expirationDate("05/12")
@@ -576,9 +512,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       found.getLast4 must be === "5100"
     }
 
-    it("returns associated subscriptions") {
-      val gateway = createGateway
-
+    onGatewayIt("returns associated subscriptions") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val cardRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("5105105105105100").expirationDate("05/12")
@@ -610,9 +544,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("delete") {
-    it("causes a card to become unfindable") {
-      val gateway = createGateway
-
+    onGatewayIt("causes a card to become unfindable") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe")
         .cvv("123").number("5105105105105100").expirationDate("05/12")
@@ -628,9 +560,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("failOnDuplicatePaymentMethod option") {
-    it("fails on if duplicate it detected") {
-      val gateway = createGateway
-
+    onGatewayIt("fails on if duplicate it detected") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
         cvv("123").number("4012000033330026").expirationDate("05/12").
@@ -644,9 +574,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("verifyCard option") {
-    it("verifies valid Credit Card") {
-      val gateway = createGateway
-
+    onGatewayIt("verifies valid Credit Card") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("4111111111111111").expirationDate("05/12").
@@ -659,9 +587,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       result must be ('success)
     }
 
-    it("verifies Credit Card against specific Merchant Account") {
-      val gateway = createGateway
-
+    onGatewayIt("verifies Credit Card against specific Merchant Account") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("5105105105105100").expirationDate("05/12").
@@ -676,9 +602,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       result.getCreditCardVerification.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
     }
 
-    it("verifies invalid Credit Card") {
-      val gateway = createGateway
-
+    onGatewayIt("verifies invalid Credit Card") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("5105105105105100").expirationDate("05/12").
@@ -709,9 +633,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("expired") {
-    it("finds all expired cards") {
-      val gateway = createGateway
-
+    onGatewayIt("finds all expired cards") { gateway =>
       val expiredCards = gateway.creditCard.expired
       (expiredCards.getMaximumSize) must be > 0
 
@@ -724,9 +646,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
   }
 
   describe("expiringBetween") {
-    it("finds cards within expiry range") {
-      val gateway = createGateway
-
+    onGatewayIt("finds cards within expiry range") { gateway =>
       val start = Calendar.getInstance
       start.set(2010, 0, 1)
       val end = Calendar.getInstance

@@ -1,10 +1,13 @@
 package com.braintreegateway.integrationtest
 
+import _root_.org.junit.runner.RunWith
+import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.testhelpers.GatewaySpec
 import java.util.Random
 
+@RunWith(classOf[JUnitRunner])
 class MerchantAccountSpec extends GatewaySpec with MustMatchers {
 
   describe("create") {

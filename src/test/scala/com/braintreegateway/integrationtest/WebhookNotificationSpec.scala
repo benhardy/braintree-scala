@@ -9,7 +9,10 @@ import com.braintreegateway.ValidationErrorCode
 import java.util.Calendar
 import org.scalatest.matchers.MustMatchers
 import TestHelper.beSameDayAs
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
   describe("create") {
     it("categorized unrecognized kinds") {

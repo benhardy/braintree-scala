@@ -9,19 +9,13 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import com.braintreegateway.testhelpers.GatewaySpec
 
 @RunWith(classOf[JUnitRunner])
-class DiscountSpec extends FunSpec with MustMatchers {
-  val gateway =
-    new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "integration_public_key",
-        "integration_private_key")
-
-  val http = new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL,
-        Environment.DEVELOPMENT.certificateFilenames, BraintreeGateway.VERSION)
+class DiscountSpec extends FunSpec with MustMatchers with GatewaySpec {
 
   describe("discount creation") {
-    it("saves all discount details retrievably") {
-
+    onGatewayIt("saves all discount details retrievably") { gateway =>
       val discountId = "a_discount_id" + new Random().nextInt.toString
       val discountRequest = new FakeModificationRequest().
           amount(new BigDecimal("100.00")).
@@ -32,6 +26,7 @@ class DiscountSpec extends FunSpec with MustMatchers {
           neverExpires(false).
           numberOfBillingCycles(12)
 
+      val http = gatewayHttp(gateway)
       http.post("/modifications/create_modification_for_tests", discountRequest)
       val discounts = gateway.discount.all
 
@@ -44,5 +39,10 @@ class DiscountSpec extends FunSpec with MustMatchers {
       actualDiscount.neverExpires must be === false
       actualDiscount.getNumberOfBillingCycles must be === new Integer("12")
     }
+  }
+
+  def gatewayHttp(gateway: BraintreeGateway): Http = {
+    new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL,
+      Environment.DEVELOPMENT.certificateFilenames, BraintreeGateway.VERSION)
   }
 }

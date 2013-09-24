@@ -5,7 +5,6 @@ import _root_.org.scalatest.FunSpec
 import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway.util.NodeWrapperFactory
-import java.util.List
 import scala.collection.JavaConversions._
 
 @RunWith(classOf[JUnitRunner])

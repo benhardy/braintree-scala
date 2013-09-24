@@ -1,10 +1,13 @@
 package com.braintreegateway
 
+import _root_.org.junit.runner.RunWith
 import _root_.org.scalatest.FunSpec
+import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway.exceptions._
 import java.net.URLEncoder
 
+@RunWith(classOf[JUnitRunner])
 class TransparentRedirectRequestSpec extends FunSpec with MustMatchers {
   val configuration = new Configuration("baseMerchantURL", "integration_public_key", "integration_private_key")
 

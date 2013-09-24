@@ -7,13 +7,11 @@ import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import testhelpers.CalendarHelper._
 import com.braintreegateway.util.NodeWrapperFactory
+import testhelpers.GatewaySpec
 import testhelpers.XmlHelper._
 
 @RunWith(classOf[JUnitRunner])
-class CreditCardVerificationSpec extends FunSpec with MustMatchers {
-  def createGateway = {
-    new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "integration_public_key", "integration_private_key")
-  }
+class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewaySpec {
 
   describe("CreditCardVerification constructor") {
     it("can construct from a response XML") {
@@ -57,9 +55,7 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers {
   }
 
   describe("creditCardVerification.search") {
-    it("can search on all text fields") {
-
-      val gateway = createGateway
+    onGatewayIt("can search on all text fields") { gateway =>
       val request = new CustomerRequest().creditCard.number("4000111111111115").expirationDate("11/12").
         cardholderName("Tom Smith").options.verifyCard(true).done.done
       val result = gateway.customer.create(request)
@@ -74,8 +70,7 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers {
       collection.getFirst.getId must be === verification.getId
     }
 
-    it("can search on multiple value fields") {
-      val gateway = createGateway
+    onGatewayIt("can search on multiple value fields") { gateway =>
       val requestOne = new CustomerRequest().creditCard.number("4000111111111115").expirationDate("11/12").
           options.verifyCard(true).done.done
       val resultOne = gateway.customer.create(requestOne)
@@ -99,8 +94,7 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers {
       expectedIds must contain (collection.getFirst.getId)
     }
 
-    it("can search on range fields") {
-      val gateway = createGateway
+    onGatewayIt("can search on range fields") { gateway =>
       val request = new CustomerRequest().creditCard.
           number("4000111111111115").
           expirationDate("11/12").
@@ -135,8 +129,7 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers {
  }
 
   describe("CreditCardVerification") {
-    it("Has Card Type indicators") {
-      val gateway = createGateway
+    onGatewayIt("Has Card Type indicators") { gateway =>
       val request = new CustomerRequest().
           creditCard.
             number("4000111111111115").expirationDate("11/12").cardholderName("Tom Smith").

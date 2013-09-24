@@ -7,17 +7,12 @@ import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.exceptions.NotFoundException
 import java.util.Calendar
+import testhelpers.GatewaySpec
 
 @RunWith(classOf[JUnitRunner])
-class AddressSpec extends FunSpec with MustMatchers {
-  def createGateway = {
-    new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "integration_public_key", "integration_private_key")
-  }
-
+class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
   describe("create") {
-    it("fills expected fields") {
-      val gateway = createGateway
-
+    onGatewayIt("fills expected fields") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().firstName("Joe").lastName("Smith").company("Smith Co.").
         streetAddress("1 E Main St").extendedAddress("Unit 2").locality("Chicago").region("Illinois").
@@ -45,9 +40,7 @@ class AddressSpec extends FunSpec with MustMatchers {
   }
 
   describe("update") {
-    it("changes expected fields") {
-      val gateway = createGateway
-
+    onGatewayIt("changes expected fields") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().streetAddress("1 E Main St").extendedAddress("Unit 2").
         locality("Chicago").region("Illinois").postalCode("60607").countryName("United States of America")
@@ -76,9 +69,7 @@ class AddressSpec extends FunSpec with MustMatchers {
   }
 
   describe("find") {
-    it("return address in happy case") {
-      val gateway = createGateway
-
+    onGatewayIt("return address in happy case") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().streetAddress("1 E Main St")
       val createResult = gateway.address.create(customer.getId, request)
@@ -90,9 +81,7 @@ class AddressSpec extends FunSpec with MustMatchers {
       foundAddress.getStreetAddress must be === "1 E Main St"
     }
 
-    it("throws NotFoundException on empty ids") {
-      val gateway = createGateway
-
+    onGatewayIt("throws NotFoundException on empty ids") { gateway =>
       intercept[NotFoundException] {
         gateway.address.find(" ", "address_id")
       }
@@ -103,9 +92,7 @@ class AddressSpec extends FunSpec with MustMatchers {
   }
 
   describe("delete") {
-    it("causes an address to be deleted") {
-      val gateway = createGateway
-
+    onGatewayIt("causes an address to be deleted") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().streetAddress("1 E Main St").extendedAddress("Unit 2").
         locality("Chicago").region("Illinois").postalCode("60607").countryName("United States of America")
@@ -124,9 +111,7 @@ class AddressSpec extends FunSpec with MustMatchers {
   }
 
   describe("validation errors on create") {
-    it("detects inconsistent country & country code") {
-      val gateway = createGateway
-
+    onGatewayIt("detects inconsistent country & country code") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().countryName("Tunisia").countryCodeAlpha2("US")
 
@@ -139,9 +124,7 @@ class AddressSpec extends FunSpec with MustMatchers {
       code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
     }
 
-    it("detects CountryCodeAlpha2") {
-      val gateway = createGateway
-
+    onGatewayIt("detects CountryCodeAlpha2") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().countryCodeAlpha2("ZZ")
 
@@ -154,9 +137,7 @@ class AddressSpec extends FunSpec with MustMatchers {
       code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
     }
 
-    it("detects invalid CountryCodeAlpha3") {
-      val gateway = createGateway
-
+    onGatewayIt("detects invalid CountryCodeAlpha3") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().countryCodeAlpha3("ZZZ")
 
@@ -169,9 +150,7 @@ class AddressSpec extends FunSpec with MustMatchers {
       code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA3_IS_NOT_ACCEPTED
     }
 
-    it("detects invalid CountryCodeNumeric") {
-      val gateway = createGateway
-
+    onGatewayIt("detects invalid CountryCodeNumeric") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().countryCodeNumeric("000")
 
@@ -187,9 +166,7 @@ class AddressSpec extends FunSpec with MustMatchers {
   }
 
   describe("error parameters") {
-    it("provides error parameters") {
-      val gateway = createGateway
-
+    onGatewayIt("provides error parameters") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new AddressRequest().countryName("United States of Hammer")
 
