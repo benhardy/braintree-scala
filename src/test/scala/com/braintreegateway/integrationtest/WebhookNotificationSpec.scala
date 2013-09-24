@@ -8,6 +8,7 @@ import com.braintreegateway.util.NodeWrapperFactory
 import com.braintreegateway.ValidationErrorCode
 import java.util.Calendar
 import org.scalatest.matchers.MustMatchers
+import TestHelper.beSameDayAs
 
 class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
   describe("create") {
@@ -36,7 +37,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
         notification.getKind must be === WebhookNotification.Kind.SUBSCRIPTION_WENT_PAST_DUE
         notification.getSubscription.getId must be === "my_id"
-        TestHelper.assertDatesEqual(Calendar.getInstance, notification.getTimestamp)
+        notification.getTimestamp must beSameDayAs(Calendar.getInstance)
     }
 
     onGatewayIt("createsSampleMerchantAccountApprovedNotification") {
@@ -46,7 +47,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         notification.getKind must be === WebhookNotification.Kind.SUB_MERCHANT_ACCOUNT_APPROVED
         notification.getMerchantAccount.getId must be === "my_id"
         notification.getMerchantAccount.getStatus must be === MerchantAccount.Status.ACTIVE
-        TestHelper.assertDatesEqual(Calendar.getInstance, notification.getTimestamp)
+        notification.getTimestamp must beSameDayAs(Calendar.getInstance)
     }
 
     onGatewayIt("createsSampleMerchantAccountDeclinedNotification") {
@@ -56,7 +57,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         notification.getKind must be === WebhookNotification.Kind.SUB_MERCHANT_ACCOUNT_DECLINED
         notification.getMerchantAccount.getId must be === "my_id"
         notification.getMerchantAccount.getStatus must be === MerchantAccount.Status.SUSPENDED
-        TestHelper.assertDatesEqual(Calendar.getInstance, notification.getTimestamp)
+        notification.getTimestamp must beSameDayAs(Calendar.getInstance)
     }
 
     onGatewayIt("createsSampleMerchantAccountDeclinedNotificationWithErrorCodes") {
@@ -65,7 +66,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
         notification.getKind must be === WebhookNotification.Kind.SUB_MERCHANT_ACCOUNT_DECLINED
         notification.getMerchantAccount.getId must be === "my_id"
-        TestHelper.assertDatesEqual(Calendar.getInstance, notification.getTimestamp)
+        notification.getTimestamp must beSameDayAs(Calendar.getInstance)
         val code = notification.getErrors.forObject("merchantAccount").onField("base").get(0).getCode
         code must be === ValidationErrorCode.MERCHANT_ACCOUNT_APPLICANT_DETAILS_DECLINED_OFAC
     }

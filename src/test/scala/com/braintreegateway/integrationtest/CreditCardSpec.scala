@@ -12,6 +12,7 @@ import java.util.{Calendar, Random}
 import java.math.BigDecimal
 import scala.collection.JavaConversions._
 import MerchantAccountTestConstants._
+import TestHelper._
 
 @RunWith(classOf[JUnitRunner])
 class CreditCardSpec extends FunSpec with MustMatchers {
@@ -41,7 +42,7 @@ class CreditCardSpec extends FunSpec with MustMatchers {
       val gateway = createGateway
 
       val trData = gateway.trData(new CreditCardRequest, "http://example.com")
-      TestHelper.assertValidTrData(gateway.getConfiguration, trData)
+      trData must beValidTrData(gateway.getConfiguration)
     }
   }
 

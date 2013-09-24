@@ -9,6 +9,7 @@ import com.braintreegateway.SandboxValues.TransactionAmount
 import com.braintreegateway.testhelpers.{TestHelper,GatewaySpec}
 import java.util.Calendar
 import java.util.TimeZone
+import TestHelper._
 
 @RunWith(classOf[JUnitRunner])
 class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
@@ -48,7 +49,7 @@ class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
         options.submitForSettlement(true).done
       val result = gateway.transaction.sale(request)
       result must be ('success)
-      TestHelper.settle(gateway, result.getTarget.getId)
+      result.getTarget must settle(gateway)
 
       val summaryResult = gateway.settlementBatchSummary.generate(Calendar.getInstance(eastern_timezone))
 
@@ -68,7 +69,7 @@ class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
 
       val result = gateway.transaction.sale(request)
       result must be ('success)
-      TestHelper.settle(gateway, result.getTarget.getId)
+      result.getTarget must settle(gateway)
 
       val summaryResult = gateway.settlementBatchSummary.generate(Calendar.getInstance(eastern_timezone), "store_me")
 

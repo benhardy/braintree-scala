@@ -14,6 +14,7 @@ import java.math.BigDecimal
 import java.util.{Calendar, TimeZone, Random}
 import MerchantAccountTestConstants._
 import scala.collection.JavaConversions._
+import TestHelper._
 
 @RunWith(classOf[JUnitRunner])
 class SubscriptionSpec extends GatewaySpec with MustMatchers {
@@ -71,11 +72,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         subscription.getFailureCount must be === new Integer(0)
         subscription.hasTrialPeriod must be === false
         subscription.getMerchantAccountId must be === DEFAULT_MERCHANT_ACCOUNT_ID
-        TestHelper.assertDatesEqual(expectedBillingPeriodEndDate, subscription.getBillingPeriodEndDate)
-        TestHelper.assertDatesEqual(expectedBillingPeriodStartDate, subscription.getBillingPeriodStartDate)
-        TestHelper.assertDatesEqual(expectedBillingPeriodEndDate, subscription.getPaidThroughDate)
-        TestHelper.assertDatesEqual(expectedNextBillingDate, subscription.getNextBillingDate)
-        TestHelper.assertDatesEqual(expectedFirstDate, subscription.getFirstBillingDate)
+        subscription.getBillingPeriodEndDate must beSameDayAs(expectedBillingPeriodEndDate)
+        subscription.getBillingPeriodEndDate must beSameDayAs(expectedBillingPeriodEndDate)
+        subscription.getBillingPeriodStartDate must beSameDayAs(expectedBillingPeriodStartDate)
+        subscription.getPaidThroughDate must beSameDayAs(expectedBillingPeriodEndDate)
+        subscription.getNextBillingDate must beSameDayAs(expectedNextBillingDate)
+        subscription.getFirstBillingDate must beSameDayAs(expectedFirstDate)
     }
 
     onGatewayIt("createReturnsTransactionWithSubscriptionBillingPeriod") {
@@ -112,8 +114,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         subscription.hasTrialPeriod must be === true
         subscription.getTrialDuration must be === plan.getTrialDuration
         subscription.getTrialDurationUnit.toString must be === plan.getTrialDurationUnit.toString
-        TestHelper.assertDatesEqual(expectedFirstAndNextBillingDate, subscription.getNextBillingDate)
-        TestHelper.assertDatesEqual(expectedFirstAndNextBillingDate, subscription.getFirstBillingDate)
+        subscription.getNextBillingDate must beSameDayAs(expectedFirstAndNextBillingDate)
+        subscription.getFirstBillingDate must beSameDayAs(expectedFirstAndNextBillingDate)
     }
 
     onGatewayIt("overridePlanAddTrial") {
@@ -225,7 +227,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val createResult = gateway.subscription.create(request)
         createResult must be('success)
         val subscription = createResult.getTarget
-        TestHelper.assertDatesEqual(firstBillingDate, subscription.getFirstBillingDate)
+        subscription.getFirstBillingDate must beSameDayAs(firstBillingDate)
         subscription.getStatus must be === Subscription.Status.PENDING
     }
 
@@ -782,8 +784,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription11 = gateway.subscription.create(request11).getTarget
         val search = new SubscriptionSearchRequest().billingCyclesRemaining.is(12).price.is(new BigDecimal(5))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription12) must be === true
-        TestHelper.includesSubscription(results, subscription11) must be === false
+        results must includeSubscription(subscription12)
+        results must not (includeSubscription(subscription11))
     }
 
     onGatewayIt("searchOnDaysPastDue") {
@@ -810,8 +812,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription2 = gateway.subscription.create(request2).getTarget
         val search = new SubscriptionSearchRequest().id.startsWith("find_me").price.is(new BigDecimal(2))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === false
+        results must includeSubscription(subscription1)
+        results must not (includeSubscription(subscription2))
     }
 
     onGatewayIt("searchOnInTrialPeriod") {
@@ -824,12 +826,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscriptionWithoutTrial = gateway.subscription.create(request2).getTarget
         var search = new SubscriptionSearchRequest().inTrialPeriod.is(true)
         val subscriptionsWithTrialPeriods = gateway.subscription.search(search)
-        TestHelper.includesSubscription(subscriptionsWithTrialPeriods, subscriptionWithTrial) must be === true
-        TestHelper.includesSubscription(subscriptionsWithTrialPeriods, subscriptionWithoutTrial) must be === false
+        subscriptionsWithTrialPeriods must includeSubscription(subscriptionWithTrial)
+        subscriptionsWithTrialPeriods must not (includeSubscription(subscriptionWithoutTrial))
         search = new SubscriptionSearchRequest().inTrialPeriod.is(false)
         val subscriptionsWithoutTrialPeriods = gateway.subscription.search(search)
-        TestHelper.includesSubscription(subscriptionsWithoutTrialPeriods, subscriptionWithoutTrial) must be === true
-        TestHelper.includesSubscription(subscriptionsWithoutTrialPeriods, subscriptionWithTrial) must be === false
+        subscriptionsWithoutTrialPeriods must includeSubscription(subscriptionWithoutTrial)
+        subscriptionsWithoutTrialPeriods must not (includeSubscription(subscriptionWithTrial))
     }
 
     onGatewayIt("searchOnMerchantAccountIdIs") {
@@ -841,8 +843,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscriptionNonDefaultMerchantAccount = gateway.subscription.create(request2).getTarget
         val search = new SubscriptionSearchRequest().merchantAccountId.is(NON_DEFAULT_MERCHANT_ACCOUNT_ID).price.is(new BigDecimal(3))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscriptionNonDefaultMerchantAccount) must be === true
-        TestHelper.includesSubscription(results, subscriptionDefaultMerchantAccount) must be === false
+        results must includeSubscription(subscriptionNonDefaultMerchantAccount)
+        results must not (includeSubscription(subscriptionDefaultMerchantAccount))
     }
 
     onGatewayIt("searchOnBogusMerchantAccountIdIs") {
@@ -852,13 +854,13 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription = gateway.subscription.create(request1).getTarget
         var search = new SubscriptionSearchRequest().merchantAccountId.is(subscription.getMerchantAccountId).price.is(new BigDecimal(5))
         var results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription) must be === true
+        results must includeSubscription(subscription)
         search = new SubscriptionSearchRequest().merchantAccountId.in(subscription.getMerchantAccountId, "totally_bogus").price.is(new BigDecimal(5))
         results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription) must be === true
+        results must includeSubscription(subscription)
         search = new SubscriptionSearchRequest().merchantAccountId.is("totally_bogus").price.is(new BigDecimal(5))
         results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription) must be === false
+        results must not (includeSubscription(subscription))
     }
 
     onGatewayIt("searchOnNextBillingDate") {
@@ -872,8 +874,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         expectedNextBillingDate.add(Calendar.DAY_OF_MONTH, 5)
         val search = new SubscriptionSearchRequest().nextBillingDate.greaterThanOrEqualTo(expectedNextBillingDate)
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, triallessSubscription) must be === true
-        TestHelper.includesSubscription(results, trialSubscription) must be === false
+        results must includeSubscription(triallessSubscription)
+        results must not (includeSubscription(trialSubscription))
     }
 
     onGatewayIt("searchOnPlanIdIs") {
@@ -887,8 +889,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription2 = gateway.subscription.create(request2).getTarget
         val search = new SubscriptionSearchRequest().planId.is(trialPlan.getId).price.is(new BigDecimal(7))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === false
+        results must includeSubscription(subscription1)
+        results must not (includeSubscription(subscription2))
     }
 
     onGatewayIt("searchOnPlanIdIsNot") {
@@ -902,8 +904,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription2 = gateway.subscription.create(request2).getTarget
         val search = new SubscriptionSearchRequest().planId.isNot(trialPlan.getId).price.is(new BigDecimal(8))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription2) must be === true
-        TestHelper.includesSubscription(results, subscription1) must be === false
+        results must includeSubscription(subscription2)
+        results must not (includeSubscription(subscription1))
     }
 
     onGatewayIt("searchOnPlanIdEndsWith") {
@@ -917,8 +919,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription2 = gateway.subscription.create(request2).getTarget
         val search = new SubscriptionSearchRequest().planId.endsWith("trial_plan").price.is(new BigDecimal(9))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === false
+        results must includeSubscription(subscription1)
+        results must not (includeSubscription(subscription2))
     }
 
     onGatewayIt("searchOnPlanIdStartsWith") {
@@ -932,8 +934,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription2 = gateway.subscription.create(request2).getTarget
         val search = new SubscriptionSearchRequest().planId.startsWith("integration_trial_p").price.is(new BigDecimal(10))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === false
+        results must includeSubscription(subscription1)
+        results must not (includeSubscription(subscription2))
     }
 
     onGatewayIt("searchOnPlanIdContains") {
@@ -947,8 +949,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription2 = gateway.subscription.create(request2).getTarget
         val search = new SubscriptionSearchRequest().planId.contains("trial_p").price.is(new BigDecimal(11))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === false
+        results must includeSubscription(subscription1)
+        results must not (includeSubscription(subscription2))
     }
 
     onGatewayIt("searchOnPlanIdIn") {
@@ -962,9 +964,9 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription3 = gateway.subscription.create(request3).getTarget
         val search = new SubscriptionSearchRequest().planId.in(PlanFixture.PLAN_WITH_TRIAL.getId, PlanFixture.PLAN_WITHOUT_TRIAL.getId).price.is(new BigDecimal(6))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === true
-        TestHelper.includesSubscription(results, subscription3) must be === false
+        results must includeSubscription(subscription1)
+        results must includeSubscription(subscription2)
+        results must not (includeSubscription(subscription3))
     }
 
     onGatewayIt("searchOnStatusIn") {
@@ -978,8 +980,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         gateway.subscription.cancel(subscription2.getId)
         val search = new SubscriptionSearchRequest().status.in(Status.ACTIVE).price.is(new BigDecimal(12))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === false
+        results must includeSubscription(subscription1)
+        results must not (includeSubscription(subscription2))
     }
 
     onGatewayIt("searchOnStatusExpired") {
@@ -1004,8 +1006,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val statuses = List(Status.ACTIVE, Status.CANCELED)
         val search = new SubscriptionSearchRequest().status.in(statuses).price.is(new BigDecimal(13))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === true
+        results must includeSubscription(subscription1)
+        results must includeSubscription(subscription2)
     }
 
     onGatewayIt("searchOnStatusInWithMultipleStatuses") {
@@ -1018,8 +1020,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         gateway.subscription.cancel(subscription2.getId)
         val search = new SubscriptionSearchRequest().status.in(Status.ACTIVE, Status.CANCELED).price.is(new BigDecimal(14))
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === true
+        results must includeSubscription(subscription1)
+        results must includeSubscription(subscription2)
     }
 
     onGatewayIt("searchOnTransactionId") {
@@ -1032,8 +1034,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription2 = gateway.subscription.create(request2).getTarget
         val search = new SubscriptionSearchRequest().transactionId.is(subscription1.getTransactions.get(0).getId)
         val results = gateway.subscription.search(search)
-        TestHelper.includesSubscription(results, subscription1) must be === true
-        TestHelper.includesSubscription(results, subscription2) must be === false
+        results must includeSubscription(subscription1)
+        results must not (includeSubscription(subscription2))
     }
   }
 

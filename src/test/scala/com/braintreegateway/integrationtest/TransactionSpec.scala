@@ -18,6 +18,7 @@ import MerchantAccountTestConstants._
 import scala.collection.JavaConversions._
 import java.util.Random
 import CalendarHelper._
+import TestHelper._
 
 @RunWith(classOf[JUnitRunner])
 class TransactionSpec extends GatewaySpec with MustMatchers {
@@ -32,18 +33,18 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("trData") { gateway =>
       val trData = gateway.trData(new TransactionRequest, "http://example.com")
-      TestHelper.assertValidTrData(gateway.getConfiguration, trData)
+      trData must beValidTrData(gateway.getConfiguration)
     }
 
     onGatewayIt("saleTrData") { gateway =>
       val trData = gateway.transaction.saleTrData(new TransactionRequest, "http://example.com")
-      TestHelper.assertValidTrData(gateway.getConfiguration, trData)
+      trData must beValidTrData(gateway.getConfiguration)
       trData.contains("sale") must be === true
     }
 
     onGatewayIt("creditTrData") { gateway =>
       val trData = gateway.transaction.creditTrData(new TransactionRequest, "http://example.com")
-      TestHelper.assertValidTrData(gateway.getConfiguration, trData)
+      trData must beValidTrData(gateway.getConfiguration)
       trData.contains("credit") must be === true
     }
 
@@ -721,7 +722,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val firstName = String.valueOf(new Random().nextInt)
       val request = new TransactionRequest().amount(new BigDecimal("1000")).creditCard.number("4111111111111111").expirationDate("05/2012").cardholderName("Tom Smith").token(creditCardToken).done.billingAddress.company("Braintree").countryName("United States of America").extendedAddress("Suite 123").firstName(firstName).lastName("Smith").locality("Chicago").postalCode("12345").region("IL").streetAddress("123 Main St").done.customer.company("Braintree").email("smith@example.com").fax("5551231234").firstName("Tom").lastName("Smith").phone("5551231234").website("http://example.com").done.options.storeInVault(true).submitForSettlement(true).done.orderId("myorder").shippingAddress.company("Braintree P.S.").countryName("Mexico").extendedAddress("Apt 456").firstName("Thomas").lastName("Smithy").locality("Braintree").postalCode("54321").region("MA").streetAddress("456 Road").done
       val transaction1 = gateway.transaction.sale(request).getTarget
-      TestHelper.settle(gateway, transaction1.getId)
+      transaction1 must settle(gateway)
       val transaction2 = gateway.transaction.find(transaction1.getId)
       val searchRequest = new TransactionSearchRequest().id.is(transaction1.getId).billingCompany.is("Braintree").
         billingCountryName.is("United States of America").billingExtendedAddress.is("Suite 123").
@@ -864,7 +865,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").cardholderName(name).done.options.submitForSettlement(true).done
       val creditTransaction = gateway.transaction.credit(request).getTarget
       val saleTransaction = gateway.transaction.sale(request).getTarget
-      TestHelper.settle(gateway, saleTransaction.getId)
+      saleTransaction must settle(gateway)
       val refundTransaction = gateway.transaction.refund(saleTransaction.getId).getTarget
       var searchRequest= new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transaction.Type.CREDIT)
       var collection= gateway.transaction.search(searchRequest)
@@ -944,6 +945,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       gateway.transaction.search(searchRequest).getMaximumSize must be === 1
     }
 
+    // TODO this test is broken in that it'll fail if it's been too long since dbdo has been run, needs fixing
     onGatewayIt("searchOnAuthorizationExpiredAt") { gateway =>
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
@@ -1041,7 +1043,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("searchOnSettledAt") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done.options.submitForSettlement(true).done
       var transaction= gateway.transaction.sale(request).getTarget
-      TestHelper.settle(gateway, transaction.getId)
+      transaction must settle(gateway)
       transaction = gateway.transaction.find(transaction.getId)
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
@@ -1109,12 +1111,12 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
   describe("refund") {
     onGatewayIt("refund transaction") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done.options.submitForSettlement(true).done
-      val transactionId = gateway.transaction.sale(request).getTarget.getId
-      TestHelper.settle(gateway, transactionId)
-      val result = gateway.transaction.refund(transactionId)
+      val sale = gateway.transaction.sale(request).getTarget
+      sale must settle(gateway)
+      val result = gateway.transaction.refund(sale.getId)
       result must be ('success)
       val refund = result.getTarget
-      val originalTransaction = gateway.transaction.find(transactionId)
+      val originalTransaction = gateway.transaction.find(sale.getId)
       refund.getType must be === Transaction.Type.CREDIT
       refund.getAmount must be === originalTransaction.getAmount
       originalTransaction.getRefundId must be === refund.getId
@@ -1124,7 +1126,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("refundTransactionWithPartialAmount") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done.options.submitForSettlement(true).done
       val transaction = gateway.transaction.sale(request).getTarget
-      TestHelper.settle(gateway, transaction.getId)
+      transaction must settle(gateway)
       val result = gateway.transaction.refund(transaction.getId, TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2)))
       result must be ('success)
       result.getTarget.getType must be === Transaction.Type.CREDIT
@@ -1134,7 +1136,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("refundMultipleTransactionsWithPartialAmounts") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done.options.submitForSettlement(true).done
       var transaction= gateway.transaction.sale(request).getTarget
-      TestHelper.settle(gateway, transaction.getId)
+      transaction must settle(gateway)
       val refund1 = gateway.transaction.refund(transaction.getId, TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))).getTarget
       refund1.getType must be === Transaction.Type.CREDIT
       refund1.getAmount must be === TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))
@@ -1142,8 +1144,8 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       refund2.getType must be === Transaction.Type.CREDIT
       refund2.getAmount must be === TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))
       transaction = gateway.transaction.find(transaction.getId)
-      TestHelper.listIncludes(transaction.getRefundIds, refund1.getId) must be === true
-      TestHelper.listIncludes(transaction.getRefundIds, refund1.getId) must be === true
+      transaction.getRefundIds must contain (refund1.getId)
+      transaction.getRefundIds must contain (refund1.getId)
     }
 
     onGatewayIt("refundFailsWithNonSettledTransaction") { gateway =>
@@ -1300,7 +1302,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done.serviceFeeAmount(new BigDecimal("1.00"))
       val saleResult = gateway.transaction.sale(request)
       saleResult must be ('success)
-      TestHelper.escrow(gateway, saleResult.getTarget.getId)
+      saleResult.getTarget must escrow(gateway)
       val releaseResult = gateway.transaction.releaseFromEscrow(saleResult.getTarget.getId)
       releaseResult must be ('success)
       releaseResult.getTarget.getEscrowStatus must be === Transaction.EscrowStatus.RELEASE_PENDING
@@ -1319,7 +1321,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done.serviceFeeAmount(new BigDecimal("1.00"))
       val saleResult = gateway.transaction.sale(request)
       saleResult must be ('success)
-      TestHelper.escrow(gateway, saleResult.getTarget.getId)
+      saleResult.getTarget must escrow(gateway)
       val releaseResult = gateway.transaction.releaseFromEscrow(saleResult.getTarget.getId)
       val cancelResult = gateway.transaction.cancelRelease(saleResult.getTarget.getId)
       cancelResult must be ('success)
@@ -1330,7 +1332,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done.serviceFeeAmount(new BigDecimal("1.00"))
       val saleResult = gateway.transaction.sale(request)
       saleResult must be ('success)
-      TestHelper.escrow(gateway, saleResult.getTarget.getId)
+      saleResult.getTarget must escrow(gateway)
       val cancelResult = gateway.transaction.cancelRelease(saleResult.getTarget.getId)
       cancelResult must not be ('success)
       cancelResult.getErrors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_CANCEL_RELEASE

@@ -8,6 +8,7 @@ import org.scalatest.junit.JUnitRunner
 import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
+import TestHelper._
 
 @RunWith(classOf[JUnitRunner])
 class TrUtilSpec extends FunSpec with MustMatchers {
@@ -18,7 +19,7 @@ class TrUtilSpec extends FunSpec with MustMatchers {
     it("builds valid tr data") {
       val request = new CreditCardRequest().customerId("123")
       val trData = new TrUtil(configuration).buildTrData(request, "http://example.com")
-      TestHelper.assertValidTrData(configuration, trData)
+      trData must beValidTrData(configuration)
     }
 
     it("apiVersionIsCorrectInTrData") {
