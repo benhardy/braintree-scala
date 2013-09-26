@@ -24,14 +24,14 @@ public class TrUtil {
 
         String trContent = new QueryString()
                 .append("api_version", Configuration.apiVersion())
-                .append("public_key", configuration.publicKey)
+                .append("public_key", configuration.publicKey())
                 .append("redirect_url", redirectURL)
                 .append("time", dateString)
                 .append("kind", request.getKind())
                 .appendEncodedData(request.toQueryString())
                 .toString();
 
-        String trHash = new Crypto().hmacHash(configuration.privateKey, trContent.toString());
+        String trHash = new Crypto().hmacHash(configuration.privateKey(), trContent.toString());
         return trHash + "|" + trContent;
     }
 
@@ -40,7 +40,7 @@ public class TrUtil {
         String queryStringWithoutHash = pieces[0];
         String hash = pieces[1];
 
-        return hash.equals(new Crypto().hmacHash(configuration.privateKey, queryStringWithoutHash));
+        return hash.equals(new Crypto().hmacHash(configuration.privateKey(), queryStringWithoutHash));
     }
 
     protected String encodeMap(Map<String, String> map) {
@@ -58,6 +58,6 @@ public class TrUtil {
     }
 
     public String url() {
-        return configuration.baseMerchantURL + "/transparent_redirect_requests";
+        return configuration.baseMerchantURL() + "/transparent_redirect_requests";
     }
 }

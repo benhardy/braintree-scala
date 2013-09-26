@@ -84,9 +84,9 @@ public class CustomerRequest extends Request {
     @Override
     public String getKind() {
         if (this.customerId == null) {
-            return TransparentRedirectGateway.CREATE_CUSTOMER;
+            return TransparentRedirectGateway.CREATE_CUSTOMER();
         } else {
-            return TransparentRedirectGateway.UPDATE_CUSTOMER;
+            return TransparentRedirectGateway.UPDATE_CUSTOMER();
         }
     }
 

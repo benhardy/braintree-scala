@@ -122,8 +122,8 @@ class HttpSpec extends GatewaySpec with FunSpec with MustMatchers {
         val request = new CustomerRequest
         val trParams = new CustomerRequest
         val gateway = new BraintreeGateway(Environment.DEVELOPMENT, "integration_merchant_id", "bad_public", "bad_private")
-        val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.customer.transparentRedirectURLForCreate)
-        gateway.customer.confirmTransparentRedirect(queryString)
+        val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
+        gateway.transparentRedirect.confirmCustomer(queryString)
       }
     }
 

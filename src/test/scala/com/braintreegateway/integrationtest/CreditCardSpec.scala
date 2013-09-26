@@ -22,14 +22,6 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
   }
 
   describe("transparentRedirect") {
-    onGatewayIt("has correct URL For Create") { gateway =>
-      val url = gateway.creditCard.transparentRedirectURLForCreate
-      url must be === gateway.baseMerchantURL + "/payment_methods/all/create_via_transparent_redirect_request"
-    }
-    onGatewayIt("has correct URL For Update") { gateway =>
-      val url = gateway.creditCard.transparentRedirectURLForUpdate
-      url must be === gateway.baseMerchantURL + "/payment_methods/all/update_via_transparent_redirect_request"
-    }
     onGatewayIt("trData") { gateway =>
       val trData = gateway.trData(new CreditCardRequest, "http://example.com")
       trData must beValidTrData(gateway.getConfiguration)
@@ -178,10 +170,10 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val trParams = new CreditCardRequest().customerId(customer.getId)
       val request = new CreditCardRequest().cardholderName("John Doe").number("5105105105105100").expirationDate("05/12")
-      val trCreateUrl = gateway.creditCard.transparentRedirectURLForCreate
+      val trCreateUrl = gateway.transparentRedirect.url
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, trCreateUrl)
 
-      val result = gateway.creditCard.confirmTransparentRedirect(queryString)
+      val result = gateway.transparentRedirect.confirmCreditCard(queryString)
 
       result must be('success)
       val card = result.getTarget
@@ -216,8 +208,8 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       gateway.creditCard.create(request1)
       val trParams = new CreditCardRequest().customerId(customer.getId).options.makeDefault(true).done
       val request2 = new CreditCardRequest().number("5105105105105100").expirationDate("05/12")
-      val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request2, gateway.creditCard.transparentRedirectURLForCreate)
-      val card = gateway.creditCard.confirmTransparentRedirect(queryString).getTarget
+      val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request2, gateway.transparentRedirect.url)
+      val card = gateway.transparentRedirect.confirmCreditCard(queryString).getTarget
       card must be('default)
     }
 
@@ -227,9 +219,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       gateway.creditCard.create(request1)
       val trParams = new CreditCardRequest().customerId(customer.getId)
       val request2 = new CreditCardRequest().number("5105105105105100").expirationDate("05/12").options.makeDefault(true).done
-      val trCreateUrl = gateway.creditCard.transparentRedirectURLForCreate
+      val trCreateUrl = gateway.transparentRedirect.url
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request2, trCreateUrl)
-      val card = gateway.creditCard.confirmTransparentRedirect(queryString).getTarget
+      val card = gateway.transparentRedirect.confirmCreditCard(queryString).getTarget
       card must be('default)
     }
 
@@ -249,8 +241,8 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         val gateway = createGateway
         val customer = gateway.customer.create(new CustomerRequest).getTarget
         val trParams = new CreditCardRequest().customerId(customer.getId)
-        val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, new CreditCardRequest, gateway.creditCard.transparentRedirectURLForCreate)
-        gateway.creditCard.confirmTransparentRedirect(queryString + "this makes it invalid")
+        val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, new CreditCardRequest, gateway.transparentRedirect.url)
+        gateway.transparentRedirect.confirmCreditCard(queryString + "this makes it invalid")
       }
     }
   }
@@ -358,9 +350,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       val trParams = new CreditCardRequest().paymentMethodToken(card.getToken)
       val request = new CreditCardRequest().cardholderName("joe cool")
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request,
-        gateway.creditCard.transparentRedirectURLForUpdate)
+        gateway.transparentRedirect.url)
 
-      val result = gateway.creditCard.confirmTransparentRedirect(queryString)
+      val result = gateway.transparentRedirect.confirmCreditCard(queryString)
 
       result must be('success)
       val updatedCard = result.getTarget
@@ -483,9 +475,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         billingAddress.options.updateExisting(true).done.done
       val updateRequest = new CreditCardRequest().billingAddress.lastName("Jones").done
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, updateRequest,
-        gateway.creditCard.transparentRedirectURLForUpdate)
+        gateway.transparentRedirect.url)
 
-      val updatedCard = gateway.creditCard.confirmTransparentRedirect(queryString).getTarget
+      val updatedCard = gateway.transparentRedirect.confirmCreditCard(queryString).getTarget
 
       updatedCard.getBillingAddress.getFirstName must be === "John"
       updatedCard.getBillingAddress.getLastName must be === "Jones"

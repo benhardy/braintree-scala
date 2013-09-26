@@ -95,7 +95,7 @@ public class TransactionRequest extends Request {
 
     @Override
     public String getKind() {
-        return TransparentRedirectGateway.CREATE_TRANSACTION;
+        return TransparentRedirectGateway.CREATE_TRANSACTION();
     }
 
     public TransactionRequest merchantAccountId(String merchantAccountId) {
