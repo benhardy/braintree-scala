@@ -16,7 +16,7 @@ class PlanSpec extends GatewaySpec with MustMatchers {
   describe("plans.all") {
     onGatewayIt("returnsAllPlans") {
       gateway =>
-        val http = new Http(gateway.getAuthorizationHeader(), gateway.baseMerchantURL(),
+        val http = new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
           Environment.DEVELOPMENT.certificateFilenames, BraintreeGateway.VERSION);
         val planId = "a_plan_id" + String.valueOf(new Random().nextInt)
 

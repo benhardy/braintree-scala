@@ -19,7 +19,7 @@ class AddOnSpec extends FunSpec with MustMatchers {
         Environment.DEVELOPMENT, "integration_merchant_id", "integration_public_key", "integration_private_key"
       )
       val http = new Http(
-        gateway.getAuthorizationHeader, gateway.baseMerchantURL, Environment.DEVELOPMENT.certificateFilenames,
+        gateway.authorizationHeader, gateway.baseMerchantURL, Environment.DEVELOPMENT.certificateFilenames,
         BraintreeGateway.VERSION
       )
     }

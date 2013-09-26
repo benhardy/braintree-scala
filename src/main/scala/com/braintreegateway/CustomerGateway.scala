@@ -36,15 +36,6 @@ class CustomerGateway(http: Http, configuration: Configuration) {
   }
 
   /**
-   * Please use gateway.transparentRedirect().confirmCustomer() instead
-   */
-  @Deprecated def confirmTransparentRedirect(queryString: String) = {
-    val trRequest = new TransparentRedirectRequest(configuration, queryString)
-    val node = http.post("/customers/all/confirm_transparent_redirect_request", trRequest)
-    new Result[Customer](node, classOf[Customer])
-  }
-
-  /**
    * Creates a {@link Customer}.
    *
    * @param request

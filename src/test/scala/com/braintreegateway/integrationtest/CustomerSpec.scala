@@ -182,7 +182,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val request = new CustomerRequest().firstName("John").lastName("Doe")
       val trCreateUrl = gateway.transparentRedirect.url
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, trCreateUrl)
-      val result = gateway.customer.confirmTransparentRedirect(queryString)
+      val result = gateway.transparentRedirect.confirmCustomer(queryString)
       result must be('success)
       val customer = result.getTarget
       customer.getFirstName must be === "John"
@@ -193,7 +193,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val trCreateUrl = gateway.transparentRedirect.url
       val queryString = TestHelper.simulateFormPostForTR(gateway, new CustomerRequest, new CustomerRequest, trCreateUrl)
       intercept[ForgedQueryStringException] {
-        gateway.customer.confirmTransparentRedirect(queryString + "this make it invalid")
+        gateway.transparentRedirect.confirmCustomer(queryString + "this make it invalid")
       }
     }
 
@@ -203,7 +203,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         expirationDate("11/12").done
       val trCreateUrl = gateway.transparentRedirect.url
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, trCreateUrl)
-      val result = gateway.customer.confirmTransparentRedirect(queryString)
+      val result = gateway.transparentRedirect.confirmCustomer(queryString)
       result must be('success)
       val customer = result.getTarget
       customer.getFirstName must be === "John"
@@ -394,7 +394,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val creditCard = customer.getCreditCards.get(0)
       val trParams = new CustomerRequest().customerId(customer.getId).firstName("Jane").lastName("Doe").creditCard.expirationDate("10/10").options.updateExistingToken(creditCard.getToken).done.billingAddress.postalCode("11111").options.updateExisting(true).done.done.done
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, new CustomerRequest, gateway.transparentRedirect.url)
-      val updatedCustomer = gateway.customer.confirmTransparentRedirect(queryString).getTarget
+      val updatedCustomer = gateway.transparentRedirect.confirmCustomer(queryString).getTarget
       val updatedCreditCard = updatedCustomer.getCreditCards.get(0)
       val updatedAddress = updatedCreditCard.getBillingAddress
       updatedCustomer.getFirstName must be === "Jane"
@@ -409,7 +409,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val request = new CustomerRequest().firstName("Drew").lastName("Olson").company("Braintree").email("drew.olson@example.com").fax("555-555-5555").phone("555-555-5554").website("http://getbraintree.com")
       val trParams = new CustomerRequest().customerId(createdCustomer.getId)
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
-      val result = gateway.customer.confirmTransparentRedirect(queryString)
+      val result = gateway.transparentRedirect.confirmCustomer(queryString)
       result must be('success)
       val customer = result.getTarget
       customer.getFirstName must be === "Drew"

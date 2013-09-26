@@ -33,18 +33,18 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("trData") { gateway =>
       val trData = gateway.trData(new TransactionRequest, "http://example.com")
-      trData must beValidTrData(gateway.getConfiguration)
+      trData must beValidTrData(gateway.configuration)
     }
 
     onGatewayIt("saleTrData") { gateway =>
       val trData = gateway.transaction.saleTrData(new TransactionRequest, "http://example.com")
-      trData must beValidTrData(gateway.getConfiguration)
+      trData must beValidTrData(gateway.configuration)
       trData.contains("sale") must be === true
     }
 
     onGatewayIt("creditTrData") { gateway =>
       val trData = gateway.transaction.creditTrData(new TransactionRequest, "http://example.com")
-      trData must beValidTrData(gateway.getConfiguration)
+      trData must beValidTrData(gateway.configuration)
       trData.contains("credit") must be === true
     }
 
@@ -1002,25 +1002,25 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val oneDayEarlier = 1.days before rightNow
       val oneDayLater =  1.days after rightNow
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).gatewayRejectedAt.between(oneDayEarlier, oneDayLater)
-      processingRulesGateway.transaction().search(searchRequest).getMaximumSize must be === 1
+      processingRulesGateway.transaction.search(searchRequest).getMaximumSize must be === 1
 
       searchRequest = new TransactionSearchRequest().
         id().is(transaction.getId()).
         gatewayRejectedAt().greaterThanOrEqualTo(oneDayEarlier)
 
-      processingRulesGateway.transaction().search(searchRequest).getMaximumSize must be === 1
+      processingRulesGateway.transaction.search(searchRequest).getMaximumSize must be === 1
 
       searchRequest = new TransactionSearchRequest().
         id().is(transaction.getId()).
         gatewayRejectedAt().lessThanOrEqualTo(oneDayLater)
 
-      processingRulesGateway.transaction().search(searchRequest).getMaximumSize must be === 1
+      processingRulesGateway.transaction.search(searchRequest).getMaximumSize must be === 1
 
       searchRequest = new TransactionSearchRequest().
         id().is(transaction.getId()).
         gatewayRejectedAt().between(threeDaysEarlier, oneDayEarlier)
 
-      processingRulesGateway.transaction().search(searchRequest).getMaximumSize must be === 0
+      processingRulesGateway.transaction.search(searchRequest).getMaximumSize must be === 0
     }
 
     onGatewayIt("searchOnProcessorDeclinedAt") { gateway =>

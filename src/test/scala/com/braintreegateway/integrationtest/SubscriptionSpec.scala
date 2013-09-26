@@ -1097,7 +1097,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
   }
 
   private def makePastDue(gateway: BraintreeGateway, subscription: Subscription, numberOfDaysPastDue: Int) {
-    val response = new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL, Environment.DEVELOPMENT.certificateFilenames, BraintreeGateway.VERSION).put("/subscriptions/" + subscription.getId + "/make_past_due?days_past_due=" + numberOfDaysPastDue)
+    val response = new Http(gateway.authorizationHeader, gateway.baseMerchantURL, Environment.DEVELOPMENT.certificateFilenames, BraintreeGateway.VERSION).put("/subscriptions/" + subscription.getId + "/make_past_due?days_past_due=" + numberOfDaysPastDue)
     response must be('success)
   }
 }

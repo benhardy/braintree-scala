@@ -24,7 +24,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
   describe("transparentRedirect") {
     onGatewayIt("trData") { gateway =>
       val trData = gateway.trData(new CreditCardRequest, "http://example.com")
-      trData must beValidTrData(gateway.getConfiguration)
+      trData must beValidTrData(gateway.configuration)
     }
   }
 

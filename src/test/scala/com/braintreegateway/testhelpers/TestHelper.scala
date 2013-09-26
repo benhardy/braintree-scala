@@ -76,7 +76,7 @@ object TestHelper {
 
   def settle(gateway: BraintreeGateway) = Matcher {
     (transaction: Transaction) => {
-      val response: NodeWrapper = new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL,
+      val response: NodeWrapper = new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
         Environment.DEVELOPMENT.certificateFilenames,
         BraintreeGateway.VERSION).put(s"/transactions/${transaction.getId}/settle")
       MatchResult(response.isSuccess,
@@ -87,7 +87,7 @@ object TestHelper {
 
   def escrow(gateway: BraintreeGateway) = Matcher {
     (transaction: Transaction) => {
-      val response: NodeWrapper = new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL,
+      val response: NodeWrapper = new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
         Environment.DEVELOPMENT.certificateFilenames,
         BraintreeGateway.VERSION).put(s"/transactions/${transaction.getId}/escrow")
       MatchResult(response.isSuccess,

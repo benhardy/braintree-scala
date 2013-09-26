@@ -42,7 +42,7 @@ class DiscountSpec extends FunSpec with MustMatchers with GatewaySpec {
   }
 
   def gatewayHttp(gateway: BraintreeGateway): Http = {
-    new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL,
+    new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
       Environment.DEVELOPMENT.certificateFilenames, BraintreeGateway.VERSION)
   }
 }

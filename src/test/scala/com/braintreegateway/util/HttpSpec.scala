@@ -22,7 +22,7 @@ class HttpSpec extends GatewaySpec with FunSpec with MustMatchers {
   describe("correctly configured operations") {
 
     def correctlyConfiguredHttp(gateway: BraintreeGateway) = {
-      new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL,
+      new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
         Environment.SANDBOX.certificateFilenames, BraintreeGateway.VERSION)
     }
 
@@ -88,7 +88,7 @@ class HttpSpec extends GatewaySpec with FunSpec with MustMatchers {
       gateway =>
         intercept[DownForMaintenanceException] {
           val request = new CustomerRequest
-          new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL, Environment.SANDBOX.certificateFilenames, "1.0.0").put("/test/maintenance", request)
+          new Http(gateway.authorizationHeader, gateway.baseMerchantURL, Environment.SANDBOX.certificateFilenames, "1.0.0").put("/test/maintenance", request)
         }
     }
 
@@ -98,8 +98,8 @@ class HttpSpec extends GatewaySpec with FunSpec with MustMatchers {
           val request = new CustomerRequest
           val trParams = new CustomerRequest
           val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request,
-            gateway.getConfiguration.baseMerchantURL + "/test/maintenance")
-          gateway.customer.confirmTransparentRedirect(queryString)
+            gateway.configuration.baseMerchantURL + "/test/maintenance")
+          gateway.transparentRedirect.confirmCustomer(queryString)
         }
     }
 
@@ -109,7 +109,7 @@ class HttpSpec extends GatewaySpec with FunSpec with MustMatchers {
           val request = new CustomerRequest
           val trParams = new CustomerRequest
           val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request,
-            gateway.getConfiguration.baseMerchantURL + "/test/maintenance")
+            gateway.configuration.baseMerchantURL + "/test/maintenance")
           gateway.transparentRedirect.confirmCustomer(queryString)
         }
     }
@@ -141,7 +141,7 @@ class HttpSpec extends GatewaySpec with FunSpec with MustMatchers {
     onGatewayIt("throwUpgradeRequiredIfClientLibraryIsTooOld") {
       gateway =>
         intercept[UpgradeRequiredException] {
-          val http = new Http(gateway.getAuthorizationHeader, gateway.baseMerchantURL, Environment.SANDBOX.certificateFilenames, "1.0.0")
+          val http = new Http(gateway.authorizationHeader, gateway.baseMerchantURL, Environment.SANDBOX.certificateFilenames, "1.0.0")
           http.get("/")
         }
     }
@@ -153,7 +153,7 @@ class HttpSpec extends GatewaySpec with FunSpec with MustMatchers {
         try {
           startSSLServer
           intercept[Exception] {
-            val http = new Http(gateway.getAuthorizationHeader, "https://localhost:9443",
+            val http = new Http(gateway.authorizationHeader, "https://localhost:9443",
               Environment.SANDBOX.certificateFilenames, BraintreeGateway.VERSION)
             http.get("/")
           }.getMessage must include("Cert")

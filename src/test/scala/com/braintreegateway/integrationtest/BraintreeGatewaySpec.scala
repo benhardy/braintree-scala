@@ -28,7 +28,7 @@ class BraintreeGatewaySpec extends FunSpec with MustMatchers {
     it("returns a valid header in dev") {
       val config = new BraintreeGateway(Environment.DEVELOPMENT, "development_merchant_id",
         "integration_public_key", "integration_private_key")
-      config.getAuthorizationHeader must be === "Basic aW50ZWdyYXRpb25fcHVibGljX2tleTppbnRlZ3JhdGlvbl9wcml2YXRlX2tleQ=="
+      config.authorizationHeader must be === "Basic aW50ZWdyYXRpb25fcHVibGljX2tleTppbnRlZ3JhdGlvbl9wcml2YXRlX2tleQ=="
     }
   }
 }
