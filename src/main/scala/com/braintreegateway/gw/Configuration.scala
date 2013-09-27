@@ -1,4 +1,4 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 case class Configuration(baseMerchantURL: String, publicKey: String, privateKey: String) {
 

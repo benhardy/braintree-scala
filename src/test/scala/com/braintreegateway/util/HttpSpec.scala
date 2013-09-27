@@ -1,6 +1,5 @@
 package com.braintreegateway.util
 
-import com.braintreegateway.BraintreeGateway
 import com.braintreegateway.CustomerRequest
 import com.braintreegateway.Environment
 import com.braintreegateway.exceptions.AuthenticationException
@@ -14,6 +13,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.junit.JUnitRunner
+import com.braintreegateway.gw.BraintreeGateway
 
 @RunWith(classOf[JUnitRunner])
 class HttpSpec extends GatewaySpec with FunSpec with MustMatchers {

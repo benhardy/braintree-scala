@@ -1,6 +1,5 @@
 package com.braintreegateway.util
 
-import com.braintreegateway.Configuration
 import com.braintreegateway.CreditCardRequest
 import com.braintreegateway.TransactionRequest
 import com.braintreegateway.testhelpers.TestHelper
@@ -9,6 +8,7 @@ import org.junit.runner.RunWith
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import TestHelper._
+import com.braintreegateway.gw.Configuration
 
 @RunWith(classOf[JUnitRunner])
 class TrUtilSpec extends FunSpec with MustMatchers {

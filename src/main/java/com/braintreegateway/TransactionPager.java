@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.gw.TransactionGateway;
+
 import java.util.List;
 
 public class TransactionPager implements Pager<Transaction> {

@@ -1,5 +1,6 @@
 package com.braintreegateway;
 
+import com.braintreegateway.gw.BraintreeGateway;
 import com.braintreegateway.util.EnumUtils;
 import com.braintreegateway.util.NodeWrapper;
 

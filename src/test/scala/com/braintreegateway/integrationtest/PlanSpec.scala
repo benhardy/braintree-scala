@@ -5,6 +5,7 @@ import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.util.Http
+import gw.BraintreeGateway
 import java.math.BigDecimal
 import java.util.Random
 import scala.collection.JavaConversions._

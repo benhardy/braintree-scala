@@ -1,4 +1,4 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
@@ -7,6 +7,7 @@ import java.util.Calendar
 import java.util.{List =>JUList}
 import java.util.TimeZone
 import scala.collection.JavaConversions._
+import com.braintreegateway._
 
 /**
  * Provides methods to create, delete, find, and update {@link CreditCard}

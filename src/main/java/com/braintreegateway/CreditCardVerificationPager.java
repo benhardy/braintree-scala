@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.gw.CreditCardVerificationGateway;
+
 import java.util.List;
 
 public class CreditCardVerificationPager implements Pager<CreditCardVerification> {

@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.gw.TransparentRedirectGateway;
+
 import java.util.HashMap;
 import java.util.Map;
 

@@ -7,6 +7,7 @@ import com.braintreegateway._
 import com.braintreegateway.SandboxValues.TransactionAmount
 import com.braintreegateway.Subscription.Status
 import com.braintreegateway.exceptions.NotFoundException
+import gw.BraintreeGateway
 import testhelpers.{PlanFixture, MerchantAccountTestConstants, TestHelper, GatewaySpec}
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapperFactory

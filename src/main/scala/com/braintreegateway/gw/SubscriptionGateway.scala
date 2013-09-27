@@ -1,10 +1,11 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
 import java.math.BigDecimal
 import java.util.{List=>JUList}
 import scala.collection.JavaConversions._
+import com.braintreegateway._
 
 /**
  * Provides methods to interact with {@link Subscription Subscriptions}.

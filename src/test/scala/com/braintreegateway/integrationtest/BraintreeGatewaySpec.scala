@@ -1,11 +1,11 @@
 package com.braintreegateway.integrationtest
 
-import com.braintreegateway.BraintreeGateway
 import com.braintreegateway.Environment
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import com.braintreegateway.gw.BraintreeGateway
 
 @RunWith(classOf[JUnitRunner])
 class BraintreeGatewaySpec extends FunSpec with MustMatchers {

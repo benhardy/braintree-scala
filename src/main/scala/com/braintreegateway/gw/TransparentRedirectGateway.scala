@@ -1,9 +1,10 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapper
 import com.braintreegateway.util.StringUtils
 import com.braintreegateway.util.TrUtil
+import com.braintreegateway._
 
 object TransparentRedirectGateway {
   var CREATE_TRANSACTION: String = "create_transaction"

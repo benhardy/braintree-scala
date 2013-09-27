@@ -1,6 +1,7 @@
 package com.braintreegateway;
 
 import com.braintreegateway.Transaction.Type;
+import com.braintreegateway.gw.TransparentRedirectGateway;
 
 import java.math.BigDecimal;
 import java.util.HashMap;

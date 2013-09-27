@@ -1,5 +1,8 @@
-package com.braintreegateway;
+package com.braintreegateway.gw;
 
+import com.braintreegateway.Result;
+import com.braintreegateway.SettlementBatchSummary;
+import com.braintreegateway.SettlementBatchSummaryRequest;
 import com.braintreegateway.util.Http;
 import com.braintreegateway.util.NodeWrapper;
 

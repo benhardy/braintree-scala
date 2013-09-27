@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.gw.SubscriptionGateway;
+
 import java.util.List;
 
 public class SubscriptionPager implements Pager<Subscription> {

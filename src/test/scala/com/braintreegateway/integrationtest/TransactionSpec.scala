@@ -10,6 +10,7 @@ import com.braintreegateway.exceptions.ForgedQueryStringException
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.test.CreditCardNumbers
 import com.braintreegateway.test.VenmoSdk
+import gw.BraintreeGateway
 import testhelpers._
 import com.braintreegateway.util.NodeWrapperFactory
 import java.math.BigDecimal

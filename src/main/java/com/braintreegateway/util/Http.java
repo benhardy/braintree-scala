@@ -1,6 +1,6 @@
 package com.braintreegateway.util;
 
-import com.braintreegateway.Configuration;
+import com.braintreegateway.gw.Configuration;
 import com.braintreegateway.Request;
 import com.braintreegateway.exceptions.*;
 

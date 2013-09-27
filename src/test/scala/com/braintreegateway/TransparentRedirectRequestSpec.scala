@@ -5,6 +5,7 @@ import _root_.org.scalatest.FunSpec
 import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway.exceptions._
+import gw.Configuration
 import java.net.URLEncoder
 
 @RunWith(classOf[JUnitRunner])

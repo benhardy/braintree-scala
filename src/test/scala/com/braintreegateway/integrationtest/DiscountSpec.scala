@@ -1,6 +1,6 @@
 package com.braintreegateway.integrationtest
 
-import com.braintreegateway.{FakeModificationRequest, BraintreeGateway, Environment}
+import com.braintreegateway.{FakeModificationRequest, Environment}
 import com.braintreegateway.util.Http
 import java.math.BigDecimal
 import java.util.Random
@@ -10,6 +10,7 @@ import org.scalatest.FunSpec
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.braintreegateway.testhelpers.GatewaySpec
+import com.braintreegateway.gw.BraintreeGateway
 
 @RunWith(classOf[JUnitRunner])
 class DiscountSpec extends FunSpec with MustMatchers with GatewaySpec {

@@ -1,9 +1,10 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.org.apache.commons.codec.binary.Base64
 import com.braintreegateway.util.ClientLibraryProperties
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.TrUtil
+import com.braintreegateway._
 
 /**
  * This is the primary interface to the Braintree Gateway. It is used to

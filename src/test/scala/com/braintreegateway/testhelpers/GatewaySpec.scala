@@ -1,7 +1,8 @@
 package com.braintreegateway.testhelpers
 
-import com.braintreegateway.{Environment, BraintreeGateway}
+import com.braintreegateway.{Environment}
 import org.scalatest.{Tag, FunSpec}
+import com.braintreegateway.gw.BraintreeGateway
 
 /**
  * Extension for FunSpec that allows it blocks in tests to take a fresh gateway as a parameter

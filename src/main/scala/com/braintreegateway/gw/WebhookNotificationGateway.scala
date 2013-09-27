@@ -1,9 +1,10 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.exceptions.InvalidSignatureException
 import com.braintreegateway.org.apache.commons.codec.binary.Base64
 import com.braintreegateway.util.Crypto
 import com.braintreegateway.util.NodeWrapperFactory
+import com.braintreegateway.WebhookNotification
 
 class WebhookNotificationGateway(configuration: Configuration) {
 

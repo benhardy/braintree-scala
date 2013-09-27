@@ -7,6 +7,7 @@ import com.braintreegateway.util.Crypto
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapper
 import _root_.org.junit.Ignore
+import gw.{Configuration, BraintreeGateway}
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL

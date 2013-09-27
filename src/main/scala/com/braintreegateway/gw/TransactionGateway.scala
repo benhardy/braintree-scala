@@ -1,4 +1,4 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.Transaction.Type
 import com.braintreegateway.exceptions.NotFoundException
@@ -8,6 +8,7 @@ import com.braintreegateway.util.TrUtil
 import java.math.BigDecimal
 import java.util.{List=>JUList}
 import scala.collection.JavaConversions._
+import com.braintreegateway._
 
 
 /**

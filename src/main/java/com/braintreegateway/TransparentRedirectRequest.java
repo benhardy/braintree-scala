@@ -1,6 +1,7 @@
 package com.braintreegateway;
 
 import com.braintreegateway.exceptions.ForgedQueryStringException;
+import com.braintreegateway.gw.Configuration;
 import com.braintreegateway.util.Http;
 import com.braintreegateway.util.TrUtil;
 

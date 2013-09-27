@@ -6,6 +6,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
+import gw.BraintreeGateway
 import test.{CreditCardDefaults, CreditCardNumbers, VenmoSdk}
 import testhelpers.{GatewaySpec, MerchantAccountTestConstants, TestHelper}
 import java.util.{Calendar, Random}

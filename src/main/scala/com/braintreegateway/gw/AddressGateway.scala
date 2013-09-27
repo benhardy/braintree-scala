@@ -1,8 +1,9 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapper
+import com.braintreegateway.{Address, Result, AddressRequest}
 
 /**
  * Provides methods to create, delete, find, and update {@link Address} objects.

@@ -1,6 +1,7 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.util.Http
+import com.braintreegateway.{MerchantAccount, Result, MerchantAccountRequest}
 
 class MerchantAccountGateway(http: Http) {
 

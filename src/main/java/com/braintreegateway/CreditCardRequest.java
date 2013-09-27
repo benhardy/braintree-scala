@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.gw.TransparentRedirectGateway;
+
 /**
  * Provides a fluent interface to build up requests around {@link CreditCard CreditCards}.
  */

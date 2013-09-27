@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.gw.CreditCardGateway;
+
 import java.util.List;
 
 public class ExpiredCreditCardPager implements Pager<CreditCard> {

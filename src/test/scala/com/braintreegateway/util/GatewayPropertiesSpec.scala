@@ -1,10 +1,10 @@
 package com.braintreegateway.util
 
-import com.braintreegateway.BraintreeGateway
 import org.scalatest.matchers.{MatchResult, Matcher, MustMatchers}
 import org.scalatest.FunSpec
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import com.braintreegateway.gw.BraintreeGateway
 
 @RunWith(classOf[JUnitRunner])
 class GatewayPropertiesSpec extends FunSpec with MustMatchers {

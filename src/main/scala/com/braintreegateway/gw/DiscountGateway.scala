@@ -1,9 +1,10 @@
-package com.braintreegateway
+package com.braintreegateway.gw
 
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapper
 import java.util.{List=>JUList}
 import scala.collection.JavaConversions._
+import com.braintreegateway.Discount
 
 class DiscountGateway(http: Http) {
 

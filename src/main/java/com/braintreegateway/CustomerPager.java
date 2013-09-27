@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.gw.CustomerGateway;
+
 import java.util.List;
 
 public class CustomerPager implements Pager<Customer> {
