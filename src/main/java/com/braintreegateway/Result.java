@@ -5,6 +5,7 @@ import com.braintreegateway.util.NodeWrapper;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
+@Deprecated
 public class Result<T> {
 
     private CreditCardVerification creditCardVerification;
