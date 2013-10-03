@@ -2,8 +2,6 @@ package com.braintreegateway.gw
 
 import com.braintreegateway._
 import com.braintreegateway.util.NodeWrapper
-import gw.Failure
-import gw.Success
 import scala.collection.JavaConverters._
 
 // TODO rename to Result when the Java one's removed
@@ -15,6 +13,11 @@ sealed trait Result2[+T] {
   def filter(f: T=>Boolean): Result2[T] = ???
   def foreach(f: T=>Unit):Unit
 
+  /**
+   * Provided to temporarily make tests less grumpy. This will go away
+   * before release.
+   * @return
+   */
   @deprecated def getTarget: T = this match { case Success(t) => t }
 }
 
@@ -26,13 +29,14 @@ case class Success[T](target: T) extends Result2[T] {
 }
 
 case class Failure(
-                            errors: ValidationErrors,
-                            parameters: Map[String, String],
-                            message: String,
-                            creditCardVerification: Option[CreditCardVerification] = None,
-                            transaction: Option[Transaction] = None,
-                            subscription: Option[Subscription] = None
-                            ) extends Result2[Nothing] {
+    errors: ValidationErrors,
+    parameters: Map[String, String],
+    message: String,
+    creditCardVerification: Option[CreditCardVerification] = None,
+    transaction: Option[Transaction] = None,
+    subscription: Option[Subscription] = None
+    ) extends Result2[Nothing] {
+
   def isSuccess: Boolean =false
   def map[B](f: Nothing=>B) = this.copy()
   def flatMap[B](f: Nothing=>Result2[B]) = this.copy()

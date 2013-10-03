@@ -6,14 +6,15 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
-import gw.BraintreeGateway
+import gw.{Deleted, Success, Failure, BraintreeGateway}
 import test.{CreditCardDefaults, CreditCardNumbers, VenmoSdk}
-import testhelpers.{GatewaySpec, MerchantAccountTestConstants, TestHelper}
+import testhelpers.{CalendarHelper, GatewaySpec, MerchantAccountTestConstants, TestHelper}
 import java.util.{Calendar, Random}
 import java.math.BigDecimal
 import scala.collection.JavaConversions._
 import MerchantAccountTestConstants._
 import TestHelper._
+import CalendarHelper._
 
 @RunWith(classOf[JUnitRunner])
 class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
@@ -49,12 +50,12 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       card.getLast4 must be === "5100"
       card.getMaskedNumber must be === "510510******5100"
       card.getToken must not be null
-      val thisYear = Calendar.getInstance.get(Calendar.YEAR)
-      card.getCreatedAt.get(Calendar.YEAR) must be === thisYear
-      card.getUpdatedAt.get(Calendar.YEAR) must be === thisYear
-      card.getUniqueNumberIdentifier.matches("\\A\\w{32}\\z") must be === true
+      val thisYear = now.year
+      card.getCreatedAt.year must be === thisYear
+      card.getUpdatedAt.year must be === thisYear
+      card.getUniqueNumberIdentifier must fullyMatch regex("\\A\\w{32}\\z")
       card must not be ('venmoSdk)
-      card.getImageUrl.matches(".*png.*") must be === true
+      card.getImageUrl must fullyMatch regex(".*png.*")
     }
 
     onGatewayIt("sets card expiration dates correctly") { gateway =>
@@ -68,9 +69,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       card.getExpirationMonth must be === "06"
       card.getExpirationYear must be === "2013"
       card.getExpirationDate must be === "06/2013"
-      val thisYear = Calendar.getInstance.get(Calendar.YEAR)
-      card.getCreatedAt.get(Calendar.YEAR) must be === thisYear
-      card.getUpdatedAt.get(Calendar.YEAR) must be === thisYear
+      val thisYear = now.year
+      card.getCreatedAt.year must be === thisYear
+      card.getUpdatedAt.year must be === thisYear
     }
 
     onGatewayIt("reproduces XML chars in cardholder name") { gateway =>
@@ -80,9 +81,12 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
       val result = gateway.creditCard.create(request)
 
-      result must be('success)
-      val card = result.getTarget
-      card.getCardholderName must be === "Special Chars <>&\"'"
+      result match {
+        case Success(card) => {
+          card.getCardholderName must be === "Special Chars <>&\"'"
+        }
+        case unwanted => fail("expected Success but got " + unwanted)
+      }
     }
 
     onGatewayIt("processes security parameters") { gateway =>
@@ -263,10 +267,14 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Invalid.code)
       val result = gateway.creditCard.create(request)
-      val errorCode = result.getErrors.forObject("creditCard").onField("venmoSdkPaymentMethodCode").get(0).getCode
-      result must not be ('success)
-      result.getMessage must be === "Invalid VenmoSDK payment method code"
-      errorCode must be === ValidationErrorCode.CREDIT_CARD_INVALID_VENMO_SDK_PAYMENT_METHOD_CODE
+      result match {
+        case Failure(errors,_,message,_,_,_) => {
+          val errorCode = errors.forObject("creditCard").onField("venmoSdkPaymentMethodCode").get(0).getCode
+          message must be === "Invalid VenmoSDK payment method code"
+          errorCode must be === ValidationErrorCode.CREDIT_CARD_INVALID_VENMO_SDK_PAYMENT_METHOD_CODE
+        }
+        case somethingElse => fail("expected success but got " + somethingElse)
+      }
     }
   }
 
@@ -277,10 +285,13 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         number("5105105105105100").expirationDate("05/12").
         options.venmoSdkSession(VenmoSdk.Session.Valid.value).done
       val result = gateway.creditCard.create(request)
-      result must be('success)
-      val card = result.getTarget
-      card.getBin must be === "510510"
-      card must be('venmoSdk)
+      result match {
+        case Success(card) => {
+          card.getBin must be === "510510"
+          card must be('venmoSdk)
+        }
+        case somethingElse => fail("expected success but got " + somethingElse)
+      }
     }
 
     onGatewayIt("fails with invalid session") { gateway =>
@@ -289,10 +300,13 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         number("5105105105105100").expirationDate("05/12").
         options.venmoSdkSession(VenmoSdk.Session.Invalid.value).done
       val result = gateway.creditCard.create(request)
-      result must be('success)
-      val card = result.getTarget
-      card.getBin must be === "510510"
-      card must not be ('venmoSdk)
+      result match {
+        case Success(card) => {
+          card.getBin must be === "510510"
+          card must not be('venmoSdk)
+        }
+        case somethingElse => fail("expected success but got " + somethingElse)
+      }
     }
   }
 
@@ -301,44 +315,57 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
         number("5105105105105100").expirationDate("05/12")
-      val result = gateway.creditCard.create(request)
-      result must be('success)
-      val card = result.getTarget
       val updateRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("Jane Jones").
         cvv("321").number("4111111111111111").expirationDate("12/05").
         billingAddress.
-          countryName("Italy"). countryCodeAlpha2("IT").countryCodeAlpha3("ITA").countryCodeNumeric("380").done
+        countryName("Italy"). countryCodeAlpha2("IT").countryCodeAlpha3("ITA").countryCodeNumeric("380").done
 
-      val updateResult = gateway.creditCard.update(card.getToken, updateRequest)
+      val result = for {
+        card <- gateway.creditCard.create(request)
+        updated <- gateway.creditCard.update(card.getToken, updateRequest)
+      } yield (card, updated)
 
-      updateResult must be('success)
-      val updatedCard = updateResult.getTarget
-      updatedCard.getCardholderName must be === "Jane Jones"
-      updatedCard.getBin must be === "411111"
-      updatedCard.getExpirationMonth must be === "12"
-      updatedCard.getExpirationYear must be === "2005"
-      updatedCard.getExpirationDate must be === "12/2005"
-      updatedCard.getLast4 must be === "1111"
-      updatedCard.getToken must not be theSameInstanceAs(card.getToken)
-      updatedCard.getBillingAddress.getCountryName must be === "Italy"
-      updatedCard.getBillingAddress.getCountryCodeAlpha2 must be === "IT"
-      updatedCard.getBillingAddress.getCountryCodeAlpha3 must be === "ITA"
-      updatedCard.getBillingAddress.getCountryCodeNumeric must be === "380"
+      result match {
+        case Success((card, updatedCard)) => {
+          updatedCard.getCardholderName must be === "Jane Jones"
+          updatedCard.getBin must be === "411111"
+          updatedCard.getExpirationMonth must be === "12"
+          updatedCard.getExpirationYear must be === "2005"
+          updatedCard.getExpirationDate must be === "12/2005"
+          updatedCard.getLast4 must be === "1111"
+          updatedCard.getToken must not be theSameInstanceAs(card.getToken)
+          updatedCard.getBillingAddress.getCountryName must be === "Italy"
+          updatedCard.getBillingAddress.getCountryCodeAlpha2 must be === "IT"
+          updatedCard.getBillingAddress.getCountryCodeAlpha3 must be === "ITA"
+          updatedCard.getBillingAddress.getCountryCodeNumeric must be === "380"
+        }
+        case other => fail("expected Success but got " + other)
+      }
+
     }
 
     onGatewayIt("can set a card to be the default") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
-      val card1 = gateway.creditCard.create(request).getTarget
-      val card2 = gateway.creditCard.create(request).getTarget
-      card1 must be('default)
-      card2 must not be ('default)
-      gateway.creditCard.update(card2.getToken, new CreditCardRequest().options.makeDefault(true).done)
-      gateway.creditCard.find(card1.getToken) must not be ('default)
-      gateway.creditCard.find(card2.getToken) must be('default)
-      gateway.creditCard.update(card1.getToken, new CreditCardRequest().options.makeDefault(true).done)
-      gateway.creditCard.find(card1.getToken) must be('default)
-      gateway.creditCard.find(card2.getToken) must not be ('default)
+
+      def assertFirstIsDefault(first:CreditCard, second:CreditCard): Boolean = {
+        gateway.creditCard.find(first.getToken) must be('default)
+        gateway.creditCard.find(second.getToken) must not be ('default)
+        true
+      }
+
+      val result = for {
+        card1 <- gateway.creditCard.create(request)
+        card2 <- gateway.creditCard.create(request)
+        ok = assertFirstIsDefault(card1, card2)
+
+        card2updated <- gateway.creditCard.update(card2.getToken, new CreditCardRequest().options.makeDefault(true).done)
+        ok2 = assertFirstIsDefault(card2, card1)
+
+        card1updated <- gateway.creditCard.update(card1.getToken, new CreditCardRequest().options.makeDefault(true).done)
+        ok3 = assertFirstIsDefault(card1, card2)
+      } yield ok3
+      result must be ('success)
     }
   }
 
@@ -540,14 +567,17 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
     onGatewayIt("causes a card to become unfindable") { gateway =>
       val customer = gateway.customer.create(new CustomerRequest).getTarget
       val request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe")
-        .cvv("123").number("5105105105105100").expirationDate("05/12")
-      val result = gateway.creditCard.create(request)
-      result must be('success)
-      val card = result.getTarget
-      val deleteResult = gateway.creditCard.delete(card.getToken)
-      deleteResult must be('success)
-      intercept[NotFoundException] {
-        gateway.creditCard.find(card.getToken)
+        .cvv("123").number("5105105105105100").expirationDate("05/12").token("TOKENORAMA")
+      val result = for {
+        card <- gateway.creditCard.create(request)
+        deletion <- gateway.creditCard.delete(card.getToken)
+      } yield (card, deletion)
+      result match {
+        case Deleted => {
+          intercept[NotFoundException] {
+           gateway.creditCard.find("TOKENORAMA")
+          }
+        }
       }
     }
   }
@@ -560,9 +590,13 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         options.failOnDuplicatePaymentMethod(true).done
       gateway.creditCard.create(request)
       val result = gateway.creditCard.create(request)
-      result must not be ('success)
-      val code = result.getErrors.forObject("creditCard").onField("number").get(0).getCode
-      code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
+      result match {
+        case Failure(errors, _,_,_,_,_) => {
+          val code = errors.forObject("creditCard").onField("number").get(0).getCode
+          code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
+        }
+        case somethingElse => fail("expected Failure, got " + somethingElse)
+      }
     }
   }
 
@@ -590,9 +624,12 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           done
 
       val result = gateway.creditCard.create(request)
-
-      result must not be ('success)
-      result.getCreditCardVerification.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+      result match {
+        case Failure(_,_,_,Some(creditCardVerification),_,_) => {
+          creditCardVerification.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+        }
+        case somethingElse => fail("expected Failure, got " + somethingElse)
+      }
     }
 
     onGatewayIt("verifies invalid Credit Card") { gateway =>
@@ -603,11 +640,14 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
       val result = gateway.creditCard.create(request)
 
-      result must not be ('success)
-      val verification = result.getCreditCardVerification
-      verification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
-      result.getMessage must be === "Do Not Honor"
-      verification.getGatewayRejectionReason must be === null
+      result match {
+        case Failure(_,_,message,Some(creditCardVerification),_,_) => {
+          creditCardVerification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
+          message must be === "Do Not Honor"
+          creditCardVerification.getGatewayRejectionReason must be === null
+        }
+        case somethingElse => fail("expected Failure, got " + somethingElse)
+      }
     }
 
     it("exposes gateway rejection reason") {
@@ -619,9 +659,12 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
       val result = processingRulesGateway.creditCard.create(request)
 
-      result must not be ('success)
-      val verification = result.getCreditCardVerification
-      verification.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.CVV
+      result match {
+        case Failure(_,_,message,Some(creditCardVerification),_,_) => {
+          creditCardVerification.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.CVV
+        }
+        case somethingElse => fail("expected Failure, got " + somethingElse)
+      }
     }
   }
 

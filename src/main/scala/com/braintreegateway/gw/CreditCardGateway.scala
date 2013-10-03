@@ -38,9 +38,9 @@ class CreditCardGateway(http: Http, configuration: Configuration) {
      * the request.
    * @return a { @link Result}.
    */
-  def create(request: CreditCardRequest): Result[CreditCard] = {
+  def create(request: CreditCardRequest): Result2[CreditCard] = {
     val node = http.post("/payment_methods", request)
-    new Result[CreditCard](node, classOf[CreditCard])
+    Result2.creditCard(node)
   }
 
   /**
@@ -50,9 +50,9 @@ class CreditCardGateway(http: Http, configuration: Configuration) {
      * the CreditCard's token.
    * @return a { @link Result}.
    */
-  def delete(token: String): Result[CreditCard] = {
+  def delete(token: String): Result2[CreditCard] = {
     http.delete("/payment_methods/" + token)
-    new Result[CreditCard]
+    Result2.deleted
   }
 
   /**
@@ -77,9 +77,9 @@ class CreditCardGateway(http: Http, configuration: Configuration) {
      * the request.
    * @return a { @link Result}.
    */
-  def update(token: String, request: CreditCardRequest): Result[CreditCard] = {
+  def update(token: String, request: CreditCardRequest): Result2[CreditCard] = {
     val node = http.put("/payment_methods/" + token, request)
-    new Result[CreditCard](node, classOf[CreditCard])
+    Result2.creditCard(node)
   }
 
   /**

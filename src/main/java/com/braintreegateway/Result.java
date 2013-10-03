@@ -5,6 +5,10 @@ import com.braintreegateway.util.NodeWrapper;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
+/**
+ * @deprecated use gw.Result2 instead
+ * @param <T>
+ */
 @Deprecated
 public class Result<T> {
 
