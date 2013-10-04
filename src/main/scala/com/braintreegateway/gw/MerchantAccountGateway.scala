@@ -1,13 +1,13 @@
 package com.braintreegateway.gw
 
 import com.braintreegateway.util.Http
-import com.braintreegateway.{MerchantAccount, Result, MerchantAccountRequest}
+import com.braintreegateway.{MerchantAccount, MerchantAccountRequest}
 
 class MerchantAccountGateway(http: Http) {
 
-  def create(request: MerchantAccountRequest): Result[MerchantAccount] = {
+  def create(request: MerchantAccountRequest): Result2[MerchantAccount] = {
     val response = http.post(MerchantAccountGateway.CREATE_URL, request)
-    new Result[MerchantAccount](response, classOf[MerchantAccount])
+    Result2.merchantAccount(response)
   }
 }
 

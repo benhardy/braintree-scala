@@ -5,6 +5,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
+import gw.Failure
 import java.util.{Random, Calendar}
 import test.VenmoSdk
 import testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
@@ -85,10 +86,15 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val customerRequest = new CustomerRequest
       customerRequest.firstName("Fred").creditCard.cardholderName("John Doe").number("4012000033330026").cvv("200").expirationDate("05/12").options.failOnDuplicatePaymentMethod(true).done.done.lastName("Jones")
       gateway.customer.create(customerRequest)
+
       val result = gateway.customer.create(customerRequest)
-      result must not be ('success)
-      val code = result.getErrors.forObject("customer").forObject("creditCard").onField("number").get(0).getCode
-      code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
+
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("customer").forObject("creditCard").onField("number").get(0).getCode
+          code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
+        }
+      }
     }
 
     onGatewayIt("createWithValidCreditCardAndVerification") { gateway =>
@@ -111,9 +117,12 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val request = new CustomerRequest
       request.firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").options.verifyCard(true).done.done.lastName("Jones")
       val result = gateway.customer.create(request)
-      result must not be ('success)
-      val verification = result.getCreditCardVerification
-      verification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
+      result match {
+        case Failure(_,_,_,Some(verification),_,_) => {
+          verification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
+        }
+        case x => fail("expected Failure got " + x)
+      }
     }
 
     onGatewayIt("createWithCreditCardAndBillingAddress") { gateway =>
@@ -152,10 +161,16 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("createWithCreditCardAndBillingAddressWithErrors") { gateway =>
       val request = new CustomerRequest().firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").billingAddress.countryName("United States of America").countryCodeAlpha2("MX").done.done
+
       val result = gateway.customer.create(request)
-      result must not be ('success)
-      val code = result.getErrors.forObject("customer").forObject("creditCard").forObject("billingAddress").onField("base").get(0).getCode
-      code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
+
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").onField("base").get(0).getCode
+          code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
+        }
+        case x => fail("expected Failure got " + x)
+      }
     }
   }
 

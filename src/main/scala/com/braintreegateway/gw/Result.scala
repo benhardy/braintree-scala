@@ -57,6 +57,7 @@ object Result2 {
   def subscription(node: NodeWrapper): Result2[Subscription] = apply(node, new Subscription(_))
   def customer(node: NodeWrapper): Result2[Customer] = apply(node, new Customer(_))
   def creditCard(node: NodeWrapper): Result2[CreditCard] = apply(node, new CreditCard(_))
+  def merchantAccount(node: NodeWrapper): Result2[MerchantAccount] = apply(node, new MerchantAccount(_))
 
   def apply[T](node: NodeWrapper, maker: NodeWrapper=>T): Result2[T] = {
     if (node.isSuccess) {

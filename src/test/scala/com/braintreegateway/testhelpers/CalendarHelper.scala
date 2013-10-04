@@ -15,9 +15,12 @@ object CalendarHelper {
   class DateDelta(unitCount:Int) {
     def days = TimeDelta(Calendar.DAY_OF_MONTH, unitCount)
     def hours = TimeDelta(Calendar.HOUR_OF_DAY, unitCount)
+    def months = TimeDelta(Calendar.MONTH, unitCount)
   }
 
   implicit def dateDelta(num:Int) = new DateDelta(num)
+
+  implicit def dateDelta(num:Integer) = new DateDelta(num)
 
   case class CalendarOperations(calendar:Calendar) {
     def + (delta: TimeDelta): Calendar = {
@@ -37,6 +40,11 @@ object CalendarHelper {
     def minute = calendar.get(Calendar.MINUTE)
     def second = calendar.get(Calendar.SECOND)
     def timeZone = calendar.getTimeZone
+    def in(timeZone:TimeZone): Calendar = {
+      val newCal = copyOf(calendar)
+      newCal.setTimeZone(timeZone)
+      newCal
+    }
   }
 
   def copyOf(calendar: Calendar): Calendar = {

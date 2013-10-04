@@ -25,32 +25,32 @@ class SubscriptionGateway(http: Http) {
   /**
    * Cancels the {@link Subscription} with the given id.
    * @param id of the { @link Subscription} to cancel.
-   * @a { @link Result}.
+   * @return a { @link Result}.
    */
-  def cancel(id: String): Result[Subscription] = {
+  def cancel(id: String): Result2[Subscription] = {
     val node = http.put("/subscriptions/" + id + "/cancel")
-    new Result[Subscription](node, classOf[Subscription])
+    Result2.subscription(node)
   }
 
   /**
    * Creates a {@link Subscription}.
    * @param request the request.
-   * @a { @link Result}.
+   * @return a { @link Result}.
    */
-  def create(request: SubscriptionRequest): Result[Subscription] = {
+  def create(request: SubscriptionRequest): Result2[Subscription] = {
     val node = http.post("/subscriptions", request)
-    new Result[Subscription](node, classOf[Subscription])
+    Result2.subscription(node)
   }
 
-  def delete(customerId: String, id: String): Result[Subscription] = {
+  def delete(customerId: String, id: String): Result2[Subscription] = {
     http.delete("/subscriptions/" + id)
-    new Result[Subscription]
+    Result2.deleted
   }
 
   /**
    * Finds a {@link Subscription} by id.
    * @param id the id of the { @link Subscription}.
-   * @the { @link Subscription} or raises a { @link com.braintreegateway.exceptions.NotFoundException}.
+   * @return the { @link Subscription} or raises a { @link com.braintreegateway.exceptions.NotFoundException}.
    */
   def find(id: String): Subscription = {
     if (id == null || (id.trim == "")) throw new NotFoundException
@@ -61,17 +61,17 @@ class SubscriptionGateway(http: Http) {
    * Updates a {@link Subscription}.
    * @param id the id of the { @link Subscription}.
    * @param request the request.
-   * @a { @link Result}.
+   * @return a { @link Result}.
    */
-  def update(id: String, request: SubscriptionRequest): Result[Subscription] = {
+  def update(id: String, request: SubscriptionRequest): Result2[Subscription] = {
     val node = http.put("/subscriptions/" + id, request)
-    new Result[Subscription](node, classOf[Subscription])
+    Result2.subscription(node)
   }
 
   /**
    * Search for a {@link Subscription}.
    * @param searchRequest the { @link SubscriptionSearchRequest}.
-   * @a { @link Result}.
+   * @return a { @link Result}.
    */
   def search(searchRequest: SubscriptionSearchRequest): ResourceCollection[Subscription] = {
     val node = http.post("/subscriptions/advanced_search_ids", searchRequest)
@@ -84,16 +84,16 @@ class SubscriptionGateway(http: Http) {
     response.findAll("subscription").map{new Subscription(_)}
   }
 
-  private def retryCharge(txnRequest: SubscriptionTransactionRequest): Result[Transaction] = {
+  private def retryCharge(txnRequest: SubscriptionTransactionRequest): Result2[Transaction] = {
     val response = http.post("/transactions", txnRequest)
-    new Result[Transaction](response, classOf[Transaction])
+    Result2.transaction(response)
   }
 
-  def retryCharge(subscriptionId: String): Result[Transaction] = {
+  def retryCharge(subscriptionId: String): Result2[Transaction] = {
     retryCharge(new SubscriptionTransactionRequest().subscriptionId(subscriptionId))
   }
 
-  def retryCharge(subscriptionId: String, amount: BigDecimal): Result[Transaction] = {
+  def retryCharge(subscriptionId: String, amount: BigDecimal): Result2[Transaction] = {
     retryCharge(new SubscriptionTransactionRequest().subscriptionId(subscriptionId).amount(amount))
   }
 }

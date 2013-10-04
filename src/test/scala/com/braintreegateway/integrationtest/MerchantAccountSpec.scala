@@ -5,6 +5,7 @@ import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.testhelpers.GatewaySpec
+import gw.Failure
 import java.util.Random
 
 @RunWith(classOf[JUnitRunner])
@@ -40,10 +41,15 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("handles unsuccessful results") {
       gateway =>
         val result = gateway.merchantAccount.create(new MerchantAccountRequest)
-        val errors = result.getErrors.forObject("merchant-account").onField("master_merchant_account_id")
-        errors.size must be === 1
-        val code = errors.get(0).getCode
-        code must be === ValidationErrorCode.MERCHANT_ACCOUNT_MASTER_MERCHANT_ACCOUNT_ID_IS_REQUIRED
+        result match {
+          case Failure(allErrors,_,_,_,_,_) => {
+            val errors = allErrors.forObject("merchant-account").onField("master_merchant_account_id")
+            errors.size must be === 1
+            val code = errors.get(0).getCode
+            code must be === ValidationErrorCode.MERCHANT_ACCOUNT_MASTER_MERCHANT_ACCOUNT_ID_IS_REQUIRED
+          }
+          case x => fail("expected Failure got " + x)
+        }
     }
   }
 

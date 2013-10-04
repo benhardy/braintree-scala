@@ -45,7 +45,7 @@ class CustomerGateway(http: Http, configuration: Configuration) {
    */
   def create(request: CustomerRequest) = {
     val node = http.post("/customers", request)
-    new Result[Customer](node, classOf[Customer])
+    Result2.customer(node)
   }
 
   /**
