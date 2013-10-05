@@ -10,7 +10,7 @@ import com.braintreegateway.exceptions.ForgedQueryStringException
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.test.CreditCardNumbers
 import com.braintreegateway.test.VenmoSdk
-import gw.BraintreeGateway
+import gw.{Failure, Success, BraintreeGateway}
 import testhelpers._
 import com.braintreegateway.util.NodeWrapperFactory
 import java.math.BigDecimal
@@ -68,52 +68,58 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
   describe("cloneTransaction") {
     onGatewayIt("cloneTransaction") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).orderId("123").creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.customer.firstName("Dan").done.billingAddress.firstName("Carl").done.shippingAddress.firstName("Andrew").done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
       val cloneRequest = new TransactionCloneRequest().amount(new BigDecimal("123.45")).channel("MyShoppingCartProvider").options.submitForSettlement(false).done
-      val cloneResult = gateway.transaction.cloneTransaction(transaction.getId, cloneRequest)
-      cloneResult must be ('success)
-      val cloneTransaction = cloneResult.getTarget
-      cloneTransaction.getAmount must be === new BigDecimal("123.45")
-      cloneTransaction.getChannel must be === "MyShoppingCartProvider"
-      cloneTransaction.getOrderId must be === "123"
-      cloneTransaction.getCreditCard.getMaskedNumber must be === "411111******1111"
-      cloneTransaction.getCustomer.getFirstName must be === "Dan"
-      cloneTransaction.getBillingAddress.getFirstName must be === "Carl"
-      cloneTransaction.getShippingAddress.getFirstName must be === "Andrew"
+      val result = for {
+        transaction <- gateway.transaction.sale(request)
+        cloneTransaction <- gateway.transaction.cloneTransaction(transaction.getId, cloneRequest)
+      } yield cloneTransaction
+
+      result match {
+        case Success(cloneTransaction) => {
+          cloneTransaction.getAmount must be === new BigDecimal("123.45")
+          cloneTransaction.getChannel must be === "MyShoppingCartProvider"
+          cloneTransaction.getOrderId must be === "123"
+          cloneTransaction.getCreditCard.getMaskedNumber must be === "411111******1111"
+          cloneTransaction.getCustomer.getFirstName must be === "Dan"
+          cloneTransaction.getBillingAddress.getFirstName must be === "Carl"
+          cloneTransaction.getShippingAddress.getFirstName must be === "Andrew"
+        }
+      }
     }
 
     onGatewayIt("cloneTransactionAndSubmitForSettlement") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).orderId("123").creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
       val cloneRequest = new TransactionCloneRequest().amount(new BigDecimal("123.45")).options.submitForSettlement(true).done
-      val cloneResult = gateway.transaction.cloneTransaction(transaction.getId, cloneRequest)
-      cloneResult must be ('success)
-      val cloneTransaction = cloneResult.getTarget
-      cloneTransaction.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
+      val result = for {
+        transaction <- gateway.transaction.sale(request)
+        cloneTransaction <- gateway.transaction.cloneTransaction(transaction.getId, cloneRequest)
+      } yield cloneTransaction
+
+      result match {
+        case Success(cloneTransaction) => {
+          cloneTransaction.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
+        }
+      }
     }
 
     onGatewayIt("cloneTransactionWithValidationErrors") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
-      val result = gateway.transaction.credit(request)
-      result must be ('success)
-      val transaction = result.getTarget
+      val transaction = gateway.transaction.credit(request) match { case Success(txn) => txn }
       val cloneRequest = new TransactionCloneRequest().amount(new BigDecimal("123.45"))
       val cloneResult = gateway.transaction.cloneTransaction(transaction.getId, cloneRequest)
-      cloneResult must not be ('success)
-      cloneResult.getErrors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_CLONE_CREDIT
+      cloneResult match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("base").get(0).getCode 
+          code must be === ValidationErrorCode.TRANSACTION_CANNOT_CLONE_CREDIT
+        }
+      }
     }
   }
 
   describe("sale") {
     onGatewayIt("sale") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       transaction.getAmount must be === new BigDecimal("1000.00")
       transaction.getCurrencyIsoCode must be === "USD"
       transaction.getProcessorAuthorizationCode must not be === (null)
@@ -132,9 +138,8 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("saleWithCardTypeIndicators") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumbers.CardTypeIndicators.Prepaid.getValue).expirationDate("05/2012").done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val card = result.getTarget.getCreditCard
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
+      val card = transaction.getCreditCard
       card.getPrepaid must be === CreditCard.Prepaid.YES
       card.getHealthcare must be === CreditCard.Healthcare.UNKNOWN
       card.getPayroll must be === CreditCard.Payroll.UNKNOWN
@@ -147,9 +152,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("saleWithAllAttributes") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).channel("MyShoppingCartProvider").orderId("123").creditCard.cardholderName("The Cardholder").number(CreditCardNumber.VISA.number).cvv("321").expirationDate("05/2009").done.customer.firstName("Dan").lastName("Smith").company("Braintree Payment Solutions").email("dan@example.com").phone("419-555-1234").fax("419-555-1235").website("http://braintreepayments.com").done.billingAddress.firstName("Carl").lastName("Jones").company("Braintree").streetAddress("123 E Main St").extendedAddress("Suite 403").locality("Chicago").region("IL").postalCode("60622").countryName("United States of America").countryCodeAlpha2("US").countryCodeAlpha3("USA").countryCodeNumeric("840").done.shippingAddress.firstName("Andrew").lastName("Mason").company("Braintree Shipping").streetAddress("456 W Main St").extendedAddress("Apt 2F").locality("Bartlett").region("MA").postalCode("60103").countryName("Mexico").countryCodeAlpha2("MX").countryCodeAlpha3("MEX").countryCodeNumeric("484").done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       transaction.getAmount must be === new BigDecimal("1000.00")
       transaction.getStatus must be === Transaction.Status.AUTHORIZED
       transaction.getChannel must be === "MyShoppingCartProvider"
@@ -211,17 +214,21 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("saleWithSpecifyingMerchantAccountId") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID).amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+      result match {
+        case Success(transaction) => {
+          transaction.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+        }
+      }
     }
 
     onGatewayIt("saleWithoutSpecifyingMerchantAccountIdFallsBackToDefault") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getMerchantAccountId must be === DEFAULT_MERCHANT_ACCOUNT_ID
+      result match {
+        case Success(transaction) => {
+          transaction.getMerchantAccountId must be === DEFAULT_MERCHANT_ACCOUNT_ID
+        }
+      }
     }
 
     onGatewayIt("saleWithStoreInVaultAndSpecifyingToken") { gateway =>
@@ -229,27 +236,32 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val paymentToken = String.valueOf(new Random().nextInt)
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.token(paymentToken).number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.customer.id(customerId).firstName("Jane").done.options.storeInVault(true).done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      val creditCard = transaction.getCreditCard
-      creditCard.getToken must be === paymentToken
-      transaction.getVaultCreditCard(gateway).getExpirationDate must be === "05/2009"
-      val customer = transaction.getCustomer
-      customer.getId must be === customerId
-      transaction.getVaultCustomer(gateway).getFirstName must be === "Jane"
+      result match {
+        case Success(transaction) => {
+          transaction.getMerchantAccountId must be === DEFAULT_MERCHANT_ACCOUNT_ID
+          val creditCard = transaction.getCreditCard
+          creditCard.getToken must be === paymentToken
+          transaction.getVaultCreditCard(gateway).getExpirationDate must be === "05/2009"
+          val customer = transaction.getCustomer
+          customer.getId must be === customerId
+          transaction.getVaultCustomer(gateway).getFirstName must be === "Jane"
+        }
+      }
     }
 
     onGatewayIt("saleWithStoreInVaultWithoutSpecifyingToken") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.customer.firstName("Jane").done.options.storeInVault(true).done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      val creditCard = transaction.getCreditCard
-      creditCard.getToken must not be === (null)
-      transaction.getVaultCreditCard(gateway).getExpirationDate must be === "05/2009"
-      val customer = transaction.getCustomer
-      customer.getId must not be === (null)
-      transaction.getVaultCustomer(gateway).getFirstName must be === "Jane"
+      result match {
+        case Success(transaction) => {
+          val creditCard = transaction.getCreditCard
+          creditCard.getToken must not be === (null)
+          transaction.getVaultCreditCard(gateway).getExpirationDate must be === "05/2009"
+          val customer = transaction.getCustomer
+          customer.getId must not be === (null)
+          transaction.getVaultCustomer(gateway).getFirstName must be === "Jane"
+        }
+      }
     }
 
     onGatewayIt("saleWithStoreInVaultOnSuccessWhenTransactionSucceeds") { gateway =>
@@ -257,27 +269,31 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
         creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.customer.firstName("Jane").done.
         options.storeInVaultOnSuccess(true).done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      val creditCard = transaction.getCreditCard
-      creditCard.getToken must not be === (null)
-      transaction.getVaultCreditCard(gateway).getExpirationDate must be === "05/2009"
-      val customer = transaction.getCustomer
-      customer.getId must not be === (null)
-      transaction.getVaultCustomer(gateway).getFirstName must be === "Jane"
+      result match {
+        case Success(transaction) => {
+          val creditCard = transaction.getCreditCard
+          creditCard.getToken must not be === (null)
+          transaction.getVaultCreditCard(gateway).getExpirationDate must be === "05/2009"
+          val customer = transaction.getCustomer
+          customer.getId must not be === (null)
+          transaction.getVaultCustomer(gateway).getFirstName must be === "Jane"
+        }
+      }
     }
 
     onGatewayIt("saleWithStoreInVaultOnSuccessWhenTransactionFails") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.DECLINE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.customer.firstName("Jane").done.options.storeInVaultOnSuccess(true).done
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      val transaction = result.getTransaction
-      val creditCard = transaction.getCreditCard
-      creditCard.getToken must be === (null)
-      transaction.getVaultCreditCard(gateway) must be === (null)
-      val customer = transaction.getCustomer
-      customer.getId must be === (null)
-      transaction.getVaultCustomer(gateway) must be === (null)
+      result match {
+        case Failure(_,_,_,_,Some(transaction),_) => {
+          val creditCard = transaction.getCreditCard
+          creditCard.getToken must be === (null)
+          transaction.getVaultCreditCard(gateway) must be === (null)
+          val customer = transaction.getCustomer
+          customer.getId must be === (null)
+          transaction.getVaultCustomer(gateway) must be === (null)
+        }
+      }
     }
 
     onGatewayIt("saleWithStoreInVaultForBillingAndShipping") { gateway =>
@@ -286,57 +302,79 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
         shippingAddress.firstName("Andrew").done.options.storeInVault(true).addBillingAddressToPaymentMethod(true).
         storeShippingAddressInVault(true).done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      val creditCard = transaction.getVaultCreditCard(gateway)
-      creditCard.getBillingAddress.getFirstName must be === "Carl"
-      transaction.getVaultBillingAddress(gateway).getFirstName must be === "Carl"
-       transaction.getVaultShippingAddress(gateway).getFirstName must be === "Andrew"
-      val customer = transaction.getVaultCustomer(gateway)
-      customer.getAddresses.size must be === 2
-      val addresses = customer.getAddresses.sortWith((a,b) => a.getFirstName < b.getFirstName)
+      result match {
+        case Success(transaction) => {
+          val creditCard = transaction.getVaultCreditCard(gateway)
+          creditCard.getBillingAddress.getFirstName must be === "Carl"
+          transaction.getVaultBillingAddress(gateway).getFirstName must be === "Carl"
+           transaction.getVaultShippingAddress(gateway).getFirstName must be === "Andrew"
+          val customer = transaction.getVaultCustomer(gateway)
+          customer.getAddresses.size must be === 2
+          val addresses = customer.getAddresses.sortWith((a,b) => a.getFirstName < b.getFirstName)
 
-      addresses.get(0).getFirstName must be === "Andrew"
-      addresses.get(1).getFirstName must be === "Carl"
-      transaction.getBillingAddress.getId must not be === (null)
-      transaction.getShippingAddress.getId must not be === (null)
+          addresses.get(0).getFirstName must be === "Andrew"
+          addresses.get(1).getFirstName must be === "Carl"
+          transaction.getBillingAddress.getId must not be === (null)
+          transaction.getShippingAddress.getId must not be === (null)
+        }
+      }
     }
 
     onGatewayIt("saleWithVaultCustomerAndNewCreditCard") { gateway =>
-      val customer = gateway.customer.create(new CustomerRequest().firstName("Michael").lastName("Angelo").company("Some Company")).getTarget
-      val request = new TransactionRequest().amount(SandboxValues.TransactionAmount.AUTHORIZE.amount).customerId(customer.getId).creditCard.cardholderName("Bob the Builder").number(SandboxValues.CreditCardNumber.VISA.number).expirationDate("05/2009").done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getCreditCard.getCardholderName must be === "Bob the Builder"
-      transaction.getVaultCreditCard(gateway) must be === (null)
+      val result = for {
+        customer <- gateway.customer.create(new CustomerRequest().firstName("Michael").lastName("Angelo").company("Some Company"))
+
+        request = new TransactionRequest().amount(SandboxValues.TransactionAmount.AUTHORIZE.amount).
+                  customerId(customer.getId).creditCard.cardholderName("Bob the Builder").
+                  number(SandboxValues.CreditCardNumber.VISA.number).expirationDate("05/2009").done
+
+        sale <- gateway.transaction.sale(request)
+      } yield sale
+
+      result match {
+        case Success(transaction) => {
+          transaction.getCreditCard.getCardholderName must be === "Bob the Builder"
+          transaction.getVaultCreditCard(gateway) must be === (null)
+        }
+      }
     }
 
     onGatewayIt("saleWithVaultCustomerAndNewCreditCardStoresInVault") { gateway =>
-      val customer = gateway.customer.create(new CustomerRequest().firstName("Michael").lastName("Angelo").company("Some Company")).getTarget
-      val request = new TransactionRequest().amount(SandboxValues.TransactionAmount.AUTHORIZE.amount).customerId(customer.getId).creditCard.cardholderName("Bob the Builder").number(SandboxValues.CreditCardNumber.VISA.number).expirationDate("05/2009").done.options.storeInVault(true).done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getCreditCard.getCardholderName must be === "Bob the Builder"
-      transaction.getVaultCreditCard(gateway).getCardholderName must be === "Bob the Builder"
+      val result = for {
+        customer <- gateway.customer.create(new CustomerRequest().firstName("Michael").lastName("Angelo").company("Some Company"))
+
+        request = new TransactionRequest().amount(SandboxValues.TransactionAmount.AUTHORIZE.amount).customerId(customer.getId).
+            creditCard.cardholderName("Bob the Builder").number(SandboxValues.CreditCardNumber.VISA.number).expirationDate("05/2009").done.
+            options.storeInVault(true).done
+
+        sale <- gateway.transaction.sale(request)
+      } yield sale
+
+      result match {
+        case Success(transaction) => {
+          transaction.getCreditCard.getCardholderName must be === "Bob the Builder"
+          transaction.getVaultCreditCard(gateway).getCardholderName must be === "Bob the Builder"
+        }
+      }
     }
 
     onGatewayIt("saleDeclined") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.DECLINE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      val transaction = result.getTransaction
-      transaction.getAmount must be === new BigDecimal("2000.00")
-      transaction.getStatus must be === Transaction.Status.PROCESSOR_DECLINED
-      transaction.getProcessorResponseCode must be === "2000"
-      transaction.getProcessorResponseText must not be === (null)
-      val creditCard = transaction.getCreditCard
-      creditCard.getBin must be === "411111"
-      creditCard.getLast4 must be === "1111"
-      creditCard.getExpirationMonth must be === "05"
-      creditCard.getExpirationYear must be === "2009"
-      creditCard.getExpirationDate must be === "05/2009"
+      result match {
+        case Failure(_,_,_,_,Some(transaction),_) => {
+          transaction.getAmount must be === new BigDecimal("2000.00")
+          transaction.getStatus must be === Transaction.Status.PROCESSOR_DECLINED
+          transaction.getProcessorResponseCode must be === "2000"
+          transaction.getProcessorResponseText must not be === (null)
+          val creditCard = transaction.getCreditCard
+          creditCard.getBin must be === "411111"
+          creditCard.getLast4 must be === "1111"
+          creditCard.getExpirationMonth must be === "05"
+          creditCard.getExpirationYear must be === "2009"
+          creditCard.getExpirationDate must be === "05/2009"
+        }
+      }
     }
 
     onGatewayIt("saleWithSecuirtyParams") { gateway =>
@@ -347,170 +385,226 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("saleWithCustomFields") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).customField("storeMe", "custom value").customField("another_stored_field", "custom value2").creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      val expected = Map(
+      val expectedCustomFields = Map(
         "store_me" -> "custom value",
         "another_stored_field" -> "custom value2"
       )
-      transaction.getCustomFields.toMap must be === expected
+      val result = gateway.transaction.sale(request)
+      result match {
+        case Success(transaction) => {
+          transaction.getCustomFields.toMap must be === expectedCustomFields
+        }
+      }
     }
 
     onGatewayIt("saleWithRecurringFlag") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).recurring(true).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getRecurring must be === true
+      result match {
+        case Success(transaction) => {
+          transaction.getRecurring must be === true
+        }
+      }
     }
 
     onGatewayIt("saleWithValidationErrorsOnAddress") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.DECLINE.amount).customField("unkown_custom_field", "custom value").creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.billingAddress.countryName("No such country").countryCodeAlpha2("zz").countryCodeAlpha3("zzz").countryCodeNumeric("000").done
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      val billingValidationErrors = result.getErrors.forObject("transaction").forObject("billing")
-      billingValidationErrors.onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-      billingValidationErrors.onField("countryCodeAlpha2").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
-      billingValidationErrors.onField("countryCodeAlpha3").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA3_IS_NOT_ACCEPTED
-      billingValidationErrors.onField("countryCodeNumeric").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_NUMERIC_IS_NOT_ACCEPTED
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val billingValidationErrors = errors.forObject("transaction").forObject("billing")
+          billingValidationErrors.onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+          billingValidationErrors.onField("countryCodeAlpha2").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
+          billingValidationErrors.onField("countryCodeAlpha3").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA3_IS_NOT_ACCEPTED
+          billingValidationErrors.onField("countryCodeNumeric").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_NUMERIC_IS_NOT_ACCEPTED
+        }
+      }
     }
 
     onGatewayIt("saleWithUnregisteredCustomField") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.DECLINE.amount).customField("unkown_custom_field", "custom value").creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      result.getErrors.forObject("transaction").onField("customFields").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CUSTOM_FIELD_IS_INVALID
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          errors.forObject("transaction").onField("customFields").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CUSTOM_FIELD_IS_INVALID
+        }
+      }
     }
 
     onGatewayIt("saleWithMultipleValidationErrorsOnSameField") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken("foo").customerId("5").creditCard.number(CreditCardNumber.VISA.number).cvv("321").expirationDate("04/2009").done
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      val errros = result.getErrors.forObject("transaction").onField("base")
-      result.getTransaction must be === (null)
-      result.getCreditCardVerification must be === (null)
-      errros.size must be === 2
-      val validationErrorCodes = errros.map {_.getCode}
+      result match {
+        case Failure(allErrors,_,_,ccVer,txn,_) => {
+          val errors = allErrors.forObject("transaction").onField("base")
+          txn.isDefined must be === false
+          ccVer.isDefined must be === false
+          errors.size must be === 2
+          val validationErrorCodes = errors.map {_.getCode}
 
-      validationErrorCodes must contain (ValidationErrorCode.TRANSACTION_PAYMENT_METHOD_CONFLICT_WITH_VENMO_SDK)
-      validationErrorCodes must contain (ValidationErrorCode.TRANSACTION_PAYMENT_METHOD_DOES_NOT_BELONG_TO_CUSTOMER)
+          validationErrorCodes must contain (ValidationErrorCode.TRANSACTION_PAYMENT_METHOD_CONFLICT_WITH_VENMO_SDK)
+          validationErrorCodes must contain (ValidationErrorCode.TRANSACTION_PAYMENT_METHOD_DOES_NOT_BELONG_TO_CUSTOMER)
+        }
+      }
     }
 
     onGatewayIt("saleWithCustomerId") { gateway =>
-      val customer = gateway.customer.create(new CustomerRequest).getTarget
-      val creditCardRequest = new CreditCardRequest().customerId(customer.getId).cvv("123").number("5105105105105100").expirationDate("05/12")
-      val creditCard = gateway.creditCard.create(creditCardRequest).getTarget
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken(creditCard.getToken)
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getCreditCard.getToken must be === creditCard.getToken
-      transaction.getCreditCard.getBin must be === "510510"
-      transaction.getCreditCard.getExpirationDate must be === "05/2012"
+      val result = for {
+        customer <- gateway.customer.create(new CustomerRequest)
+
+        creditCardRequest = new CreditCardRequest().customerId(customer.getId).cvv("123").number("5105105105105100").expirationDate("05/12")
+        creditCard <- gateway.creditCard.create(creditCardRequest)
+
+        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken(creditCard.getToken)
+        sale <- gateway.transaction.sale(request)
+      } yield (sale, creditCard)
+
+      result match {
+        case Success((transaction, creditCard)) => {
+          transaction.getCreditCard.getToken must be === creditCard.getToken
+          transaction.getCreditCard.getBin must be === "510510"
+          transaction.getCreditCard.getExpirationDate must be === "05/2012"
+        }
+      }
     }
 
     onGatewayIt("saleWithPaymentMethodTokenAndCvv") { gateway =>
-      val customer = gateway.customer.create(new CustomerRequest).getTarget
-      val creditCardRequest = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
-      val creditCard = gateway.creditCard.create(creditCardRequest).getTarget
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken(creditCard.getToken).creditCard.cvv("301").done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getCreditCard.getToken must be === creditCard.getToken
-      transaction.getCreditCard.getBin must be === "510510"
-      transaction.getCreditCard.getExpirationDate must be === "05/2012"
-      transaction.getCvvResponseCode must be === "S"
+      val result = for {
+        customer <- gateway.customer.create(new CustomerRequest)
+
+        creditCardRequest = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
+        creditCard <- gateway.creditCard.create(creditCardRequest)
+
+        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken(creditCard.getToken).creditCard.cvv("301").done
+        sale <- gateway.transaction.sale(request)
+      } yield (sale, creditCard)
+
+      result match {
+        case Success((transaction, creditCard)) => {
+          transaction.getCreditCard.getToken must be === creditCard.getToken
+          transaction.getCreditCard.getBin must be === "510510"
+          transaction.getCreditCard.getExpirationDate must be === "05/2012"
+          transaction.getCvvResponseCode must be === "S"
+        }
+      }
     }
 
     onGatewayIt("saleUsesShippingAddressFromVault") { gateway =>
-      val customer = gateway.customer.create(new CustomerRequest).getTarget
-      gateway.creditCard.create(new CreditCardRequest().customerId(customer.getId).cvv("123").number("5105105105105100").expirationDate("05/12")).getTarget
-      val shippingAddress = gateway.address.create(customer.getId, new AddressRequest().firstName("Carl")).getTarget
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).customerId(customer.getId).shippingAddressId(shippingAddress.getId)
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getShippingAddress.getId must be === shippingAddress.getId
-      transaction.getShippingAddress.getFirstName must be === "Carl"
+      val result = for {
+        customer <- gateway.customer.create(new CustomerRequest)
+
+        card <- gateway.creditCard.create(new CreditCardRequest().customerId(customer.getId).cvv("123").
+                              number("5105105105105100").expirationDate("05/12"))
+
+        shippingAddress <- gateway.address.create(customer.getId, new AddressRequest().firstName("Carl"))
+        
+        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).customerId(customer.getId).shippingAddressId(shippingAddress.getId)
+        sale <- gateway.transaction.sale(request)
+      } yield (sale, shippingAddress)
+
+      result match {
+        case Success((transaction, shippingAddress)) => {
+          transaction.getShippingAddress.getId must be === shippingAddress.getId
+          transaction.getShippingAddress.getFirstName must be === "Carl"
+        }
+      }
     }
 
     onGatewayIt("saleWithValidationError") { gateway =>
       val request = new TransactionRequest().amount(null).creditCard.expirationMonth("05").expirationYear("2010").done
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      result.getTarget must be === (null)
-      result.getErrors.forObject("transaction").onField("amount").get(0).getCode must be === ValidationErrorCode.TRANSACTION_AMOUNT_IS_REQUIRED
-      val parameters = result.getParameters
-      parameters.get("transaction[amount]") must be === (null)
-      parameters.get("transaction[credit_card][expiration_month]") must be === "05"
-      parameters.get("transaction[credit_card][expiration_year]")  must be === "2010"
+      result match {
+        case Failure(errors, parameters, _, _, _, _) => {
+          val code = errors.forObject("transaction").onField("amount").get(0).getCode 
+          code must be === ValidationErrorCode.TRANSACTION_AMOUNT_IS_REQUIRED
+          parameters.get("transaction[amount]") must be === None
+          parameters("transaction[credit_card][expiration_month]") must be === "05"
+          parameters("transaction[credit_card][expiration_year]")  must be === "2010"
+        }
+      }
     }
 
     onGatewayIt("saleWithSubmitForSettlement") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.options.submitForSettlement(true).done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
+      result match {
+        case Success(transaction) => {
+          transaction.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
+        }
+      }
     }
 
     onGatewayIt("saleWithDescriptor") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.descriptor.name("123*123456789012345678").phone("3334445555").done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getDescriptor.getName must be === "123*123456789012345678"
-      transaction.getDescriptor.getPhone must be === "3334445555"
+      result match {
+        case Success(transaction) => {
+          transaction.getDescriptor.getName must be === "123*123456789012345678"
+          transaction.getDescriptor.getPhone must be === "3334445555"
+        }
+      }
     }
 
     onGatewayIt("saleWithDescriptorValidation") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.descriptor.name("badcompanyname12*badproduct12").phone("%bad4445555").done
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      val expected1 = result.getErrors.forObject("transaction").forObject("descriptor").onField("name").get(0).getCode
-      expected1 must be === ValidationErrorCode.DESCRIPTOR_NAME_FORMAT_IS_INVALID
-      val expected2 = result.getErrors.forObject("transaction").forObject("descriptor").onField("phone").get(0).getCode
-      expected2 must be === ValidationErrorCode.DESCRIPTOR_PHONE_FORMAT_IS_INVALID
+      result match {
+        case Failure(errors, parameters, _, _, _, _) => {
+          val expected1 = errors.forObject("transaction").forObject("descriptor").onField("name").get(0).getCode
+          expected1 must be === ValidationErrorCode.DESCRIPTOR_NAME_FORMAT_IS_INVALID
+          val expected2 = errors.forObject("transaction").forObject("descriptor").onField("phone").get(0).getCode
+          expected2 must be === ValidationErrorCode.DESCRIPTOR_PHONE_FORMAT_IS_INVALID
+        }
+      }
     }
 
     onGatewayIt("saleWithLevel2") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.taxAmount(new BigDecimal("10.00")).taxExempt(true).purchaseOrderNumber("12345")
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getTaxAmount must be === new BigDecimal("10.00")
-      transaction.isTaxExempt must be === true
-      transaction.getPurchaseOrderNumber must be === "12345"
+      result match {
+        case Success(transaction) => {
+          transaction.getTaxAmount must be === new BigDecimal("10.00")
+          transaction.isTaxExempt must be === true
+          transaction.getPurchaseOrderNumber must be === "12345"
+        }
+      }
     }
 
     onGatewayIt("saleWithTooLongPurchaseOrderNumber") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.purchaseOrderNumber("aaaaaaaaaaaaaaaaaa")
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      result.getErrors.forObject("transaction").onField("purchaseOrderNumber").get(0).getCode must be === ValidationErrorCode.TRANSACTION_PURCHASE_ORDER_NUMBER_IS_TOO_LONG
+      val errors = result match { case Failure(errors,_,_,_,_,_) => errors }
+      errors.forObject("transaction").onField("purchaseOrderNumber").get(0).getCode must be === ValidationErrorCode.TRANSACTION_PURCHASE_ORDER_NUMBER_IS_TOO_LONG
     }
 
     onGatewayIt("saleWithInvalidPurchaseOrderNumber") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.purchaseOrderNumber("\u00c3\u009f\u00c3\u00a5\u00e2\u0088\u0082")
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      result.getErrors.forObject("transaction").onField("purchaseOrderNumber").get(0).getCode must be === ValidationErrorCode.TRANSACTION_PURCHASE_ORDER_NUMBER_IS_INVALID
+      val errors = result match { case Failure(errors,_,_,_,_,_) => errors }
+      errors.forObject("transaction").onField("purchaseOrderNumber").get(0).getCode must be === ValidationErrorCode.TRANSACTION_PURCHASE_ORDER_NUMBER_IS_INVALID
     }
 
     onGatewayIt("saleWithVenmoSdkPaymentMethodCode") { gateway =>
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Visa.code)
+      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
+        venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Visa.code)
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      result.getTarget.getCreditCard.getBin must be === "411111"
+      result match {
+        case Success(transaction)  => {
+          transaction.getCreditCard.getBin must be === "411111"
+        }
+      }
     }
 
     onGatewayIt("saleWithVenmoSdkSession") { gateway =>
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.options.venmoSdkSession(VenmoSdk.Session.Valid.value).done
+      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
+        creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.
+        options.venmoSdkSession(VenmoSdk.Session.Valid.value).done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      result.getTarget.getCreditCard.isVenmoSdk must be === true
+      result match {
+        case Success(transaction)  => {
+          transaction.getCreditCard.isVenmoSdk must be === true
+        }
+      }
     }
   }
 
@@ -520,8 +614,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val trParams = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).`type`(Transaction.Type.SALE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.billingAddress.countryName("United States of America").countryCodeAlpha2("US").countryCodeAlpha3("USA").countryCodeNumeric("840").done
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
       val result = gateway.transparentRedirect.confirmTransaction(queryString)
-      result must be ('success)
-      val transaction = result.getTarget
+      val transaction = result match { case Success(txn) => txn }
       transaction.getBillingAddress.getCountryName must be === "United States of America"
       transaction.getBillingAddress.getCountryCodeAlpha2 must be === "US"
       transaction.getBillingAddress.getCountryCodeAlpha3 must be === "USA"
@@ -533,8 +626,8 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val trParams = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).`type`(Transaction.Type.SALE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.billingAddress.countryName("Foo bar!").countryCodeAlpha2("zz").countryCodeAlpha3("zzz").countryCodeNumeric("000").done
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
       val result = gateway.transparentRedirect.confirmTransaction(queryString)
-      result must not be ('success)
-      val billingValidationErrors = result.getErrors.forObject("transaction").forObject("billing")
+      val errors = result match { case Failure(errors,_,_,_,_,_) => errors }
+      val billingValidationErrors = errors.forObject("transaction").forObject("billing")
       val code1 = billingValidationErrors.onField("countryName").get(0).getCode
       code1 must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
       val code2 = billingValidationErrors.onField("countryCodeAlpha2").get(0).getCode
@@ -550,8 +643,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("credit") { gateway =>
       val request = new TransactionRequest().amount(SandboxValues.TransactionAmount.AUTHORIZE.amount).creditCard.number(SandboxValues.CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.credit(request)
-      result must be ('success)
-      val transaction = result.getTarget
+      val transaction = result match { case Success(txn) => txn }
       transaction.getAmount must be === new BigDecimal("1000.00")
       transaction.getType must be === Transaction.Type.CREDIT
       transaction.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
@@ -566,24 +658,21 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("creditWithSpecifyingMerchantAccountId") { gateway =>
       val request = new TransactionRequest().amount(SandboxValues.TransactionAmount.AUTHORIZE.amount).merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID).creditCard.number(SandboxValues.CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.credit(request)
-      result must be ('success)
-      val transaction = result.getTarget
+      val transaction = result match { case Success(txn) => txn }
       transaction.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
     }
 
     onGatewayIt("creditWithoutSpecifyingMerchantAccountIdFallsBackToDefault") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.credit(request)
-      result must be ('success)
-      val transaction = result.getTarget
+      val transaction = result match { case Success(txn) => txn }
       transaction.getMerchantAccountId must be === DEFAULT_MERCHANT_ACCOUNT_ID
     }
 
     onGatewayIt("creditWithCustomFields") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).customField("store_me", "custom value").customField("another_stored_field", "custom value2").creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.credit(request)
-      result must be ('success)
-      val transaction = result.getTarget
+      val transaction = result match { case Success(txn) => txn }
       val expected: java.util.Map[String, String] = Map(
         "store_me" -> "custom value",
         "another_stored_field" -> "custom value2"
@@ -594,22 +683,26 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("creditWithValidationError") { gateway =>
       val request = new TransactionRequest().amount(null).creditCard.expirationMonth("05").expirationYear("2010").done
       val result = gateway.transaction.credit(request)
-      result must not be ('success)
-      result.getTarget must be === (null)
-      val code = result.getErrors.forObject("transaction").onField("amount").get(0).getCode
-      code must be === ValidationErrorCode.TRANSACTION_AMOUNT_IS_REQUIRED
-      val parameters: java.util.Map[String, String] = result.getParameters
-      parameters.get("transaction[amount]") must be === (null)
-      parameters.get("transaction[credit_card][expiration_month]") must be === "05"
-      parameters.get("transaction[credit_card][expiration_year]") must be === "2010"
+      result match {
+        case Failure(errors, parameters,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("amount").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_AMOUNT_IS_REQUIRED
+
+          parameters.get("transaction[amount]") must be === None
+          parameters("transaction[credit_card][expiration_month]") must be === "05"
+          parameters("transaction[credit_card][expiration_year]") must be === "2010"
+        }
+      }
     }
   }
 
   describe("find") {
     onGatewayIt("finds") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match{ case Success(txn) => txn}
+
       val foundTransaction = gateway.transaction.find(transaction.getId)
+
       foundTransaction.getId must be === transaction.getId
       foundTransaction.getStatus must be === Transaction.Status.AUTHORIZED
       foundTransaction.getCreditCard.getExpirationDate must be === "05/2008"
@@ -643,11 +736,18 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
   describe("void") {
     onGatewayIt("voidVoidsTheTransaction") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done
-      val transaction = gateway.transaction.sale(request).getTarget
-      val result = gateway.transaction.voidTransaction(transaction.getId)
-      result must be ('success)
-      result.getTarget.getId must be === transaction.getId
-      result.getTarget.getStatus must be === Transaction.Status.VOIDED
+      
+      val result = for {
+        original <-  gateway.transaction.sale(request)
+        voided <- gateway.transaction.voidTransaction(original.getId)
+      } yield (original, voided)
+
+      result match {
+        case Success((original,voided)) => {
+          voided.getId must be === original.getId
+          voided.getStatus must be === Transaction.Status.VOIDED
+        }
+      }
     }
 
     onGatewayIt("voidWithBadId") { gateway =>
@@ -659,55 +759,85 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("voidWithBadStatus") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
         creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done
-      val transaction = gateway.transaction.sale(request).getTarget
-      gateway.transaction.voidTransaction(transaction.getId)
+      val result = for {
+        transaction <- gateway.transaction.sale(request)
+        voided <- gateway.transaction.voidTransaction(transaction.getId)
+        voidedAgain <- gateway.transaction.voidTransaction(transaction.getId)
+      } yield voidedAgain
 
-      val result = gateway.transaction.voidTransaction(transaction.getId)
-
-      result must not be ('success)
-      val code = result.getErrors.forObject("transaction").onField("base").get(0).getCode
-      code must be === ValidationErrorCode.TRANSACTION_CANNOT_BE_VOIDED
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_CANNOT_BE_VOIDED
+        }
+      }
     }
   }
 
   describe("statusHistory") {
     onGatewayIt("ReturnsCorrectStatusEvents") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done
-      val transaction = gateway.transaction.sale(request).getTarget
-      val settledTransaction = gateway.transaction.submitForSettlement(transaction.getId).getTarget
-      settledTransaction.getStatusHistory.size must be === 2
-      settledTransaction.getStatusHistory.get(0).getStatus must be === Transaction.Status.AUTHORIZED
-      settledTransaction.getStatusHistory.get(1).getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
+      
+      val result = for {
+        transaction <- gateway.transaction.sale(request)
+        settledTransaction <- gateway.transaction.submitForSettlement(transaction.getId)
+      } yield settledTransaction
+
+      result match {
+        case Success(settledTransaction) => {
+          settledTransaction.getStatusHistory.size must be === 2
+          settledTransaction.getStatusHistory.get(0).getStatus must be === Transaction.Status.AUTHORIZED
+          settledTransaction.getStatusHistory.get(1).getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
+        }
+      }
     }
   }
 
   describe("submitForSettlement") {
     onGatewayIt("submitForSettlementWithoutAmount") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done
-      val transaction = gateway.transaction.sale(request).getTarget
-      val result = gateway.transaction.submitForSettlement(transaction.getId)
-      result must be ('success)
-      result.getTarget.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
-      result.getTarget.getAmount must be === TransactionAmount.AUTHORIZE.amount
+      val result = for {
+        sale <- gateway.transaction.sale(request)
+        submitted <- gateway.transaction.submitForSettlement(sale.getId)
+      } yield submitted
+
+      result match {
+        case Success(transaction) => {
+          transaction.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
+          transaction.getAmount must be === TransactionAmount.AUTHORIZE.amount
+        }
+      }
     }
 
     onGatewayIt("submitForSettlementWithAmount") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done
-      val transaction = gateway.transaction.sale(request).getTarget
-      val result = gateway.transaction.submitForSettlement(transaction.getId, new BigDecimal("50.00"))
-      result must be ('success)
-      result.getTarget.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
-      result.getTarget.getAmount must be === new BigDecimal("50.00")
+      val result = for {
+        sale <- gateway.transaction.sale(request)
+        submitted <- gateway.transaction.submitForSettlement(sale.getId, new BigDecimal("50.00"))
+      } yield submitted
+
+      result match {
+        case Success(transaction) => {
+          transaction.getStatus must be === Transaction.Status.SUBMITTED_FOR_SETTLEMENT
+          transaction.getAmount must be === new BigDecimal("50.00")
+        }
+      }
     }
 
     onGatewayIt("submitForSettlementWithBadStatus") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done
-      val transaction = gateway.transaction.sale(request).getTarget
-      gateway.transaction.submitForSettlement(transaction.getId)
-      val result = gateway.transaction.submitForSettlement(transaction.getId)
-      result must not be ('success)
-      val code = result.getErrors.forObject("transaction").onField("base").get(0).getCode
-      code must be === ValidationErrorCode.TRANSACTION_CANNOT_SUBMIT_FOR_SETTLEMENT
+      val result = for {
+        transaction <- gateway.transaction.sale(request)
+        settling <- gateway.transaction.submitForSettlement(transaction.getId)
+        settlingAgain <- gateway.transaction.submitForSettlement(transaction.getId)
+      } yield settlingAgain
+
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_CANNOT_SUBMIT_FOR_SETTLEMENT
+        }
+      }
     }
 
     onGatewayIt("submitForSettlementWithBadId") { gateway =>
@@ -722,7 +852,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val creditCardToken = String.valueOf(new Random().nextInt)
       val firstName = String.valueOf(new Random().nextInt)
       val request = new TransactionRequest().amount(new BigDecimal("1000")).creditCard.number("4111111111111111").expirationDate("05/2012").cardholderName("Tom Smith").token(creditCardToken).done.billingAddress.company("Braintree").countryName("United States of America").extendedAddress("Suite 123").firstName(firstName).lastName("Smith").locality("Chicago").postalCode("12345").region("IL").streetAddress("123 Main St").done.customer.company("Braintree").email("smith@example.com").fax("5551231234").firstName("Tom").lastName("Smith").phone("5551231234").website("http://example.com").done.options.storeInVault(true).submitForSettlement(true).done.orderId("myorder").shippingAddress.company("Braintree P.S.").countryName("Mexico").extendedAddress("Apt 456").firstName("Thomas").lastName("Smithy").locality("Braintree").postalCode("54321").region("MA").streetAddress("456 Road").done
-      val transaction1 = gateway.transaction.sale(request).getTarget
+      val transaction1 = gateway.transaction.sale(request) match { case Success(txn) => txn }
       transaction1 must settle(gateway)
       val transaction2 = gateway.transaction.find(transaction1.getId)
       val searchRequest = new TransactionSearchRequest().id.is(transaction1.getId).billingCompany.is("Braintree").
@@ -747,7 +877,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnTextNodeOperators") { gateway =>
       val request = new TransactionRequest().amount(new BigDecimal("1000")).creditCard.number("4111111111111111").expirationDate("05/2012").cardholderName("Tom Smith").done
-      val transaction = gateway.transaction.sale(request).getTarget
+        val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).creditCardCardholderName.startsWith("Tom")
       var collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
@@ -764,7 +894,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnNullValue") { gateway =>
       val request = new TransactionRequest().amount(new BigDecimal("1000")).creditCard.number("4111111111111111").expirationDate("05/2012").cardholderName("Tom Smith").done
-      val transaction = gateway.transaction.sale(request).getTarget
+        val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       val searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCardholderName.is(null)
       val collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
@@ -772,7 +902,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnCreatedUsing") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).createdUsing.is(Transaction.CreatedUsing.FULL_INFORMATION)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
@@ -786,7 +916,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnCreditCardCustomerLocation") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).creditCardCustomerLocation.is(CreditCard.CustomerLocation.US)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
@@ -800,7 +930,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnMerchantAccountId") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).merchantAccountId.is(transaction.getMerchantAccountId)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
@@ -814,7 +944,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnCreditCardType") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).creditCardCardType.is(CreditCard.CardType.VISA)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
@@ -828,7 +958,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnStatus") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).status.is(Transaction.Status.AUTHORIZED)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
@@ -849,7 +979,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnSource") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).source.is(Transaction.Source.API)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
@@ -863,11 +993,12 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnType") { gateway =>
       val name = String.valueOf(new Random().nextInt)
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").cardholderName(name).done.options.submitForSettlement(true).done
-      val creditTransaction = gateway.transaction.credit(request).getTarget
-      val saleTransaction = gateway.transaction.sale(request).getTarget
+      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
+          creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").cardholderName(name).done.options.submitForSettlement(true).done
+      val creditTransaction = gateway.transaction.credit(request) match { case Success(txn) => txn}
+      val saleTransaction = gateway.transaction.sale(request) match { case Success(txn) => txn}
       saleTransaction must settle(gateway)
-      val refundTransaction = gateway.transaction.refund(saleTransaction.getId).getTarget
+      val refundTransaction = gateway.transaction.refund(saleTransaction.getId)  match { case Success(txn) => txn}
       var searchRequest= new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transaction.Type.CREDIT)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 2
@@ -886,7 +1017,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnAmount") { gateway =>
       val request = new TransactionRequest().amount(new BigDecimal("1000")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+        val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).amount.between(new BigDecimal("500"), new BigDecimal("1500"))
       gateway.transaction.search(searchRequest).getMaximumSize must be === 1
       searchRequest = new TransactionSearchRequest().id.is(transaction.getId).amount.greaterThanOrEqualTo(new BigDecimal("500"))
@@ -921,7 +1052,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnCreatedAt") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       val createdAt = transaction.getCreatedAt
       val threeDaysEarlier = createdAt -3.days
       val oneDayEarlier = createdAt -1.days
@@ -938,7 +1069,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnCreatedAtUsingLocalTime") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       val rightNow = now
       val oneDayEarlier = 1.days before rightNow
       val oneDayLater = 1.days after rightNow
@@ -962,7 +1093,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnAuthorizedAt") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
       val oneDayEarlier = 1.days before rightNow
@@ -979,7 +1110,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnFailedAt") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.FAILED.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTransaction
+      val transaction = gateway.transaction.sale(request) match { case Failure(_,_,_,_,Some(txn),_) => txn }
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
       val oneDayEarlier = 1.days before rightNow
@@ -994,10 +1125,10 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       gateway.transaction.search(searchRequest).getMaximumSize must be === 0
     }
 
-    onGatewayIt("searchOnGatewayRejectedAt") { gateway =>
+    it("searchOnGatewayRejectedAt") {
       val processingRulesGateway = new BraintreeGateway(Environment.DEVELOPMENT, "processing_rules_merchant_id", "processing_rules_public_key", "processing_rules_private_key")
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").cvv("200").done
-      val transaction = processingRulesGateway.transaction.sale(request).getTransaction
+      val transaction = processingRulesGateway.transaction.sale(request) match { case Failure(_,_,_,_,Some(txn),_) => txn }
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
       val oneDayEarlier = 1.days before rightNow
@@ -1026,7 +1157,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnProcessorDeclinedAt") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.DECLINE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      val transaction = gateway.transaction.sale(request).getTransaction
+      val transaction = gateway.transaction.sale(request) match { case Failure(_,_,_,_,Some(txn),_) => txn }
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
       val oneDayEarlier = 1.days before rightNow
@@ -1043,7 +1174,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnSettledAt") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done.options.submitForSettlement(true).done
-      var transaction= gateway.transaction.sale(request).getTarget
+      var transaction= gateway.transaction.sale(request) match { case Success(txn) => txn }
       transaction must settle(gateway)
       transaction = gateway.transaction.find(transaction.getId)
       val rightNow = now
@@ -1062,7 +1193,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnSubmittedForSettlementAt") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done.options.submitForSettlement(true).done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
       val oneDayEarlier = 1.days before rightNow
@@ -1079,8 +1210,14 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnVoidedAt") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
-      var transaction= gateway.transaction.sale(request).getTarget
-      transaction = gateway.transaction.voidTransaction(transaction.getId).getTarget
+      val result = for {
+        transaction <- gateway.transaction.sale(request)
+        voided <- gateway.transaction.voidTransaction(transaction.getId)
+      } yield transaction
+      val transaction = result match {
+        case Success(transaction) => transaction
+        case _ => fail("expected Success")
+      }
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
       val oneDayEarlier = 1.days before rightNow
@@ -1097,7 +1234,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("searchOnMultipleStatusAtFields") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done.options.submitForSettlement(true).done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       val rightNow = now
       val threeDaysEarlier = 3.days before rightNow
       val oneDayEarlier = 1.days before rightNow
@@ -1112,11 +1249,10 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
   describe("refund") {
     onGatewayIt("refund transaction") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done.options.submitForSettlement(true).done
-      val sale = gateway.transaction.sale(request).getTarget
+      val sale = gateway.transaction.sale(request) match { case Success(txn) => txn }
       sale must settle(gateway)
-      val result = gateway.transaction.refund(sale.getId)
-      result must be ('success)
-      val refund = result.getTarget
+      val result = gateway.transaction.refund(sale.getId) match { case Success(txn) => txn }
+      val refund = result
       val originalTransaction = gateway.transaction.find(sale.getId)
       refund.getType must be === Transaction.Type.CREDIT
       refund.getAmount must be === originalTransaction.getAmount
@@ -1126,22 +1262,25 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("refundTransactionWithPartialAmount") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done.options.submitForSettlement(true).done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       transaction must settle(gateway)
       val result = gateway.transaction.refund(transaction.getId, TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2)))
-      result must be ('success)
-      result.getTarget.getType must be === Transaction.Type.CREDIT
-      result.getTarget.getAmount must be === TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))
+      result match {
+        case Success(transaction) => {
+          transaction.getType must be === Transaction.Type.CREDIT
+          transaction.getAmount must be === TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))
+        }
+      }
     }
 
     onGatewayIt("refundMultipleTransactionsWithPartialAmounts") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done.options.submitForSettlement(true).done
-      var transaction= gateway.transaction.sale(request).getTarget
+      var transaction= gateway.transaction.sale(request) match { case Success(txn) => txn }
       transaction must settle(gateway)
-      val refund1 = gateway.transaction.refund(transaction.getId, TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))).getTarget
+      val refund1 = gateway.transaction.refund(transaction.getId, TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))) match { case Success(txn) => txn }
       refund1.getType must be === Transaction.Type.CREDIT
       refund1.getAmount must be === TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))
-      val refund2 = gateway.transaction.refund(transaction.getId, TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))).getTarget
+      val refund2 = gateway.transaction.refund(transaction.getId, TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))) match { case Success(txn) => txn }
       refund2.getType must be === Transaction.Type.CREDIT
       refund2.getAmount must be === TransactionAmount.AUTHORIZE.amount.divide(new BigDecimal(2))
       transaction = gateway.transaction.find(transaction.getId)
@@ -1151,11 +1290,14 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("refundFailsWithNonSettledTransaction") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2008").done
-      val transaction = gateway.transaction.sale(request).getTarget
+      val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       transaction.getStatus must be === Transaction.Status.AUTHORIZED
       val result = gateway.transaction.refund(transaction.getId)
-      result must not be ('success)
-      result.getErrors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_REFUND_UNLESS_SETTLED
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          errors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_REFUND_UNLESS_SETTLED
+        }
+      }
     }
   }
 
@@ -1178,36 +1320,58 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val processingRulesGateway = new BraintreeGateway(Environment.DEVELOPMENT, "processing_rules_merchant_id", "processing_rules_public_key", "processing_rules_private_key")
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").cvv("200").done
       val result = processingRulesGateway.transaction.sale(request)
-      result must not be ('success)
-      val transaction = result.getTransaction
-      transaction.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.CVV
+      result match {
+        case Failure(_,_,_,_,Some(transaction),_) => {
+          transaction.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.CVV
+        }
+        case _ => fail("expected failure")
+      }
     }
 
     onGatewayIt("gatewayRejectedOnAvs") { gateway =>
       val processingRulesGateway = new BraintreeGateway(Environment.DEVELOPMENT, "processing_rules_merchant_id", "processing_rules_public_key", "processing_rules_private_key")
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).billingAddress.postalCode("20001").done.creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = processingRulesGateway.transaction.sale(request)
-      result must not be ('success)
-      val transaction = result.getTransaction
-      transaction.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.AVS
+      result match {
+        case Failure(_,_,_,_,Some(transaction),_) => {
+          transaction.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.AVS
+        }
+        case _ => fail("expected failure")
+      }
     }
 
     onGatewayIt("gatewayRejectedOnAvsAndCvv") { gateway =>
       val processingRulesGateway = new BraintreeGateway(Environment.DEVELOPMENT, "processing_rules_merchant_id", "processing_rules_public_key", "processing_rules_private_key")
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).billingAddress.postalCode("20001").done.creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").cvv("200").done
       val result = processingRulesGateway.transaction.sale(request)
-      result must not be ('success)
-      val transaction = result.getTransaction
-      transaction.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.AVS_AND_CVV
+      result match {
+        case Failure(_,_,_,_,Some(transaction),_) => {
+          transaction.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.AVS_AND_CVV
+        }
+        case _ => fail("expected failure")
+      }
     }
   }
 
   describe("addOns") {
     onGatewayIt("snapshotPlanIdAddOnsAndDiscountsFromSubscription") { gateway =>
       val customerRequest = new CustomerRequest().creditCard.number("5105105105105100").expirationDate("05/12").done
-      val creditCard = gateway.customer.create(customerRequest).getTarget.getCreditCards.get(0)
-      val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId).addOns.add.amount(new BigDecimal("11.00")).inheritedFromId("increase_10").numberOfBillingCycles(5).quantity(2).done.add.amount(new BigDecimal("21.00")).inheritedFromId("increase_20").numberOfBillingCycles(6).quantity(3).done.done.discounts.add.amount(new BigDecimal("7.50")).inheritedFromId("discount_7").neverExpires(true).quantity(2).done.done
-      val transaction = gateway.subscription.create(request).getTarget.getTransactions.get(0)
+      val result = for {
+        customer <- gateway.customer.create(customerRequest)
+        creditCard = customer.getCreditCards.get(0)
+        request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).
+          planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId).addOns.add.
+          amount(new BigDecimal("11.00")).inheritedFromId("increase_10").numberOfBillingCycles(5).quantity(2).done.
+          add.amount(new BigDecimal("21.00")).inheritedFromId("increase_20").numberOfBillingCycles(6).quantity(3).done.
+          done.discounts.add.amount(new BigDecimal("7.50")).inheritedFromId("discount_7").neverExpires(true).quantity(2).done.done
+        subscription <- gateway.subscription.create(request)
+        transaction = subscription.getTransactions.get(0)
+      } yield transaction
+
+      val transaction = result match {
+        case Success(tran) => tran
+        case _ => fail("expected success")
+      }
       transaction.getPlanId must be === PlanFixture.PLAN_WITHOUT_TRIAL.getId
       val addOns = transaction.getAddOns.sortWith((a,b) => a.getId < b.getId)
 
@@ -1236,30 +1400,45 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("sales with serviceFee") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.serviceFeeAmount(new BigDecimal("1.00"))
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      val transaction = result.getTarget
-      transaction.getServiceFeeAmount must be === new BigDecimal("1.00")
+      result match {
+        case Success(transaction) => transaction.getServiceFeeAmount must be === new BigDecimal("1.00")
+        case _ => fail("expected Success")
+      }
     }
-
     onGatewayIt("serviceFeeNotAllowedForMasterMerchant") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2017").done.serviceFeeAmount(new BigDecimal("1.00"))
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      result.getErrors.forObject("transaction").onField("service_fee_amount").get(0).getCode must be === ValidationErrorCode.TRANSACTION_SERVICE_FEE_AMOUNT_NOT_ALLOWED_ON_MASTER_MERCHANT_ACCOUNT
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("service_fee_amount").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_SERVICE_FEE_AMOUNT_NOT_ALLOWED_ON_MASTER_MERCHANT_ACCOUNT
+        }
+        case _ => fail("expected Failure")
+      }
     }
 
     onGatewayIt("serviceFeeRequiredWhenUsingSubmerchant") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      result.getErrors.forObject("transaction").onField("merchant_account_id").get(0).getCode must be === ValidationErrorCode.TRANSACTION_SUB_MERCHANT_ACCOUNT_REQUIRES_SERVICE_FEE_AMOUNT
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("merchant_account_id").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_SUB_MERCHANT_ACCOUNT_REQUIRES_SERVICE_FEE_AMOUNT
+        }
+        case _ => fail("expected Failure")
+      }
     }
 
     onGatewayIt("negativeServiceFee") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.serviceFeeAmount(new BigDecimal("-1.00"))
       val result = gateway.transaction.sale(request)
-      result must not be ('success)
-      result.getErrors.forObject("transaction").onField("service_fee_amount").get(0).getCode must be === ValidationErrorCode.TRANSACTION_SERVICE_FEE_AMOUNT_CANNOT_BE_NEGATIVE
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("service_fee_amount").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_SERVICE_FEE_AMOUNT_CANNOT_BE_NEGATIVE
+        }
+        case _ => fail("expected Failure")
+      }
     }
   }
 
@@ -1267,76 +1446,125 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("holdInEscrowOnCreate") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.serviceFeeAmount(new BigDecimal("1.00")).options.holdInEscrow(true).done
       val result = gateway.transaction.sale(request)
-      result must be ('success)
-      result.getTarget.getEscrowStatus must be === Transaction.EscrowStatus.HOLD_PENDING
+      result match {
+        case Success(heldInEscrow) => {
+          heldInEscrow.getEscrowStatus must be === Transaction.EscrowStatus.HOLD_PENDING
+        }
+        case _ => fail("expected Success")
+      }
     }
 
     onGatewayIt("holdInEscrowOnSaleForMasterMerchantAccount") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.serviceFeeAmount(new BigDecimal("1.00")).options.holdInEscrow(true).done
       val result = gateway.transaction.sale(request)
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_CANNOT_HOLD_IN_ESCROW
+        }
+        case _ => fail("expected Failure")
+      }
       result must not be ('success)
-      result.getErrors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_HOLD_IN_ESCROW
     }
 
     onGatewayIt("holdInEscrowAfterSale") { gateway =>
-      val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done.serviceFeeAmount(new BigDecimal("1.00"))
-      val sale = gateway.transaction.sale(request)
-      sale must be ('success)
-      val transactionID = sale.getTarget.getId
-      val holdInEscrow = gateway.transaction.holdInEscrow(transactionID)
-      holdInEscrow must be ('success)
-      holdInEscrow.getTarget.getEscrowStatus must be === Transaction.EscrowStatus.HOLD_PENDING
+      val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).
+        amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").
+        done.serviceFeeAmount(new BigDecimal("1.00"))
+      val result = for {
+        sale <- gateway.transaction.sale(request)
+        transactionID = sale.getId
+        holdInEscrow <- gateway.transaction.holdInEscrow(transactionID)
+      } yield holdInEscrow
+
+      result match {
+        case Success(holdInEscrow) => {
+          holdInEscrow.getEscrowStatus must be === Transaction.EscrowStatus.HOLD_PENDING
+        }
+        case _ => fail("expected Success")
+      }
     }
 
     onGatewayIt("holdInEscrowAfterSaleFailsForMasterMerchants") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done
-      val sale = gateway.transaction.sale(request)
-      sale must be ('success)
-      val holdInEscrow = gateway.transaction.holdInEscrow(sale.getTarget.getId)
-      holdInEscrow must not be ('success)
-      holdInEscrow.getErrors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_HOLD_IN_ESCROW
+      val result = for {
+        sale <- gateway.transaction.sale(request)
+        transactionID = sale.getId
+        holdInEscrow <- gateway.transaction.holdInEscrow(sale.getId)
+      } yield holdInEscrow
+
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_CANNOT_HOLD_IN_ESCROW
+        }
+        case _ => fail("expected Failure")
+      }
     }
   }
 
   describe("release from escrow") {
     onGatewayIt("releaseFromEscrow") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done.serviceFeeAmount(new BigDecimal("1.00"))
-      val saleResult = gateway.transaction.sale(request)
-      saleResult must be ('success)
-      saleResult.getTarget must escrow(gateway)
-      val releaseResult = gateway.transaction.releaseFromEscrow(saleResult.getTarget.getId)
-      releaseResult must be ('success)
-      releaseResult.getTarget.getEscrowStatus must be === Transaction.EscrowStatus.RELEASE_PENDING
+      val result = for {
+        saleResult <- gateway.transaction.sale(request)
+        escrowed = escrow(gateway)(saleResult)
+        releaseResult <- gateway.transaction.releaseFromEscrow(saleResult.getId)
+      } yield releaseResult
+      result match {
+        case Success(transaction) => {
+          transaction.getEscrowStatus must be === Transaction.EscrowStatus.RELEASE_PENDING
+        }
+        case _ => fail("expected success")
+      }
     }
 
     onGatewayIt("releaseFromEscrowFailsWhenTransactionIsNotEscrowed") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done.serviceFeeAmount(new BigDecimal("1.00"))
-      val saleResult = gateway.transaction.sale(request)
-      saleResult must be ('success)
-      val releaseResult = gateway.transaction.releaseFromEscrow(saleResult.getTarget.getId)
-      releaseResult must not be ('success)
-      releaseResult.getErrors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_RELEASE_FROM_ESCROW
+      val result = for {
+        saleResult <- gateway.transaction.sale(request)
+        releaseResult <- gateway.transaction.releaseFromEscrow(saleResult.getId)
+      } yield releaseResult
+      result match {
+        case Failure(errors,_,_,_,_,_) =>  {
+          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_CANNOT_RELEASE_FROM_ESCROW
+        }
+        case _ => fail("expected failure")
+      }
     }
 
     onGatewayIt("cancelReleaseSucceeds") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done.serviceFeeAmount(new BigDecimal("1.00"))
-      val saleResult = gateway.transaction.sale(request)
-      saleResult must be ('success)
-      saleResult.getTarget must escrow(gateway)
-      val releaseResult = gateway.transaction.releaseFromEscrow(saleResult.getTarget.getId)
-      val cancelResult = gateway.transaction.cancelRelease(saleResult.getTarget.getId)
-      cancelResult must be ('success)
-      cancelResult.getTarget.getEscrowStatus must be === Transaction.EscrowStatus.HELD
+      val result = for {
+        saleResult <- gateway.transaction.sale(request)
+        escrowed = escrow(gateway)(saleResult)
+        releaseResult <- gateway.transaction.releaseFromEscrow(saleResult.getId)
+        cancelResult <- gateway.transaction.cancelRelease(saleResult.getId)
+      } yield cancelResult
+      result match {
+        case Success(transaction) => {
+          transaction.getEscrowStatus must be === Transaction.EscrowStatus.HELD
+        }
+        case _ => fail("expected success")
+      }
     }
 
     onGatewayIt("cancelReleaseFailsReleasingNonPendingTransactions") { gateway =>
       val request = new TransactionRequest().merchantAccountId(NON_DEFAULT_SUB_MERCHANT_ACCOUNT_ID).amount(new BigDecimal("100.00")).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2012").done.serviceFeeAmount(new BigDecimal("1.00"))
-      val saleResult = gateway.transaction.sale(request)
-      saleResult must be ('success)
-      saleResult.getTarget must escrow(gateway)
-      val cancelResult = gateway.transaction.cancelRelease(saleResult.getTarget.getId)
-      cancelResult must not be ('success)
-      cancelResult.getErrors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_CANCEL_RELEASE
+
+      val result = for {
+        saleResult <- gateway.transaction.sale(request)
+        cancelResult <- gateway.transaction.cancelRelease(saleResult.getId)
+      } yield cancelResult
+
+      result match {
+        case Failure(errors,_,_,_,_,_) =>  {
+          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          code must be === ValidationErrorCode.TRANSACTION_CANNOT_CANCEL_RELEASE
+        }
+        case _ => fail("expected failure")
+      }
     }
   }
 }

@@ -20,29 +20,30 @@ class TransparentRedirectGateway(http: Http, configuration: Configuration) {
     new TrUtil(configuration).url
   }
 
-  def confirmCreditCard(queryString: String): Result[CreditCard] = {
-    confirmTr(classOf[CreditCard], queryString)
+  def confirmCreditCard(queryString: String): Result2[CreditCard] = {
+    Result2.creditCard(confirmTr(classOf[CreditCard], queryString))
   }
 
-  def confirmCustomer(queryString: String): Result[Customer] = {
-    confirmTr(classOf[Customer], queryString)
+  def confirmCustomer(queryString: String): Result2[Customer] = {
+    Result2.customer(confirmTr(classOf[Customer], queryString))
   }
 
-  def confirmTransaction(queryString: String): Result[Transaction] = {
-    confirmTr(classOf[Transaction], queryString)
+  def confirmTransaction(queryString: String): Result2[Transaction] = {
+    Result2.transaction(confirmTr(classOf[Transaction], queryString))
   }
 
   def trData(trData: Request, redirectURL: String): String = {
     new TrUtil(configuration).buildTrData(trData, redirectURL)
   }
 
-  private def confirmTr[T](klass: Class[T], queryString: String): Result[T] = {
-    val trRequest: TransparentRedirectRequest = new TransparentRedirectRequest(configuration, queryString)
-    val node: NodeWrapper = http.post("/transparent_redirect_requests/" + trRequest.getId + "/confirm", trRequest)
-    if (!(node.getElementName == StringUtils.classToXMLName(klass)) && !(node.getElementName == "api-error-response")) {
-      throw new IllegalArgumentException("You attemped to confirm a " + StringUtils.classToXMLName(klass) + ", but received a " + node.getElementName + ".")
+  private def confirmTr[T](klass: Class[T], queryString: String): NodeWrapper = {
+    val trRequest = new TransparentRedirectRequest(configuration, queryString)
+    val node = http.post("/transparent_redirect_requests/" + trRequest.getId + "/confirm", trRequest)
+    val classXmlName = StringUtils.classToXMLName(klass)
+    if (!(node.getElementName == classXmlName) && !(node.getElementName == "api-error-response")) {
+      throw new IllegalArgumentException("You attemped to confirm a " + classXmlName + ", but received a " + node.getElementName + ".")
     }
-    new Result[T](node, klass)
+    node
   }
 
 }

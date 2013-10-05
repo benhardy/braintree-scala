@@ -6,6 +6,7 @@ import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.SandboxValues.CreditCardNumber
 import com.braintreegateway.SandboxValues.TransactionAmount
+import gw.Failure
 import testhelpers.{GatewaySpec, MerchantAccountTestConstants, TestHelper}
 import java.math.BigDecimal
 
@@ -141,8 +142,12 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val trParams = new TransactionRequest().`type`(Transaction.Type.SALE)
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, invalidRequest, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
-        result must not be ('success)
-        result.getErrors.deepSize must be > 0
+        result match {
+          case Failure(errors,_,_,_,_,_) => {
+            errors.deepSize must be > 0
+          }
+          case _ => fail("expected Failure")
+        }
     }
   }
 }
