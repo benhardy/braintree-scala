@@ -6,10 +6,12 @@ import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.SandboxValues.CreditCardNumber
 import com.braintreegateway.SandboxValues.TransactionAmount
-import com.braintreegateway.testhelpers.{TestHelper,GatewaySpec}
+import gw.Success
+import testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
 import java.util.Calendar
 import java.util.TimeZone
 import TestHelper._
+import CalendarHelper._
 
 @RunWith(classOf[JUnitRunner])
 class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
@@ -47,19 +49,21 @@ class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
         creditCard.number(CreditCardNumber.VISA.number).cvv("321").expirationDate("05/2009").done.
         options.submitForSettlement(true).done
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      result.getTarget must settle(gateway)
+      val transaction = gateway.transaction.sale(request) match { case Success(t) => t }
+      transaction must settle(gateway)
+      val estTime = now in eastern_timezone
+      val summaryResult = gateway.settlementBatchSummary.generate(estTime)
 
-      val summaryResult = gateway.settlementBatchSummary.generate(Calendar.getInstance(eastern_timezone))
-
-      summaryResult must be ('success)
-      summaryResult.getTarget.getRecords.size must be > 0
-      val first = summaryResult.getTarget.getRecords.get(0)
-      first.containsKey("kind") must be === true
-      first.containsKey("count") must be === true
-      first.containsKey("amount_settled") must be === true
-      first.containsKey("merchant_account_id") must be === true
+      summaryResult match {
+        case Success(summary) => {
+          summary.getRecords.size must be > 0
+          val first = summary.getRecords.get(0)
+          first.containsKey("kind") must be === true
+          first.containsKey("count") must be === true
+          first.containsKey("amount_settled") must be === true
+          first.containsKey("merchant_account_id") must be === true
+        }
+      }
     }
 
     onGatewayIt("returns Data Grouped By The Given Custom Field") { gateway =>
@@ -67,16 +71,19 @@ class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
         creditCard.number(CreditCardNumber.VISA.number).cvv("321").expirationDate("05/2009").done.
         customField("store_me", "1").options.submitForSettlement(true).done
 
-      val result = gateway.transaction.sale(request)
-      result must be ('success)
-      result.getTarget must settle(gateway)
+      val transaction = gateway.transaction.sale(request)  match { case Success(t) => t }
+      transaction must settle(gateway)
 
-      val summaryResult = gateway.settlementBatchSummary.generate(Calendar.getInstance(eastern_timezone), "store_me")
+      val timestamp = now in eastern_timezone
+      val summaryResult = gateway.settlementBatchSummary.generate(timestamp, "store_me")
 
-      summaryResult must be ('success)
-      summaryResult.getTarget.getRecords.size must be > 0
-      val first = summaryResult.getTarget.getRecords.get(0)
-      first.containsKey("store_me") must be === true
+      summaryResult match {
+        case Success(summary) => {
+          summary.getRecords.size must be > 0
+          val first = summary.getRecords.get(0)
+          first.containsKey("store_me") must be === true
+        }
+      }
     }
   }
 }
