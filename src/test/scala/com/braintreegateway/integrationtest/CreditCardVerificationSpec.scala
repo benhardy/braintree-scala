@@ -42,7 +42,7 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
       </api-error-response>
 
       val xml: String = xmlAsStringWithHeader(response)
-      val verificationNode = NodeWrapperFactory.instance.create(xml).findFirst("verification")
+      val verificationNode = NodeWrapperFactory.create(xml).findFirst("verification")
       val verification = new CreditCardVerification(verificationNode)
       verification.getAvsErrorResponseCode must be === null
       verification.getAvsPostalCodeResponseCode must be === "I"

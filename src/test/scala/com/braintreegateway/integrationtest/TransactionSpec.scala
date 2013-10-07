@@ -1304,13 +1304,13 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
   describe("Transaction constructor") {
     onGatewayIt("unrecognizedStatus") { gateway =>
       val xml = <transaction><status>foobar</status><billing/><credit-card/><customer/><descriptor/><shipping/><subscription/><service-fee></service-fee><disbursement-details/><type>sale</type></transaction>
-      val transaction = new Transaction(NodeWrapperFactory.instance.create(xml.toString))
+      val transaction = new Transaction(NodeWrapperFactory.create(xml.toString))
       transaction.getStatus must be === Transaction.Status.UNRECOGNIZED
     }
 
     onGatewayIt("unrecognizedType") { gateway =>
       val xml = <transaction><type>foobar</type><billing/><credit-card/><customer/><descriptor/><shipping/><subscription/><service-fee></service-fee><disbursement-details/><type>sale</type></transaction>
-      val transaction = new Transaction(NodeWrapperFactory.instance.create(xml.toString))
+      val transaction = new Transaction(NodeWrapperFactory.create(xml.toString))
       transaction.getType must be === Transaction.Type.UNRECOGNIZED
     }
   }

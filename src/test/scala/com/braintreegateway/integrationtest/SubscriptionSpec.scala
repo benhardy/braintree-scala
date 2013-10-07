@@ -1240,7 +1240,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val xml = <subscription>
                     <status>foobar</status>
                   </subscription>
-        val transaction = new Subscription(NodeWrapperFactory.instance.create(xml.toString))
+        val transaction = new Subscription(NodeWrapperFactory.create(xml.toString))
         transaction.getStatus must be === Subscription.Status.UNRECOGNIZED
     }
 
@@ -1249,7 +1249,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val xml = <subscription>
           <trial-duration-unit>foobar</trial-duration-unit>
         </subscription>
-        val transaction = new Subscription(NodeWrapperFactory.instance.create(xml.toString))
+        val transaction = new Subscription(NodeWrapperFactory.create(xml.toString))
         transaction.getTrialDurationUnit must be === Subscription.DurationUnit.UNRECOGNIZED
     }
   }

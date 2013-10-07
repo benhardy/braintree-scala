@@ -5,7 +5,7 @@ import com.braintreegateway.util.NodeWrapperFactory
 
 object PlanFixture {
   val PLAN_WITHOUT_TRIAL = new Plan(
-    NodeWrapperFactory.instance.create(
+    NodeWrapperFactory.create(
       <plan>
         <billing-day-of-month>1</billing-day-of-month>
         <billing-frequency>1</billing-frequency>
@@ -21,7 +21,7 @@ object PlanFixture {
       </plan>.toString
   ))
 
-  val PLAN_WITH_TRIAL = new Plan(NodeWrapperFactory.instance.create(
+  val PLAN_WITH_TRIAL = new Plan(NodeWrapperFactory.create(
     <plan>
       <billing-day-of-month>1</billing-day-of-month>
       <billing-frequency>2</billing-frequency>
@@ -37,7 +37,7 @@ object PlanFixture {
     </plan>.toString
   ))
 
-  val BILLING_DAY_OF_MONTH_PLAN = new Plan(NodeWrapperFactory.instance.create(
+  val BILLING_DAY_OF_MONTH_PLAN = new Plan(NodeWrapperFactory.create(
     <plan>
       <billing-day-of-month>1</billing-day-of-month>
       <billing-frequency>2</billing-frequency>
@@ -53,7 +53,7 @@ object PlanFixture {
     </plan>.toString
   ))
 
-  val ADD_ON_DISCOUNT_PLAN = new Plan(NodeWrapperFactory.instance.create(
+  val ADD_ON_DISCOUNT_PLAN = new Plan(NodeWrapperFactory.create(
     <plan>
       <billing-day-of-month>1</billing-day-of-month>
       <billing-frequency>2</billing-frequency>

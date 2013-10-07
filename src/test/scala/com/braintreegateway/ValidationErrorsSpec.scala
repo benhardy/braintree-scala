@@ -123,7 +123,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.instance.create(xmlAsStringWithHeader(xml)))
+      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 1
       errors.forObject("address").onField("country_name").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
       errors.forObject("address").onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
@@ -150,7 +150,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.instance.create(xmlAsStringWithHeader(xml)))
+      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 2
       errors.forObject("address").onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
       errors.forObject("address").onField("streetAddress").get(0).getCode must be === ValidationErrorCode.ADDRESS_STREET_ADDRESS_IS_TOO_LONG
@@ -177,7 +177,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.instance.create(xmlAsStringWithHeader(xml)))
+      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 2
       errors.forObject("transaction").onField("base").size must be === 2
     }
@@ -201,7 +201,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.instance.create(xmlAsStringWithHeader(xml)))
+      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 1
       errors.forObject("creditCard").forObject("billingAddress").onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
     }
@@ -240,7 +240,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.instance.create(xmlAsStringWithHeader(xml)))
+      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 3
       errors.size must be === 0
       errors.forObject("customer").deepSize must be === 3

@@ -11,7 +11,7 @@ class WebhookNotificationGateway(configuration: Configuration) {
   def parse(signature: String, payload: String): WebhookNotification = {
     validateSignature(signature, payload)
     val xmlPayload = new String(Base64.decodeBase64(payload))
-    val node = NodeWrapperFactory.instance.create(xmlPayload)
+    val node = NodeWrapperFactory.create(xmlPayload)
     new WebhookNotification(node)
   }
 

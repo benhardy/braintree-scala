@@ -19,7 +19,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
       val xml = <notification>
         <kind>bad_kind</kind> <subject></subject>
       </notification>
-      val node = NodeWrapperFactory.instance.create(xml.toString)
+      val node = NodeWrapperFactory.create(xml.toString)
       val notification = new WebhookNotification(node)
       notification.getKind must be === WebhookNotification.Kind.UNRECOGNIZED
     }

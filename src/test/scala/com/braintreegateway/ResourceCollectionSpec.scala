@@ -18,7 +18,7 @@ class ResourceCollectionSpec extends FunSpec with MustMatchers {
         </ids>
       </search-results>
 
-      val rootNode = NodeWrapperFactory.instance.create(resultXml.toString)
+      val rootNode = NodeWrapperFactory.create(resultXml.toString)
 
       val resourceCollection = new ResourceCollection[String](new TestPager, rootNode)
 
