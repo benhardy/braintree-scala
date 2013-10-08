@@ -115,12 +115,8 @@ abstract class NodeWrapper {
 
   @deprecated
   def findMap(expression: String): JMap[String, String] = {
-    val map: JMap[String, String] = new JHashMap[String, String]
     import scala.collection.JavaConversions._
-    for (mapNode <- findAll(expression)) {
-      map.put(StringUtils.underscore(mapNode.getElementName), mapNode.findString("."))
-    }
-    map
+    findMapOpt(expression)
   }
 
   def findMapOpt(expression:String): Map[String, String] = {

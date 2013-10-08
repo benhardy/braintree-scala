@@ -2,15 +2,16 @@ package com.braintreegateway.util
 
 import org.xml.sax.Attributes
 import org.xml.sax.InputSource
-import org.xml.sax.SAXException
 import org.xml.sax.helpers.DefaultHandler
-import javax.xml.parsers.SAXParser
 import javax.xml.parsers.SAXParserFactory
 import java.io.StringReader
-import java.util._
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import scala.collection.JavaConversions._
+import java.util.{Calendar, TimeZone}
+import java.util.{Map=>JMap, HashMap=>JHashMap}
+import java.util.{List=>JList, ArrayList=>JArrayList, LinkedList=>JLinkedList}
+import java.util.{Stack=>JStack}
 import java.util
 
 object SimpleNodeWrapper {
@@ -60,7 +61,7 @@ object SimpleNodeWrapper {
       }
     }
 
-    private val stack: Stack[SimpleNodeWrapper] = new Stack[SimpleNodeWrapper]
+    private val stack = new JStack[SimpleNodeWrapper]
     var root: SimpleNodeWrapper = null
   }
 
@@ -68,18 +69,18 @@ object SimpleNodeWrapper {
 
 class SimpleNodeWrapper(val name:String) extends NodeWrapper {
 
-  private val attributes: Map[String, String] = new HashMap[String, String]
-  private val content: List[AnyRef] = new LinkedList[AnyRef]
+  private val attributes: JMap[String, String] = new JHashMap[String, String]
+  private val content: JList[AnyRef] = new JLinkedList[AnyRef]
 
-  def findAll(expression: String): List[NodeWrapper] = {
+  def findAll(expression: String): JList[NodeWrapper] = {
     val paths: Array[String] = expression.split("/")
-    val tokens: LinkedList[String] = new LinkedList[String](paths.toList)
-    val nodes: List[NodeWrapper] = new LinkedList[NodeWrapper]
+    val tokens = new JLinkedList[String](paths.toList)
+    val nodes: JList[NodeWrapper] = new JLinkedList[NodeWrapper]
     findAll(tokens, nodes)
     nodes
   }
 
-  private def findAll(tokens: LinkedList[String], nodes: List[NodeWrapper]): Unit = {
+  private def findAll(tokens: JLinkedList[String], nodes: JList[NodeWrapper]): Unit = {
     if (tokens.isEmpty) nodes.add(this)
     else {
       val first: String = tokens.getFirst
@@ -106,19 +107,19 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
   }
 
   @deprecated // old behavior was null-based
-  private def find(tokens: LinkedList[String]): SimpleNodeWrapper = {
+  private def find(tokens: JLinkedList[String]): SimpleNodeWrapper = {
     findOpt(tokens.toList).getOrElse(null)
   }
 
   @deprecated
   private def find(expression: String): SimpleNodeWrapper = {
     val paths: Array[String] = expression.split("/")
-    val tokens: LinkedList[String] = new LinkedList[String](paths.toList)
+    val tokens = new JLinkedList[String](paths.toList)
     find(tokens)
   }
 
-  private def restOf(tokens: LinkedList[String]): LinkedList[String] = {
-    val newTokens: LinkedList[String] = new LinkedList[String](tokens)
+  private def restOf(tokens: JLinkedList[String]): JLinkedList[String] = {
+    val newTokens = new JLinkedList[String](tokens)
     newTokens.removeFirst
     newTokens
   }
@@ -148,7 +149,7 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
   private def stringValue: String = {
     if (content.size == 1 && content.get(0) == null) { null }
     else {
-      val value: StringBuilder = new StringBuilder
+      val value = new StringBuilder
       for (o <- content) {
         value.append(o.toString)
       }
@@ -160,8 +161,8 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
     name
   }
 
-  private def childNodes: List[SimpleNodeWrapper] = {
-    val nodes: List[SimpleNodeWrapper] = new LinkedList[SimpleNodeWrapper]
+  private def childNodes: JList[SimpleNodeWrapper] = {
+    val nodes: JList[SimpleNodeWrapper] = new JLinkedList[SimpleNodeWrapper]
     import scala.collection.JavaConversions._
     for (o <- content) {
       if (o.isInstanceOf[SimpleNodeWrapper]) {
@@ -171,27 +172,39 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
     nodes
   }
 
-  def getFormParameters: Map[String, String] = {
-    val params: Map[String, String] = new HashMap[String, String]
-    for (node <- childNodes) {
-      node.buildParams("", params)
-    }
-    params
+  def getFormParameters: JMap[String, String] = {
+    val pairs:util.List[(String,String)] = for {
+      node <- childNodes;
+      things <- node.buildParams("")
+    } yield things
+    val m = new util.HashMap[String,String]()
+    pairs.foreach{p => m.put(p._1, p._2)}
+    m
   }
 
-  private def buildParams(prefix: String, params: Map[String, String]) {
-    val newPrefix = if ("" == prefix)
+  def buildParams(prefix: String): List[(String,String)] = {
+    val newPrefix = prefixWithName(prefix)
+    if (childNodes.isEmpty) {
+      List((newPrefix, stringValue))
+    }
+    else {
+      childNodeParamPairs(newPrefix)
+    }
+  }
+
+  def childNodeParamPairs(newPrefix:String): List[(String,String)] = {
+    val bits = for {
+      childNode <- childNodes
+      childParams <- childNode.buildParams(newPrefix)
+    } yield childParams
+    bits.toList
+  }
+
+  def prefixWithName(prefix: String): String = {
+    if ("" == prefix)
       StringUtils.underscore(name)
     else
       prefix + "[" + StringUtils.underscore(name) + "]"
-    if (childNodes.isEmpty) {
-      params.put(newPrefix, stringValue)
-    }
-    else {
-      for (childNode <- childNodes) {
-        childNode.buildParams(newPrefix, params)
-      }
-    }
   }
 
   override def toString: String = {
