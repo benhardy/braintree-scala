@@ -11,6 +11,7 @@ import java.util._
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 import scala.collection.JavaConversions._
+import java.util
 
 object SimpleNodeWrapper {
   def parse(xml: String): SimpleNodeWrapper = {
@@ -89,21 +90,27 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
     }
   }
 
-  private def find(tokens: LinkedList[String]): SimpleNodeWrapper = {
-    if (tokens.isEmpty) {
-      this
-    }
-    else {
-      val first: String = tokens.getFirst
-      if ("." == first) return find(restOf(tokens))
-      import scala.collection.JavaConversions._
-      for (node <- childNodes) {
-        if (("*" == first) || (first == node.name)) return node.find(restOf(tokens))
+  private def findOpt(tokens: scala.collection.immutable.List[String]): Option[SimpleNodeWrapper] = {
+    tokens match {
+      case Nil => Some(this)
+      case first :: rest => {
+        if ("." == first) {
+          findOpt(rest)
+        } else {
+          childNodes.
+            find(node => (("*" == first) || (first == node.name))).
+            flatMap(node => node.findOpt(rest))
+        }
       }
-      null
     }
   }
 
+  @deprecated // old behavior was null-based
+  private def find(tokens: LinkedList[String]): SimpleNodeWrapper = {
+    findOpt(tokens.toList).getOrElse(null)
+  }
+
+  @deprecated
   private def find(expression: String): SimpleNodeWrapper = {
     val paths: Array[String] = expression.split("/")
     val tokens: LinkedList[String] = new LinkedList[String](paths.toList)
