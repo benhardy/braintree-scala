@@ -15,11 +15,11 @@ import scala.collection.JavaConversions._
 object SimpleNodeWrapper {
   def parse(xml: String): SimpleNodeWrapper = {
     try {
-      val source: InputSource = new InputSource(new StringReader(xml))
-      val parser: SAXParser = saxParserFactory.newSAXParser
-      val handler: SimpleNodeWrapper.MapNodeHandler = new SimpleNodeWrapper.MapNodeHandler
+      val source = new InputSource(new StringReader(xml))
+      val parser = saxParserFactory.newSAXParser
+      val handler = new SimpleNodeWrapper.MapNodeHandler
       parser.parse(source, handler)
-      return handler.root
+      handler.root
     }
     catch {
       case e: Exception => {
@@ -75,7 +75,7 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
     val tokens: LinkedList[String] = new LinkedList[String](paths.toList)
     val nodes: List[NodeWrapper] = new LinkedList[NodeWrapper]
     findAll(tokens, nodes)
-    return nodes
+    nodes
   }
 
   private def findAll(tokens: LinkedList[String], nodes: List[NodeWrapper]): Unit = {
@@ -83,7 +83,6 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
     else {
       val first: String = tokens.getFirst
       if ("." == first) findAll(restOf(tokens), nodes)
-      import scala.collection.JavaConversions._
       for (node <- childNodes) {
         if (("*" == first) || (first == node.name)) node.findAll(restOf(tokens), nodes)
       }
@@ -91,7 +90,9 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
   }
 
   private def find(tokens: LinkedList[String]): SimpleNodeWrapper = {
-    if (tokens.isEmpty) return this
+    if (tokens.isEmpty) {
+      this
+    }
     else {
       val first: String = tokens.getFirst
       if ("." == first) return find(restOf(tokens))
@@ -99,71 +100,90 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
       for (node <- childNodes) {
         if (("*" == first) || (first == node.name)) return node.find(restOf(tokens))
       }
-      return null
+      null
     }
   }
 
   private def find(expression: String): SimpleNodeWrapper = {
     val paths: Array[String] = expression.split("/")
     val tokens: LinkedList[String] = new LinkedList[String](paths.toList)
-    return find(tokens)
+    find(tokens)
   }
 
   private def restOf(tokens: LinkedList[String]): LinkedList[String] = {
     val newTokens: LinkedList[String] = new LinkedList[String](tokens)
     newTokens.removeFirst
-    return newTokens
+    newTokens
   }
 
+  @deprecated
   def findFirst(expression: String): NodeWrapper = {
-    return find(expression)
+    find(expression)
   }
 
+  def findFirstOpt(expression: String): Option[NodeWrapper] = {
+    Option(find(expression))
+  }
+
+  @deprecated
   def findString(expression: String): String = {
     val node: SimpleNodeWrapper = find(expression)
-    if (node == null) return null
-    else return node.stringValue
+    if (node == null) null
+    else node.stringValue
+  }
+
+  def findStringOpt(expression: String): Option[String] = {
+    val node: SimpleNodeWrapper = find(expression)
+    if (node == null) None
+    else Some(node.stringValue)
   }
 
   private def stringValue: String = {
-    if (content.size == 1 && content.get(0) == null) return null
-    val value: StringBuilder = new StringBuilder
-    import scala.collection.JavaConversions._
-    for (o <- content) {
-      value.append(o.toString)
+    if (content.size == 1 && content.get(0) == null) { null }
+    else {
+      val value: StringBuilder = new StringBuilder
+      for (o <- content) {
+        value.append(o.toString)
+      }
+      value.toString.trim
     }
-    return value.toString.trim
   }
 
   def getElementName: String = {
-    return name
+    name
   }
 
   private def childNodes: List[SimpleNodeWrapper] = {
     val nodes: List[SimpleNodeWrapper] = new LinkedList[SimpleNodeWrapper]
     import scala.collection.JavaConversions._
     for (o <- content) {
-      if (o.isInstanceOf[SimpleNodeWrapper]) nodes.add(o.asInstanceOf[SimpleNodeWrapper])
+      if (o.isInstanceOf[SimpleNodeWrapper]) {
+        nodes.add(o.asInstanceOf[SimpleNodeWrapper])
+      }
     }
-    return nodes
+    nodes
   }
 
   def getFormParameters: Map[String, String] = {
     val params: Map[String, String] = new HashMap[String, String]
-    import scala.collection.JavaConversions._
     for (node <- childNodes) {
       node.buildParams("", params)
     }
-    return params
+    params
   }
 
   private def buildParams(prefix: String, params: Map[String, String]) {
-    //val childNodes: List[SimpleNodeWrapper] = childNodes
-    val newPrefix: String = if (("" == prefix)) StringUtils.underscore(name) else prefix + "[" + StringUtils.underscore(name) + "]"
-    if (childNodes.isEmpty) params.put(newPrefix, stringValue)
+    val newPrefix = if ("" == prefix)
+      StringUtils.underscore(name)
+    else
+      prefix + "[" + StringUtils.underscore(name) + "]"
+    if (childNodes.isEmpty) {
+      params.put(newPrefix, stringValue)
+    }
     else {
-      import scala.collection.JavaConversions._
-      for (childNode <- childNodes) childNode.buildParams(newPrefix, params)
+      for (childNode <- childNodes) {
+        childNode.buildParams(newPrefix, params)
+      }
     }
   }
 

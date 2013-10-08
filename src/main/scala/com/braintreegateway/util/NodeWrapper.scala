@@ -2,7 +2,9 @@ package com.braintreegateway.util
 
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
-import java.util._
+import java.util.{Calendar, TimeZone}
+import java.util.{Map=>JMap, HashMap=>JHashMap}
+import java.util.{List=>JList, ArrayList=>JArrayList}
 
 object NodeWrapper {
   final val DATE_FORMAT: String = "yyyy-MM-dd"
@@ -13,10 +15,10 @@ object NodeWrapper {
 abstract class NodeWrapper {
   import NodeWrapper._
 
-  def findAll(expression: String): List[NodeWrapper]
+  def findAll(expression: String): JList[NodeWrapper]
 
-  def findAllStrings(expression: String): List[String] = {
-    val strings: List[String] = new ArrayList[String]
+  def findAllStrings(expression: String): JList[String] = {
+    val strings: JList[String] = new JArrayList[String]
     import scala.collection.JavaConversions._
     for (node <- findAll(expression)) {
       strings.add(node.findString("."))
@@ -24,26 +26,58 @@ abstract class NodeWrapper {
     strings
   }
 
+  @deprecated
   def findBigDecimal(expression: String): BigDecimal = {
     val value: String = findString(expression)
     if (value == null) null else new BigDecimal(value)
   }
 
+  def findBigDecimalOpt(expression: String): Option[BigDecimal] = {
+    findStringOpt(expression) map { new BigDecimal(_) }
+  }
+
+  @deprecated
   def findBoolean(expression: String): Boolean = {
     val value: String = findString(expression)
     java.lang.Boolean.valueOf(value)
   }
 
+  def findBooleanOpt(expression: String): Option[Boolean] = {
+    findStringOpt(expression).map {_.toBoolean}
+  }
+
+  @deprecated
   def findDate(expression: String): Calendar = {
+    val dateString = findString(expression)
+    if (dateString == null) {
+      return null
+    }
+    parseDate(DATE_FORMAT)(dateString)
+  }
+
+  @deprecated
+  def findDateTime(expression: String): Calendar = {
+    val dateString = findString(expression)
+    if (dateString == null) {
+      return null
+    }
+    parseDate(DATE_TIME_FORMAT)(dateString)
+  }
+
+  def findDateOpt(expression: String): Option[Calendar] = {
+    findStringOpt(expression) map parseDate(DATE_FORMAT)
+  }
+
+  def findDateTimeOpt(expression: String): Option[Calendar] = {
+    findStringOpt(expression) map parseDate(DATE_TIME_FORMAT)
+  }
+
+  private def parseDate(format: String)(dateString: String): Calendar = {
     try {
-      val dateString: String = findString(expression)
-      if (dateString == null) {
-        return null
-      }
-      val dateFormat: SimpleDateFormat = new SimpleDateFormat(DATE_FORMAT)
-      dateFormat.setTimeZone(TimeZone.getTimeZone(UTC_DESCRIPTOR))
-      val calendar: Calendar = Calendar.getInstance(TimeZone.getTimeZone(UTC_DESCRIPTOR))
-      calendar.setTime(dateFormat.parse(dateString))
+      val dateTimeFormat = new SimpleDateFormat(format)
+      dateTimeFormat.setTimeZone(TimeZone.getTimeZone(UTC_DESCRIPTOR))
+      val calendar = Calendar.getInstance(TimeZone.getTimeZone(UTC_DESCRIPTOR))
+      calendar.setTime(dateTimeFormat.parse(dateString))
       calendar
     }
     catch {
@@ -53,48 +87,51 @@ abstract class NodeWrapper {
     }
   }
 
-  def findDateTime(expression: String): Calendar = {
-    try {
-      val dateString: String = findString(expression)
-      if (dateString == null) {
-        return null
-      }
-      val dateTimeFormat: SimpleDateFormat = new SimpleDateFormat(DATE_TIME_FORMAT)
-      dateTimeFormat.setTimeZone(TimeZone.getTimeZone(UTC_DESCRIPTOR))
-      val calendar: Calendar = Calendar.getInstance(TimeZone.getTimeZone(UTC_DESCRIPTOR))
-      calendar.setTime(dateTimeFormat.parse(dateString))
-      return calendar
-    }
-    catch {
-      case e: Exception => {
-        throw new RuntimeException(e)
-      }
-    }
-  }
-
+  @deprecated
   def findInteger(expression: String): Integer = {
     val value: String = findString(expression)
-    return if (value == null) null else Integer.valueOf(value)
+    if (value == null) null else Integer.valueOf(value)
   }
 
+  def findIntegerOpt(expression: String): Option[Integer] = {
+    findStringOpt(expression) map (_.toInt)
+  }
+
+  @deprecated
   def findFirst(expression: String): NodeWrapper
 
+  def findFirstOpt(expression: String): Option[NodeWrapper]
+
+  @deprecated
   def findString(expression: String): String
+
+  def findStringOpt(expression: String): Option[String]
 
   def getElementName: String
 
   def isSuccess: Boolean = {
-    return !((getElementName == "api-error-response"))
+    !((getElementName == "api-error-response"))
   }
 
-  def findMap(expression: String): Map[String, String] = {
-    val map: Map[String, String] = new HashMap[String, String]
+  @deprecated
+  def findMap(expression: String): JMap[String, String] = {
+    val map: JMap[String, String] = new JHashMap[String, String]
     import scala.collection.JavaConversions._
     for (mapNode <- findAll(expression)) {
       map.put(StringUtils.underscore(mapNode.getElementName), mapNode.findString("."))
     }
-    return map
+    map
   }
 
-  def getFormParameters: Map[String, String]
+  def findMapOpt(expression:String): Map[String, String] = {
+    import scala.collection.JavaConversions._
+    val items = for {
+      mapNode <- findAll(expression).toList
+      value <- mapNode.findStringOpt(".")
+      key = StringUtils.underscore(mapNode.getElementName)
+    } yield (key, value)
+    items.toMap
+  }
+
+  def getFormParameters: JMap[String, String]
 }
