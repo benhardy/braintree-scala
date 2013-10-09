@@ -11,6 +11,7 @@ import org.scalatest.matchers.MustMatchers
 import TestHelper.beSameDayAs
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import com.braintreegateway.testhelpers.CalendarHelper._
 
 @RunWith(classOf[JUnitRunner])
 class WebhookNotificationSpec extends GatewaySpec with MustMatchers {

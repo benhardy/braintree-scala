@@ -30,13 +30,13 @@ object TestHelper {
           "%04d-%02d-%02d".format(day.year, day.month, day.day)
         }
       }
-
       val same = (left, right) match {
         case (null, null) => true
         case (null, _) => false
         case (_, null) => false
         case (a, b) => {
-          a.day == b.day && a.month == b.month && a.year == b.year
+          val leftInRightZone = a in right.getTimeZone
+          leftInRightZone.day == b.day && leftInRightZone.month == b.month && leftInRightZone.year == b.year
         }
       }
       val prefix = s"days ${render(left)} and ${render(right)} are "
