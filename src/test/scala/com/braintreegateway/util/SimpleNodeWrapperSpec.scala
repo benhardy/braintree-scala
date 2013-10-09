@@ -247,11 +247,11 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
   describe("findFirst") {
     it("returns found items") {
       val xml = <toplevel>
-                  <foo type='array'>
-                    <bar><greeting>hi</greeting></bar>
-                    <bar><greeting>hello</greeting></bar>
-                  </foo>
-                </toplevel>
+        <foo type='array'>
+          <bar><greeting>hi</greeting></bar>
+          <bar><greeting>hello</greeting></bar>
+        </foo>
+      </toplevel>
       val node = SimpleNodeWrapper.parse(xml.toString).findFirst("foo/bar")
       node.findString("greeting") must be === "hi"
     }
@@ -259,6 +259,29 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
     it("returns null if nothing found") {
       val xml = <toplevel></toplevel>
       SimpleNodeWrapper.parse(xml.toString).findFirst("foo/bar") must be === null
+    }
+  }
+
+  describe("findFirstOpt") {
+    it("returns found items in a Some") {
+      val xml = <toplevel>
+        <foo type='array'>
+          <bar><greeting>hi</greeting></bar>
+          <bar><greeting>hello</greeting></bar>
+        </foo>
+      </toplevel>
+      val doc = SimpleNodeWrapper.parse(xml.toString)
+      val res = for {
+         node <- doc.findFirstOpt("foo/bar")
+         greet <- node.findStringOpt("greeting")
+      } yield greet
+      res must be === Some("hi")
+    }
+
+    it("returns None if nothing found") {
+      val xml = <toplevel></toplevel>
+      val doc = SimpleNodeWrapper.parse(xml.toString)
+      doc.findFirstOpt("foo/bar") must be === None
     }
   }
 
