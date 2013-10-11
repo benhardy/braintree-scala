@@ -1,76 +1,109 @@
 package com.braintreegateway.util
 
-import org.xml.sax.Attributes
-import org.xml.sax.InputSource
-import org.xml.sax.helpers.DefaultHandler
-import javax.xml.parsers.SAXParserFactory
-import java.io.StringReader
-import java.util.regex.Matcher
-import java.util.regex.Pattern
+import java.io.InputStream
 import scala.collection.JavaConversions._
-import java.util.{Calendar, TimeZone}
-import java.util.{Map=>JMap, HashMap=>JHashMap}
-import java.util.{List=>JList, ArrayList=>JArrayList, LinkedList=>JLinkedList}
-import java.util.{Stack=>JStack}
-import java.util
+
+import scala.collection.immutable.{Map => SMap}
+import scala.collection.immutable.{List => SList}
+
+import java.util.{Map => JMap, HashMap => JHashMap}
+import java.util.{List => JList, LinkedList => JLinkedList}
+import collection.mutable
+import collection.mutable.ListBuffer
+import xml.MetaData
+import io.Source
+import scala.xml.pull._
+import scala.Some
+import scala.xml.parsing.XhtmlEntities
+
+sealed trait NodeType {}
+
+case class TextNode(value: String) extends NodeType {
+  override def toString = value
+}
+
+trait Element extends NodeType {
+  def name: String
+
+  def attributes: Map[String, String]
+
+  def content: List[NodeType]
+}
 
 object SimpleNodeWrapper {
-  def parse(xml: String): SimpleNodeWrapper = {
-    try {
-      val source = new InputSource(new StringReader(xml))
-      val parser = saxParserFactory.newSAXParser
-      val handler = new SimpleNodeWrapper.MapNodeHandler
-      parser.parse(source, handler)
-      handler.root
-    }
-    catch {
-      case e: Exception => {
-        throw new IllegalArgumentException(e.getMessage, e)
-      }
-    }
+
+  def parse(string: String): SimpleNodeWrapper = parse(Source.fromString(string))
+
+  def parse(stream: InputStream): SimpleNodeWrapper = parse(Source.fromInputStream(stream))
+
+  def parse(source: Source): SimpleNodeWrapper = parse(new XMLEventReader(source))
+
+  def metadataMap(metaData: MetaData): Map[String, String] = {
+    metaData.map {
+      inner => inner.key -> inner.value.last.toString()
+    }.toMap
   }
 
-  private val saxParserFactory: SAXParserFactory = SAXParserFactory.newInstance
+  def parse(reader: XMLEventReader): SimpleNodeWrapper = {
+    var root: Option[SimpleNodeWrapper] = None
 
-  private object MapNodeHandler {
-    private val NON_WHITE_SPACE: Pattern = Pattern.compile("\\S")
-  }
+    case class NodeBuilder(name: String, metadata: MetaData, content: ListBuffer[NodeType] = new ListBuffer[NodeType])
 
-  private class MapNodeHandler extends DefaultHandler {
-    override def startElement(uri: String, localName: String, qName: String, attributes: Attributes) {
-      val node: SimpleNodeWrapper = new SimpleNodeWrapper(qName)
+    val stack = new mutable.Stack[NodeBuilder]
 
-      for (i <- 0 until attributes.getLength) {
-        node.attributes.put(attributes.getQName(i), attributes.getValue(i))
+    def handleElementEnd(name: String): Option[SimpleNodeWrapper] = {
+      val top = stack.pop
+      if (name != top.name) throw new IllegalArgumentException("unbalanced")
+      val built = SimpleNodeWrapper(top.name, metadataMap(top.metadata), top.content.toList)
+      if (stack.isEmpty) {
+        root = Some(built)
+      } else {
+        stack.top.content += built
       }
-      if ("true" == node.attributes.get("nil")) node.content.add(null)
-      if (!stack.isEmpty) stack.peek.content.add(node)
-      stack.push(node)
+      root
     }
 
-    override def endElement(uri: String, localName: String, qName: String) {
-      val pop: SimpleNodeWrapper = stack.pop
-      if (stack.isEmpty) root = pop
-    }
-
-    override def characters(chars: Array[Char], start: Int, length: Int) {
-      val value: String = new String(chars, start, length)
-      val matcher: Matcher = MapNodeHandler.NON_WHITE_SPACE.matcher(value)
-      if (value.length > 0 && matcher.find) {
-        stack.peek.content.add(value)
+    def handleXmlEvent(next: XMLEvent) {
+      next match {
+        case EvElemStart(_, name, metadata, _) => {
+          stack.push(NodeBuilder(name, metadata))
+        }
+        case EvText(text) => {
+          val trimmed = text.trim
+          if (trimmed.length > 0) {
+            stack.top.content += TextNode(text)
+          }
+        }
+        case EvElemEnd(_, name) => {
+          handleElementEnd(name)
+        }
+        case er: EvEntityRef => {
+          val entityMaybe = XhtmlEntities.entMap.get(er.entity).map {
+            ch => TextNode("" + ch)
+          }
+          stack.top.content ++= entityMaybe
+        }
       }
     }
 
-    private val stack = new JStack[SimpleNodeWrapper]
-    var root: SimpleNodeWrapper = null
+    while (reader.hasNext) {
+
+      val next = reader.next
+      handleXmlEvent(next)
+    }
+
+    root getOrElse {
+      throw new IllegalArgumentException("no root found")
+    }
   }
 
 }
 
-class SimpleNodeWrapper(val name:String) extends NodeWrapper {
-
-  private val attributes: JMap[String, String] = new JHashMap[String, String]
-  private val content: JList[AnyRef] = new JLinkedList[AnyRef]
+case class SimpleNodeWrapper(
+                              name: String,
+                              attributes: SMap[String, String] = SMap.empty,
+                              content: SList[NodeType] = Nil
+                              ) extends NodeWrapper with Element with NodeType {
 
   def findAll(expression: String): JList[NodeWrapper] = {
     val paths: Array[String] = expression.split("/")
@@ -147,42 +180,37 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
   }
 
   private def stringValue: String = {
-    if (content.size == 1 && content.get(0) == null) { null }
+    if (attributes.get("nil") == Some("true")) {
+      null // legacy - TODO eventually remove
+    }
     else {
-      val value = new StringBuilder
-      for (o <- content) {
-        value.append(o.toString)
-      }
-      value.toString.trim
+      content.foldLeft(new StringBuilder) {
+        (buf, item) =>
+          buf.append(item.toString)
+      }.toString.trim
     }
   }
 
-  def getElementName: String = {
-    name
-  }
+  def getElementName = name
 
-  private def childNodes: JList[SimpleNodeWrapper] = {
-    val nodes: JList[SimpleNodeWrapper] = new JLinkedList[SimpleNodeWrapper]
-    import scala.collection.JavaConversions._
-    for (o <- content) {
-      if (o.isInstanceOf[SimpleNodeWrapper]) {
-        nodes.add(o.asInstanceOf[SimpleNodeWrapper])
+  private def childNodes: SList[SimpleNodeWrapper] = {
+    content.flatMap {
+      _ match {
+        case x: SimpleNodeWrapper => Some(x)
+        case _ => None
       }
     }
-    nodes
   }
 
-  def getFormParameters: JMap[String, String] = {
-    val pairs:util.List[(String,String)] = for {
-      node <- childNodes;
+  def getFormParameters: Map[String, String] = {
+    val pairs = for {
+      node <- childNodes
       things <- node.buildParams("")
     } yield things
-    val m = new util.HashMap[String,String]()
-    pairs.foreach{p => m.put(p._1, p._2)}
-    m
+    pairs.toMap
   }
 
-  def buildParams(prefix: String): List[(String,String)] = {
+  def buildParams(prefix: String): List[(String, String)] = {
     val newPrefix = prefixWithName(prefix)
     if (childNodes.isEmpty) {
       List((newPrefix, stringValue))
@@ -192,7 +220,7 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
     }
   }
 
-  def childNodeParamPairs(newPrefix:String): List[(String,String)] = {
+  def childNodeParamPairs(newPrefix: String): List[(String, String)] = {
     val bits = for {
       childNode <- childNodes
       childParams <- childNode.buildParams(newPrefix)
@@ -207,7 +235,4 @@ class SimpleNodeWrapper(val name:String) extends NodeWrapper {
       prefix + "[" + StringUtils.underscore(name) + "]"
   }
 
-  override def toString: String = {
-    return "<" + name + (if (attributes.isEmpty) "" else " attributes=" + StringUtils.toString(attributes)) + " content=" + StringUtils.toString(content) + ">"
-  }
 }

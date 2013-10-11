@@ -3,8 +3,8 @@ package com.braintreegateway.util
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.{Calendar, TimeZone}
-import java.util.{Map=>JMap, HashMap=>JHashMap}
-import java.util.{List=>JList, ArrayList=>JArrayList}
+import java.util.{Map => JMap, HashMap => JHashMap}
+import java.util.{List => JList, ArrayList => JArrayList}
 
 object NodeWrapper {
   final val DATE_FORMAT: String = "yyyy-MM-dd"
@@ -13,6 +13,7 @@ object NodeWrapper {
 }
 
 abstract class NodeWrapper {
+
   import NodeWrapper._
 
   def findAll(expression: String): JList[NodeWrapper]
@@ -33,7 +34,9 @@ abstract class NodeWrapper {
   }
 
   def findBigDecimalOpt(expression: String): Option[BigDecimal] = {
-    findStringOpt(expression) map { new BigDecimal(_) }
+    findStringOpt(expression) map {
+      new BigDecimal(_)
+    }
   }
 
   @deprecated
@@ -43,7 +46,9 @@ abstract class NodeWrapper {
   }
 
   def findBooleanOpt(expression: String): Option[Boolean] = {
-    findStringOpt(expression).map {_.toBoolean}
+    findStringOpt(expression).map {
+      _.toBoolean
+    }
   }
 
   @deprecated
@@ -119,7 +124,7 @@ abstract class NodeWrapper {
     findMapOpt(expression)
   }
 
-  def findMapOpt(expression:String): Map[String, String] = {
+  def findMapOpt(expression: String): Map[String, String] = {
     import scala.collection.JavaConversions._
     val items = for {
       mapNode <- findAll(expression).toList
@@ -129,5 +134,5 @@ abstract class NodeWrapper {
     items.toMap
   }
 
-  def getFormParameters: JMap[String, String]
+  def getFormParameters: Map[String, String]
 }

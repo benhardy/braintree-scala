@@ -9,10 +9,13 @@ import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import com.braintreegateway.testhelpers.CalendarHelper._
 
+
 @RunWith(classOf[JUnitRunner])
 class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
 
   val XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+
+  implicit def textNode(string: String) = TextNode(string)
 
   describe("parse") {
 
@@ -20,10 +23,10 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
       val xml = <parent>
         <child>value</child>
       </parent>
-      val node = SimpleNodeWrapper.parse(xml.toString)
-      val actual = StringUtils.toString(node)
-      actual must be === "<parent content=[<child content=[value]>]>"
-      node.getElementName must be === "parent"
+      val actual = SimpleNodeWrapper.parse(xml.toString)
+      actual must be === SimpleNodeWrapper(name = "parent", content = List(
+        SimpleNodeWrapper(name = "child", content = List("value"))
+      ))
     }
 
     it("handleXmlCharactersCorrectly") {
@@ -35,23 +38,49 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
       node.findString("cardholder-name") must be === "Special Chars <>&\"'"
     }
 
+    it("parsingSimpleEmptyElement") {
+      val xml = <foo/>
+      val node = SimpleNodeWrapper.parse(XML_HEADER + xml.toString)
+      node must be === SimpleNodeWrapper(name = "foo")
+    }
+    it("parsingElementWithEmptyContent") {
+      val xml = <foo></foo>
+      val node = SimpleNodeWrapper.parse(XML_HEADER + xml.toString)
+      node must be === SimpleNodeWrapper(name = "foo", content = Nil)
+    }
+
+    it("parsingSimpleNilAttributeElement") {
+      val xml = <foo nil='true'/>
+      val node = SimpleNodeWrapper.parse(XML_HEADER + xml.toString)
+      node must be === SimpleNodeWrapper(name = "foo", attributes = Map("nil" -> "true"), content = Nil)
+    }
+
     it("parsingFullXmlDoc") {
       val xml = <add-on>
         <amount>100.00</amount>
         <foo nil='true'></foo>
       </add-on>
       val node = SimpleNodeWrapper.parse(XML_HEADER + xml.toString)
-      StringUtils.toString(node) must be === "<add-on content=[<amount content=[100.00]>, <foo attributes={nil: true} content=[null]>]>"
+      node must be === SimpleNodeWrapper(name = "add-on", content = List(
+        SimpleNodeWrapper(name = "amount", content = List("100.00")),
+        SimpleNodeWrapper(name = "foo", attributes = Map("nil" -> "true"), content = Nil)
+      ))
     }
 
     it("parsingXmlWithListAtRoot") {
       val xml = <add-ons type="array">
         <add-on>
-          <amount>10.00</amount>
+          <amount>100.00</amount>
         </add-on>
       </add-ons>
+
       val node = SimpleNodeWrapper.parse(XML_HEADER + xml.toString)
-      StringUtils.toString(node) must be === "<add-ons attributes={type: array} content=[<add-on content=[<amount content=[10.00]>]>]>"
+
+      node must be === SimpleNodeWrapper(name = "add-ons", attributes = Map("type" -> "array"), content = List(
+        SimpleNodeWrapper(name = "add-on", content = List(
+          SimpleNodeWrapper(name = "amount", content = List("100.00"))
+        ))
+      ))
     }
 
     it("parsingXmlWithNilValuesWithoutNilAttr") {
@@ -63,7 +92,12 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
         </custom-fields>
       </customer>
       val node = SimpleNodeWrapper.parse(XML_HEADER + xml.toString)
-      StringUtils.toString(node) must be === "<customer content=[<id content=[884969]>, <merchant-id content=[integration_merchant_id]>, <first-name attributes={nil: true} content=[null]>, <custom-fields content=[]>]>"
+      node must be === SimpleNodeWrapper(name = "customer", content = List(
+        SimpleNodeWrapper(name = "id", content = List("884969")),
+        SimpleNodeWrapper(name = "merchant-id", content = List("integration_merchant_id")),
+        SimpleNodeWrapper(name = "first-name", attributes = Map("nil" -> "true"), content = Nil),
+        SimpleNodeWrapper(name = "custom-fields")
+      ))
     }
 
     it("moreNestedXml") {
@@ -78,12 +112,20 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
           </bar>
         </foo>
       </toplevel>
+
       val node = SimpleNodeWrapper.parse(xml.toString)
-      node.getElementName must be === "toplevel"
-      val expected = "<toplevel content=[<foo attributes={type: array} content=[" +
-        "<bar content=[<greeting content=[hi]>, <salutation content=[bye]>]>, " +
-        "<bar content=[<greeting content=[hello]>]>]>]>"
-      StringUtils.toString(node) must be === expected
+
+      node must be === SimpleNodeWrapper(name = "toplevel", content = List(
+        SimpleNodeWrapper(name = "foo", attributes = Map("type" -> "array"), content = List(
+          SimpleNodeWrapper(name = "bar", content = List(
+            SimpleNodeWrapper(name = "greeting", content = List("hi")),
+            SimpleNodeWrapper(name = "salutation", content = List("bye"))
+          )),
+          SimpleNodeWrapper(name = "bar", content = List(
+            SimpleNodeWrapper(name = "greeting", content = List("hello"))
+          ))
+        ))
+      ))
     }
   }
 
@@ -103,7 +145,9 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
     }
 
     it("returns null for values with a 'nil' attribute set") {
-      val xml = <toplevel><foo nil='true'></foo></toplevel>
+      val xml = <toplevel>
+        <foo nil='true'></foo>
+      </toplevel>
       val node = SimpleNodeWrapper.parse(xml.toString)
       node.findString("foo") must be === null
     }
@@ -135,7 +179,9 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
     }
 
     it("returns null if not found") {
-      val xml = <toplevel><foo>bar</foo></toplevel>
+      val xml = <toplevel>
+        <foo>bar</foo>
+      </toplevel>
       val node = SimpleNodeWrapper.parse(xml.toString)
       node.findDate("created-at") must be === null
     }
@@ -175,16 +221,16 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
   describe("findBigDecimal") {
     it("finds values by name") {
       val xml = <toplevel>
-                  <amount>12.59</amount>
-                </toplevel>
+        <amount>12.59</amount>
+      </toplevel>
       val response = SimpleNodeWrapper.parse(xml.toString)
       response.findBigDecimal("amount") must be === new BigDecimal("12.59")
     }
 
     it("findBigDecimalWithNoMatchingElement") {
       val xml = <toplevel>
-                  <amount>12.59</amount>
-                </toplevel>
+        <amount>12.59</amount>
+      </toplevel>
       val response = SimpleNodeWrapper.parse(xml.toString)
       response.findBigDecimal("price") must be === null
     }
@@ -211,11 +257,15 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
   describe("findAll") {
     it("returns a list of matching items") {
       val xml = <toplevel>
-                  <foo type='array'>
-                    <bar><greeting>hi</greeting></bar>
-                    <bar><greeting>hello</greeting></bar>
-                  </foo>
-                </toplevel>
+        <foo type='array'>
+          <bar>
+            <greeting>hi</greeting>
+          </bar>
+          <bar>
+            <greeting>hello</greeting>
+          </bar>
+        </foo>
+      </toplevel>
       val node = SimpleNodeWrapper.parse(xml.toString)
       val nodes = node.findAll("foo/bar")
       nodes.size must be === 2
@@ -225,11 +275,15 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
 
     it("uses star for wildcard matching") {
       val xml = <toplevel>
-                  <foo type='array'>
-                    <bar><greeting>hi</greeting></bar>
-                    <bar><greeting>hello</greeting></bar>
-                  </foo>
-                </toplevel>
+        <foo type='array'>
+          <bar>
+            <greeting>hi</greeting>
+          </bar>
+          <bar>
+            <greeting>hello</greeting>
+          </bar>
+        </foo>
+      </toplevel>
       val node = SimpleNodeWrapper.parse(xml.toString)
       val nodes = node.findAll("foo/*")
       nodes.size must be === 2
@@ -248,8 +302,12 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
     it("returns found items") {
       val xml = <toplevel>
         <foo type='array'>
-          <bar><greeting>hi</greeting></bar>
-          <bar><greeting>hello</greeting></bar>
+          <bar>
+            <greeting>hi</greeting>
+          </bar>
+          <bar>
+            <greeting>hello</greeting>
+          </bar>
         </foo>
       </toplevel>
       val node = SimpleNodeWrapper.parse(xml.toString).findFirst("foo/bar")
@@ -266,14 +324,18 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
     it("returns found items in a Some") {
       val xml = <toplevel>
         <foo type='array'>
-          <bar><greeting>hi</greeting></bar>
-          <bar><greeting>hello</greeting></bar>
+          <bar>
+            <greeting>hi</greeting>
+          </bar>
+          <bar>
+            <greeting>hello</greeting>
+          </bar>
         </foo>
       </toplevel>
       val doc = SimpleNodeWrapper.parse(xml.toString)
       val res = for {
-         node <- doc.findFirstOpt("foo/bar")
-         greet <- node.findStringOpt("greeting")
+        node <- doc.findFirstOpt("foo/bar")
+        greet <- node.findStringOpt("greeting")
       } yield greet
       res must be === Some("hi")
     }
@@ -294,8 +356,8 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
       </params>
     </api-error-response>
     val node = SimpleNodeWrapper.parse(xml.toString)
-    StringUtils.toString(node.findFirst("params").getFormParameters) must be === "{id: invalid id, payment_method_token: 99s6, plan_id: integration_trialless_plan}"
-    StringUtils.toString(node.getFormParameters) must be === "{params[id]: invalid id, params[payment_method_token]: 99s6, params[plan_id]: integration_trialless_plan}"
+    val map = node.findFirst("params").getFormParameters
+    map must be === Map("id" -> "invalid id", "payment_method_token" -> "99s6", "plan_id" -> "integration_trialless_plan")
   }
 
   it("nestsParameters") {
@@ -308,6 +370,7 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
       </ps>
     </api-error-response>
     val node = SimpleNodeWrapper.parse(xml.toString)
-    StringUtils.toString(node.findFirst("ps").getFormParameters) must be === "{child[grandchild]: sonny, id: invalid id}"
+    val map = node.findFirst("ps").getFormParameters
+    map must be === Map("child[grandchild]" -> "sonny", "id" -> "invalid id")
   }
 }
