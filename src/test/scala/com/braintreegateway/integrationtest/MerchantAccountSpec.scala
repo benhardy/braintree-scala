@@ -5,7 +5,7 @@ import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.testhelpers.GatewaySpec
-import gw.Failure
+import gw.{Success, Failure}
 import java.util.Random
 
 @RunWith(classOf[JUnitRunner])
@@ -14,13 +14,15 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers {
   describe("create") {
     onGatewayIt("requires no id") {
       gateway =>
-        val result = gateway.merchantAccount.create(creationRequest)
-        result must be ('success)
-        val ma = result.getTarget
-        ma.getStatus must be === MerchantAccount.Status.PENDING
-        ma.getMasterMerchantAccount.getId must be === "sandbox_master_merchant_account"
-        ma must be ('subMerchant)
-        ma.getMasterMerchantAccount must not be ('subMerchant)
+        gateway.merchantAccount.create(creationRequest) match {
+          case Success(ma) => {
+            ma.getStatus must be === MerchantAccount.Status.PENDING
+            ma.getMasterMerchantAccount.getId must be === "sandbox_master_merchant_account"
+            ma must be('subMerchant)
+            ma.getMasterMerchantAccount must not be ('subMerchant)
+          }
+          case _ => fail("expected success")
+        }
     }
 
     onGatewayIt("will use id if passed") {
@@ -28,21 +30,23 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers {
         val randomNumber = new Random().nextInt % 10000
         val subMerchantAccountId = "sub_merchant_account_id_%d".format(randomNumber)
         val request = creationRequest.id(subMerchantAccountId)
-        val result = gateway.merchantAccount.create(request)
-        result must be ('success)
-        val ma = result.getTarget
-        ma.getStatus must be === MerchantAccount.Status.PENDING
-        subMerchantAccountId must be ===  ma.getId
-        ma.getMasterMerchantAccount.getId must be === "sandbox_master_merchant_account"
-        ma must be ('subMerchant)
-        ma.getMasterMerchantAccount must not be ('subMerchant)
+        gateway.merchantAccount.create(request) match {
+          case Success(ma) => {
+            ma.getStatus must be === MerchantAccount.Status.PENDING
+            subMerchantAccountId must be === ma.getId
+            ma.getMasterMerchantAccount.getId must be === "sandbox_master_merchant_account"
+            ma must be('subMerchant)
+            ma.getMasterMerchantAccount must not be ('subMerchant)
+          }
+          case _ => fail("expected success")
+        }
     }
 
     onGatewayIt("handles unsuccessful results") {
       gateway =>
         val result = gateway.merchantAccount.create(new MerchantAccountRequest)
         result match {
-          case Failure(allErrors,_,_,_,_,_) => {
+          case Failure(allErrors, _, _, _, _, _) => {
             val errors = allErrors.forObject("merchant-account").onField("master_merchant_account_id")
             errors.size must be === 1
             val code = errors.get(0).getCode

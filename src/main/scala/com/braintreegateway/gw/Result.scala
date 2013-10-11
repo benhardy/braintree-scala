@@ -13,15 +13,6 @@ sealed trait Result[+T] {
   def filter(f: T => Boolean): Result[T] = ???
 
   def foreach(f: T => Unit): Unit
-
-  /**
-   * Provided to temporarily make tests less grumpy. This will go away
-   * before release. TODO
-   * @return
-   */
-  @deprecated def getTarget: T = this match {
-    case Success(t) => t
-  }
 }
 
 case class Success[T](target: T) extends Result[T] {
