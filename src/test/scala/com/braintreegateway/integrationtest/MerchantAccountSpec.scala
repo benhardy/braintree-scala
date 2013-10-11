@@ -49,7 +49,7 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers {
           case Failure(allErrors, _, _, _, _, _) => {
             val errors = allErrors.forObject("merchant-account").onField("master_merchant_account_id")
             errors.size must be === 1
-            val code = errors.get(0).getCode
+            val code = errors.get(0).code
             code must be === ValidationErrorCode.MERCHANT_ACCOUNT_MASTER_MERCHANT_ACCOUNT_ID_IS_REQUIRED
           }
           case x => fail("expected Failure got " + x)

@@ -109,7 +109,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val cloneResult = gateway.transaction.cloneTransaction(transaction.getId, cloneRequest)
       cloneResult match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("base").get(0).getCode 
+          val code = errors.forObject("transaction").onField("base").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_CANNOT_CLONE_CREDIT
         }
       }
@@ -413,10 +413,10 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       result match {
         case Failure(errors,_,_,_,_,_) => {
           val billingValidationErrors = errors.forObject("transaction").forObject("billing")
-          billingValidationErrors.onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-          billingValidationErrors.onField("countryCodeAlpha2").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
-          billingValidationErrors.onField("countryCodeAlpha3").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA3_IS_NOT_ACCEPTED
-          billingValidationErrors.onField("countryCodeNumeric").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_NUMERIC_IS_NOT_ACCEPTED
+          billingValidationErrors.onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+          billingValidationErrors.onField("countryCodeAlpha2").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
+          billingValidationErrors.onField("countryCodeAlpha3").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA3_IS_NOT_ACCEPTED
+          billingValidationErrors.onField("countryCodeNumeric").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_NUMERIC_IS_NOT_ACCEPTED
         }
       }
     }
@@ -426,7 +426,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          errors.forObject("transaction").onField("customFields").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CUSTOM_FIELD_IS_INVALID
+          errors.forObject("transaction").onField("customFields").get(0).code must be === ValidationErrorCode.TRANSACTION_CUSTOM_FIELD_IS_INVALID
         }
       }
     }
@@ -440,7 +440,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
           txn.isDefined must be === false
           ccVer.isDefined must be === false
           errors.size must be === 2
-          val validationErrorCodes = errors.map {_.getCode}
+          val validationErrorCodes = errors.map {_.code}
 
           validationErrorCodes must contain (ValidationErrorCode.TRANSACTION_PAYMENT_METHOD_CONFLICT_WITH_VENMO_SDK)
           validationErrorCodes must contain (ValidationErrorCode.TRANSACTION_PAYMENT_METHOD_DOES_NOT_BELONG_TO_CUSTOMER)
@@ -515,7 +515,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Failure(errors, parameters, _, _, _, _) => {
-          val code = errors.forObject("transaction").onField("amount").get(0).getCode 
+          val code = errors.forObject("transaction").onField("amount").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_AMOUNT_IS_REQUIRED
           parameters.get("transaction[amount]") must be === None
           parameters("transaction[credit_card][expiration_month]") must be === "05"
@@ -550,9 +550,9 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Failure(errors, parameters, _, _, _, _) => {
-          val expected1 = errors.forObject("transaction").forObject("descriptor").onField("name").get(0).getCode
+          val expected1 = errors.forObject("transaction").forObject("descriptor").onField("name").get(0).code
           expected1 must be === ValidationErrorCode.DESCRIPTOR_NAME_FORMAT_IS_INVALID
-          val expected2 = errors.forObject("transaction").forObject("descriptor").onField("phone").get(0).getCode
+          val expected2 = errors.forObject("transaction").forObject("descriptor").onField("phone").get(0).code
           expected2 must be === ValidationErrorCode.DESCRIPTOR_PHONE_FORMAT_IS_INVALID
         }
       }
@@ -574,14 +574,14 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.purchaseOrderNumber("aaaaaaaaaaaaaaaaaa")
       val result = gateway.transaction.sale(request)
       val errors = result match { case Failure(errors,_,_,_,_,_) => errors }
-      errors.forObject("transaction").onField("purchaseOrderNumber").get(0).getCode must be === ValidationErrorCode.TRANSACTION_PURCHASE_ORDER_NUMBER_IS_TOO_LONG
+      errors.forObject("transaction").onField("purchaseOrderNumber").get(0).code must be === ValidationErrorCode.TRANSACTION_PURCHASE_ORDER_NUMBER_IS_TOO_LONG
     }
 
     onGatewayIt("saleWithInvalidPurchaseOrderNumber") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.purchaseOrderNumber("\u00c3\u009f\u00c3\u00a5\u00e2\u0088\u0082")
       val result = gateway.transaction.sale(request)
       val errors = result match { case Failure(errors,_,_,_,_,_) => errors }
-      errors.forObject("transaction").onField("purchaseOrderNumber").get(0).getCode must be === ValidationErrorCode.TRANSACTION_PURCHASE_ORDER_NUMBER_IS_INVALID
+      errors.forObject("transaction").onField("purchaseOrderNumber").get(0).code must be === ValidationErrorCode.TRANSACTION_PURCHASE_ORDER_NUMBER_IS_INVALID
     }
 
     onGatewayIt("saleWithVenmoSdkPaymentMethodCode") { gateway =>
@@ -628,13 +628,13 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transparentRedirect.confirmTransaction(queryString)
       val errors = result match { case Failure(errors,_,_,_,_,_) => errors }
       val billingValidationErrors = errors.forObject("transaction").forObject("billing")
-      val code1 = billingValidationErrors.onField("countryName").get(0).getCode
+      val code1 = billingValidationErrors.onField("countryName").get(0).code
       code1 must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-      val code2 = billingValidationErrors.onField("countryCodeAlpha2").get(0).getCode
+      val code2 = billingValidationErrors.onField("countryCodeAlpha2").get(0).code
       code2 must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
-      val code3 = billingValidationErrors.onField("countryCodeAlpha3").get(0).getCode
+      val code3 = billingValidationErrors.onField("countryCodeAlpha3").get(0).code
       code3 must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA3_IS_NOT_ACCEPTED
-      val code4 = billingValidationErrors.onField("countryCodeNumeric").get(0).getCode
+      val code4 = billingValidationErrors.onField("countryCodeNumeric").get(0).code
       code4 must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_NUMERIC_IS_NOT_ACCEPTED
     }
   }
@@ -685,7 +685,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.credit(request)
       result match {
         case Failure(errors, parameters,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("amount").get(0).getCode
+          val code = errors.forObject("transaction").onField("amount").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_AMOUNT_IS_REQUIRED
 
           parameters.get("transaction[amount]") must be === None
@@ -767,7 +767,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          val code = errors.forObject("transaction").onField("base").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_CANNOT_BE_VOIDED
         }
       }
@@ -834,7 +834,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          val code = errors.forObject("transaction").onField("base").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_CANNOT_SUBMIT_FOR_SETTLEMENT
         }
       }
@@ -1295,7 +1295,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.refund(transaction.getId)
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          errors.forObject("transaction").onField("base").get(0).getCode must be === ValidationErrorCode.TRANSACTION_CANNOT_REFUND_UNLESS_SETTLED
+          errors.forObject("transaction").onField("base").get(0).code must be === ValidationErrorCode.TRANSACTION_CANNOT_REFUND_UNLESS_SETTLED
         }
       }
     }
@@ -1410,7 +1410,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("service_fee_amount").get(0).getCode
+          val code = errors.forObject("transaction").onField("service_fee_amount").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_SERVICE_FEE_AMOUNT_NOT_ALLOWED_ON_MASTER_MERCHANT_ACCOUNT
         }
         case _ => fail("expected Failure")
@@ -1422,7 +1422,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("merchant_account_id").get(0).getCode
+          val code = errors.forObject("transaction").onField("merchant_account_id").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_SUB_MERCHANT_ACCOUNT_REQUIRES_SERVICE_FEE_AMOUNT
         }
         case _ => fail("expected Failure")
@@ -1434,7 +1434,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("service_fee_amount").get(0).getCode
+          val code = errors.forObject("transaction").onField("service_fee_amount").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_SERVICE_FEE_AMOUNT_CANNOT_BE_NEGATIVE
         }
         case _ => fail("expected Failure")
@@ -1459,7 +1459,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          val code = errors.forObject("transaction").onField("base").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_CANNOT_HOLD_IN_ESCROW
         }
         case _ => fail("expected Failure")
@@ -1495,7 +1495,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          val code = errors.forObject("transaction").onField("base").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_CANNOT_HOLD_IN_ESCROW
         }
         case _ => fail("expected Failure")
@@ -1527,7 +1527,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       } yield releaseResult
       result match {
         case Failure(errors,_,_,_,_,_) =>  {
-          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          val code = errors.forObject("transaction").onField("base").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_CANNOT_RELEASE_FROM_ESCROW
         }
         case _ => fail("expected failure")
@@ -1560,7 +1560,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
       result match {
         case Failure(errors,_,_,_,_,_) =>  {
-          val code = errors.forObject("transaction").onField("base").get(0).getCode
+          val code = errors.forObject("transaction").onField("base").get(0).code
           code must be === ValidationErrorCode.TRANSACTION_CANNOT_CANCEL_RELEASE
         }
         case _ => fail("expected failure")

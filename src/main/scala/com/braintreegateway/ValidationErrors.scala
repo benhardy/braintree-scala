@@ -5,6 +5,15 @@ import com.braintreegateway.util.StringUtils
 import java.util._
 
 /**
+ * Represents an validation error from the gateway.
+ * @param attribute - the attribute that this error references, e.g. amount or expirationDate.
+ * @param code - the ValidationErrorCode for the specific validation error
+ * @param message - Messages may change over time; rely on {@link #code()} for comparisons.
+ */
+case class ValidationError(attribute: String, code: ValidationErrorCode, message: String) {
+}
+
+/**
  * Represents a collection of (nested) validation errors. Query for validation
  * errors by object and field. For Example:
  *
@@ -14,7 +23,7 @@ import java.util._
  * Result<Transaction> result = gateway.transaction().sale(request);
  * Assert.assertFalse(result.isSuccess());
  * ValidationErrors errors = result.getErrors();
- * Assert.assertEquals(ValidationErrorCode.TRANSACTION_AMOUNT_IS_REQUIRED, errors.forObject("transaction").onField("amount").get(0).getCode());
+ * Assert.assertEquals(ValidationErrorCode.TRANSACTION_AMOUNT_IS_REQUIRED, errors.forObject("transaction").onField("amount").get(0).code());
  * </pre>
  *
  * For more detailed information on {@link ValidationErrors}, see <a

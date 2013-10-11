@@ -319,7 +319,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Failure(errors,_,_,_,_,_) => {
-            val code = errors.forObject("creditCard").forObject("billingAddress").onField("base").get(0).getCode
+            val code = errors.forObject("creditCard").forObject("billingAddress").onField("base").get(0).code
             code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
           }
         }
@@ -367,7 +367,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case r: Failure => {
-            val errorCode = r.errors.forObject("creditCard").onField("venmoSdkPaymentMethodCode").get(0).getCode
+            val errorCode = r.errors.forObject("creditCard").onField("venmoSdkPaymentMethodCode").get(0).code
             errorCode must be === ValidationErrorCode.CREDIT_CARD_INVALID_VENMO_SDK_PAYMENT_METHOD_CODE
             r.message must be === "Invalid VenmoSDK payment method code"
           }
@@ -540,7 +540,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case r: Failure => {
-            val code = r.errors.forObject("creditCard").forObject("billingAddress").onField("countryCodeAlpha2").get(0).getCode
+            val code = r.errors.forObject("creditCard").forObject("billingAddress").onField("countryCodeAlpha2").get(0).code
             code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
           }
         }
@@ -778,7 +778,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case r: Failure => {
-            val code = r.errors.forObject("creditCard").onField("number").get(0).getCode
+            val code = r.errors.forObject("creditCard").onField("number").get(0).code
             code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
           }
         }

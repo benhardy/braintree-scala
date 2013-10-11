@@ -16,15 +16,15 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
     it("onField") {
       val errors = new ValidationErrors
       errors.addError(new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
-      errors.onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-      errors.onField("countryName").get(0).getMessage must be === "invalid country"
+      errors.onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      errors.onField("countryName").get(0).message must be === "invalid country"
     }
   
     it("onFieldAlsoWorksWithUnderscores") {
       val errors = new ValidationErrors
       errors.addError(new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
-      errors.onField("country_name").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-      errors.onField("country_name").get(0).getMessage must be === "invalid country"
+      errors.onField("country_name").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      errors.onField("country_name").get(0).message must be === "invalid country"
     }
   
     it("nonExistingField") {
@@ -37,8 +37,8 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
       addressErrors.addError(new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
       val errors = new ValidationErrors
       errors.addErrors("address", addressErrors)
-      errors.forObject("address").onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-      errors.forObject("address").onField("country_name").get(0).getMessage must be === "invalid country"
+      errors.forObject("address").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      errors.forObject("address").onField("country_name").get(0).message must be === "invalid country"
     }
   
     it("forObjectOnNonExistingObject") {
@@ -51,7 +51,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
       addressErrors.addError(new ValidationError("name", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "invalid name"))
       val errors = new ValidationErrors
       errors.addErrors("billing-address", addressErrors)
-      errors.forObject("billing_address").onField("name").get(0).getCode must be === ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG
+      errors.forObject("billing_address").onField("name").get(0).code must be === ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG
     }
   }
   describe("size") {
@@ -86,7 +86,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
       errors.addError(new ValidationError("someField", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "some message"))
       errors.addErrors("address", addressErrors)
       errors.getAllValidationErrors.size must be === 1
-      errors.getAllValidationErrors.get(0).getCode must be === ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG
+      errors.getAllValidationErrors.get(0).code must be === ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG
     }
 
     it("getAllDeepValidationErrors") {
@@ -97,11 +97,11 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
       errors.addError(new ValidationError("someField", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "3"))
       errors.addErrors("address", addressErrors)
       errors.getAllDeepValidationErrors.size must be === 3
-      val validationErrors = errors.getAllDeepValidationErrors.sortWith((a,b) => a.getCode.compareTo(b.getCode) < 0)
+      val validationErrors = errors.getAllDeepValidationErrors.sortWith((a,b) => a.code.compareTo(b.code) < 0)
 
-      validationErrors.get(0).getCode must be === ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG
-      validationErrors.get(1).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-      validationErrors.get(2).getCode must be === ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG
+      validationErrors.get(0).code must be === ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG
+      validationErrors.get(1).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      validationErrors.get(2).code must be === ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG
     }
   }
 
@@ -125,8 +125,8 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
 
       val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 1
-      errors.forObject("address").onField("country_name").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-      errors.forObject("address").onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      errors.forObject("address").onField("country_name").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      errors.forObject("address").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
     }
 
     it("parseMulitpleValidationErrorsOnOneObject") {
@@ -152,8 +152,8 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
 
       val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 2
-      errors.forObject("address").onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
-      errors.forObject("address").onField("streetAddress").get(0).getCode must be === ValidationErrorCode.ADDRESS_STREET_ADDRESS_IS_TOO_LONG
+      errors.forObject("address").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      errors.forObject("address").onField("streetAddress").get(0).code must be === ValidationErrorCode.ADDRESS_STREET_ADDRESS_IS_TOO_LONG
     }
 
     it("parseMulitpleValidationErrorsOnOneField") {
@@ -203,7 +203,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
 
       val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 1
-      errors.forObject("creditCard").forObject("billingAddress").onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      errors.forObject("creditCard").forObject("billingAddress").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
     }
 
     it("parseValidationErrorsAtMultipleLevels") {
@@ -245,13 +245,13 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
       errors.size must be === 0
       errors.forObject("customer").deepSize must be === 3
       errors.forObject("customer").size must be === 1
-      errors.forObject("customer").onField("firstName").get(0).getCode must be === ValidationErrorCode.CUSTOMER_FIRST_NAME_IS_TOO_LONG
+      errors.forObject("customer").onField("firstName").get(0).code must be === ValidationErrorCode.CUSTOMER_FIRST_NAME_IS_TOO_LONG
       errors.forObject("customer").forObject("creditCard").deepSize must be === 2
       errors.forObject("customer").forObject("creditCard").size must be === 1
-      errors.forObject("customer").forObject("creditCard").onField("number").get(0).getCode must be === ValidationErrorCode.CREDIT_CARD_NUMBER_IS_INVALID
+      errors.forObject("customer").forObject("creditCard").onField("number").get(0).code must be === ValidationErrorCode.CREDIT_CARD_NUMBER_IS_INVALID
       errors.forObject("customer").forObject("creditCard").forObject("billingAddress").deepSize must be === 1
       errors.forObject("customer").forObject("creditCard").forObject("billingAddress").size must be === 1
-      errors.forObject("customer").forObject("creditCard").forObject("billingAddress").onField("countryName").get(0).getCode must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
+      errors.forObject("customer").forObject("creditCard").forObject("billingAddress").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
     }
   }
 }

@@ -71,7 +71,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         notification.getKind must be === WebhookNotification.Kind.SUB_MERCHANT_ACCOUNT_DECLINED
         notification.getMerchantAccount.getId must be === "my_id"
         notification.getTimestamp must beSameDayAs(Calendar.getInstance)
-        val code = notification.getErrors.forObject("merchantAccount").onField("base").get(0).getCode
+        val code = notification.getErrors.forObject("merchantAccount").onField("base").get(0).code
         code must be === ValidationErrorCode.MERCHANT_ACCOUNT_APPLICANT_DETAILS_DECLINED_OFAC
     }
 

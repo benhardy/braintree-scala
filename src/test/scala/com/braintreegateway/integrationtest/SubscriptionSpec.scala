@@ -303,7 +303,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         createResult match {
           case Failure(allErrors,_,_,_,_,_) => {
             val errors = allErrors.forObject("subscription").onField("firstBillingDate")
-            errors.get(0).getCode must be === ValidationErrorCode.SUBSCRIPTION_FIRST_BILLING_DATE_CANNOT_BE_IN_THE_PAST
+            errors.get(0).code must be === ValidationErrorCode.SUBSCRIPTION_FIRST_BILLING_DATE_CANNOT_BE_IN_THE_PAST
           }
         }
     }
@@ -520,9 +520,9 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
           case Failure(errors,_,_,_,_,_)  => errors.forObject("subscription").forObject("addOns").forObject("update")
         }
         updateErrors.forIndex(0).
-          onField("amount").get(0).getCode must be === ValidationErrorCode.SUBSCRIPTION_MODIFICATION_AMOUNT_IS_INVALID
+          onField("amount").get(0).code must be === ValidationErrorCode.SUBSCRIPTION_MODIFICATION_AMOUNT_IS_INVALID
         updateErrors.forIndex(1).
-          onField("quantity").get(0).getCode must be === ValidationErrorCode.SUBSCRIPTION_MODIFICATION_QUANTITY_IS_INVALID
+          onField("quantity").get(0).code must be === ValidationErrorCode.SUBSCRIPTION_MODIFICATION_QUANTITY_IS_INVALID
     }
 
     onGatewayIt("createWithBadPlanId") {
@@ -532,7 +532,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val planErrors = result match {
           case Failure(allErrors,_,_,_,_,_) => allErrors.forObject("subscription").onField("planId")
         }
-        planErrors.get(0).getCode must be === ValidationErrorCode.SUBSCRIPTION_PLAN_ID_IS_INVALID
+        planErrors.get(0).code must be === ValidationErrorCode.SUBSCRIPTION_PLAN_ID_IS_INVALID
       }
     }
 
@@ -543,7 +543,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val errors = result match {
           case Failure(allErrors,_,_,_,_,_) => allErrors
         }
-        val code = errors.forObject("subscription").onField("paymentMethodToken").get(0).getCode
+        val code = errors.forObject("subscription").onField("paymentMethodToken").get(0).code
         code must be === ValidationErrorCode.SUBSCRIPTION_PAYMENT_METHOD_TOKEN_IS_INVALID
     }
 
@@ -568,8 +568,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val errors = result match {
           case Failure(errors,_,_,_,_,_) => errors
         }
-        errors.forObject("subscription").forObject("descriptor").onField("name").get(0).getCode must be === ValidationErrorCode.DESCRIPTOR_NAME_FORMAT_IS_INVALID
-        errors.forObject("subscription").forObject("descriptor").onField("phone").get(0).getCode must be === ValidationErrorCode.DESCRIPTOR_PHONE_FORMAT_IS_INVALID
+        errors.forObject("subscription").forObject("descriptor").onField("name").get(0).code must be === ValidationErrorCode.DESCRIPTOR_NAME_FORMAT_IS_INVALID
+        errors.forObject("subscription").forObject("descriptor").onField("phone").get(0).code must be === ValidationErrorCode.DESCRIPTOR_PHONE_FORMAT_IS_INVALID
     }
 
     onGatewayIt("validationErrorsOnCreate") {
@@ -580,7 +580,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val createResult = gateway.subscription.create(request)
         createResult match {
           case Failure(errors,_,_,_,_,_) => {
-            errors.forObject("subscription").onField("id").get(0).getCode must be === ValidationErrorCode.SUBSCRIPTION_TOKEN_FORMAT_IS_INVALID
+            errors.forObject("subscription").onField("id").get(0).code must be === ValidationErrorCode.SUBSCRIPTION_TOKEN_FORMAT_IS_INVALID
           }
         }
     }
@@ -913,7 +913,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = gateway.subscription.update(createdSubscription.getId, updateRequest)
         result match {
           case Failure(errors,_,_,_,_,_) => {
-            val code = errors.forObject("subscription").onField("id").get(0).getCode
+            val code = errors.forObject("subscription").onField("id").get(0).code
             code must be === ValidationErrorCode.SUBSCRIPTION_TOKEN_FORMAT_IS_INVALID
           }
         }
