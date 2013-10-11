@@ -22,9 +22,9 @@ class AddressGateway(http: Http) {
    * @param request the request object.
    * @return a { @link Result} object.
    */
-  def create(customerId: String, request: AddressRequest): Result2[Address] = {
+  def create(customerId: String, request: AddressRequest): Result[Address] = {
     val node = http.post("/customers/" + customerId + "/addresses", request)
-    Result2.address(node)
+    Result.address(node)
   }
 
   /**
@@ -33,9 +33,9 @@ class AddressGateway(http: Http) {
    * @param id the id of the { @link Address} to delete.
    * @return a { @link Result} object.
    */
-  def delete(customerId: String, id: String): Result2[Address] = {
+  def delete(customerId: String, id: String): Result[Address] = {
     http.delete("/customers/" + customerId + "/addresses/" + id)
-    Result2.deleted
+    Result.deleted
   }
 
   /**
@@ -56,8 +56,8 @@ class AddressGateway(http: Http) {
    * @param request the request object containing the { @link AddressRequest} parameters.
    * @return the { @link Address} or raises a { @link com.braintreegateway.exceptions.NotFoundException}.
    */
-  def update(customerId: String, id: String, request: AddressRequest): Result2[Address] = {
+  def update(customerId: String, id: String, request: AddressRequest): Result[Address] = {
     val node = http.put("/customers/" + customerId + "/addresses/" + id, request)
-    Result2.address(node)
+    Result.address(node)
   }
 }

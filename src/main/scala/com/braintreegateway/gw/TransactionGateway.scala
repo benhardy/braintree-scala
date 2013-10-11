@@ -26,18 +26,18 @@ import com.braintreegateway._
  */
 class TransactionGateway(http: Http, configuration: Configuration) {
 
-  def cloneTransaction(id: String, request: TransactionCloneRequest): Result2[Transaction] = {
+  def cloneTransaction(id: String, request: TransactionCloneRequest): Result[Transaction] = {
     val response: NodeWrapper = http.post("/transactions/" + id + "/clone", request)
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
   /**
    * Please use gateway.transparentRedirect().confirmTransaction() instead
    */
-  @Deprecated def confirmTransparentRedirect(queryString: String): Result2[Transaction] = {
+  @Deprecated def confirmTransparentRedirect(queryString: String): Result[Transaction] = {
     val trRequest: TransparentRedirectRequest = new TransparentRedirectRequest(configuration, queryString)
     val node: NodeWrapper = http.post("/transactions/all/confirm_transparent_redirect_request", trRequest)
-    Result2.transaction(node)
+    Result.transaction(node)
   }
 
   /**
@@ -45,9 +45,9 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param request the request.
    * @return a{ @link Result}
    */
-  def credit(request: TransactionRequest): Result2[Transaction] = {
+  def credit(request: TransactionRequest): Result[Transaction] = {
     val response: NodeWrapper = http.post("/transactions", request.`type`(Type.CREDIT))
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
   /**
@@ -75,15 +75,15 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param id the id of the (sale) { @link Transaction} to refund.
    * @return a{ @link Result}.
    */
-  def refund(id: String): Result2[Transaction] = {
+  def refund(id: String): Result[Transaction] = {
     val response: NodeWrapper = http.post("/transactions/" + id + "/refund")
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
-  def refund(id: String, amount: BigDecimal): Result2[Transaction] = {
+  def refund(id: String, amount: BigDecimal): Result[Transaction] = {
     val request: TransactionRequest = new TransactionRequest().amount(amount)
     val response: NodeWrapper = http.post("/transactions/" + id + "/refund", request)
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
   /**
@@ -91,9 +91,9 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param request the request.
    * @return a{ @link Result}.
    */
-  def sale(request: TransactionRequest): Result2[Transaction] = {
+  def sale(request: TransactionRequest): Result[Transaction] = {
     val response: NodeWrapper = http.post("/transactions", request.`type`(Type.SALE))
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
   /**
@@ -127,10 +127,10 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param id of the transaction to cancel release from escrow of.
    * @return a{ @link Result}.
    */
-  def cancelRelease(id: String): Result2[Transaction] = {
+  def cancelRelease(id: String): Result[Transaction] = {
     val request: TransactionRequest = new TransactionRequest
     val response: NodeWrapper = http.put("/transactions/" + id + "/cancel_release", request)
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
   /**
@@ -138,10 +138,10 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param id of the transaction to hold for escrow.
    * @return a{ @link Result}.
    */
-  def holdInEscrow(id: String): Result2[Transaction] = {
+  def holdInEscrow(id: String): Result[Transaction] = {
     val request: TransactionRequest = new TransactionRequest
     val response: NodeWrapper = http.put("/transactions/" + id + "/hold_in_escrow", request)
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
   /**
@@ -149,10 +149,10 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param id of the transaction to submit for release.
    * @return a{ @link Result}.
    */
-  def releaseFromEscrow(id: String): Result2[Transaction] = {
+  def releaseFromEscrow(id: String): Result[Transaction] = {
     val request: TransactionRequest = new TransactionRequest
     val response: NodeWrapper = http.put("/transactions/" + id + "/release_from_escrow", request)
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
   /**
@@ -160,7 +160,7 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param id of the transaction to submit for settlement.
    * @return a{ @link Result}.
    */
-  def submitForSettlement(id: String): Result2[Transaction] = {
+  def submitForSettlement(id: String): Result[Transaction] = {
     submitForSettlement(id, null)
   }
 
@@ -170,10 +170,10 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param amount to settle. must be less than or equal to the authorization amount.
    * @{ @link Result}.
    */
-  def submitForSettlement(id: String, amount: BigDecimal): Result2[Transaction] = {
+  def submitForSettlement(id: String, amount: BigDecimal): Result[Transaction] = {
     val request: TransactionRequest = new TransactionRequest().amount(amount)
     val response: NodeWrapper = http.put("/transactions/" + id + "/submit_for_settlement", request)
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
   /**
@@ -188,8 +188,8 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @param id of the transaction to void.
    * @{ @link Result}.
    */
-  def voidTransaction(id: String): Result2[Transaction] = {
+  def voidTransaction(id: String): Result[Transaction] = {
     val response: NodeWrapper = http.put("/transactions/" + id + "/void")
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 }

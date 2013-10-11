@@ -27,9 +27,9 @@ class SubscriptionGateway(http: Http) {
    * @param id of the { @link Subscription} to cancel.
    * @return a { @link Result}.
    */
-  def cancel(id: String): Result2[Subscription] = {
+  def cancel(id: String): Result[Subscription] = {
     val node = http.put("/subscriptions/" + id + "/cancel")
-    Result2.subscription(node)
+    Result.subscription(node)
   }
 
   /**
@@ -37,14 +37,14 @@ class SubscriptionGateway(http: Http) {
    * @param request the request.
    * @return a { @link Result}.
    */
-  def create(request: SubscriptionRequest): Result2[Subscription] = {
+  def create(request: SubscriptionRequest): Result[Subscription] = {
     val node = http.post("/subscriptions", request)
-    Result2.subscription(node)
+    Result.subscription(node)
   }
 
-  def delete(customerId: String, id: String): Result2[Subscription] = {
+  def delete(customerId: String, id: String): Result[Subscription] = {
     http.delete("/subscriptions/" + id)
-    Result2.deleted
+    Result.deleted
   }
 
   /**
@@ -63,9 +63,9 @@ class SubscriptionGateway(http: Http) {
    * @param request the request.
    * @return a { @link Result}.
    */
-  def update(id: String, request: SubscriptionRequest): Result2[Subscription] = {
+  def update(id: String, request: SubscriptionRequest): Result[Subscription] = {
     val node = http.put("/subscriptions/" + id, request)
-    Result2.subscription(node)
+    Result.subscription(node)
   }
 
   /**
@@ -84,16 +84,16 @@ class SubscriptionGateway(http: Http) {
     response.findAll("subscription").map{new Subscription(_)}
   }
 
-  private def retryCharge(txnRequest: SubscriptionTransactionRequest): Result2[Transaction] = {
+  private def retryCharge(txnRequest: SubscriptionTransactionRequest): Result[Transaction] = {
     val response = http.post("/transactions", txnRequest)
-    Result2.transaction(response)
+    Result.transaction(response)
   }
 
-  def retryCharge(subscriptionId: String): Result2[Transaction] = {
+  def retryCharge(subscriptionId: String): Result[Transaction] = {
     retryCharge(new SubscriptionTransactionRequest().subscriptionId(subscriptionId))
   }
 
-  def retryCharge(subscriptionId: String, amount: BigDecimal): Result2[Transaction] = {
+  def retryCharge(subscriptionId: String, amount: BigDecimal): Result[Transaction] = {
     retryCharge(new SubscriptionTransactionRequest().subscriptionId(subscriptionId).amount(amount))
   }
 }

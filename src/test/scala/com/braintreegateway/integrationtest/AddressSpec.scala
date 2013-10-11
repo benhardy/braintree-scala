@@ -8,7 +8,7 @@ import com.braintreegateway._
 import com.braintreegateway.exceptions.NotFoundException
 import java.util.Calendar
 import testhelpers.GatewaySpec
-import com.braintreegateway.gw.{Result2,Success,Failure}
+import com.braintreegateway.gw.{Result,Success,Failure}
 import com.braintreegateway.testhelpers.CalendarHelper._
 
 @RunWith(classOf[JUnitRunner])
@@ -107,7 +107,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
       val deleteResult = gateway.address.delete(address.getCustomerId, address.getId)
 
       deleteResult must be('success)
-      deleteResult must be === (Result2.deleted)
+      deleteResult must be === (Result.deleted)
 
       intercept[NotFoundException] {
         gateway.address.find(address.getCustomerId, address.getId)

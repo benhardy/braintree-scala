@@ -45,7 +45,7 @@ class CustomerGateway(http: Http, configuration: Configuration) {
    */
   def create(request: CustomerRequest) = {
     val node = http.post("/customers", request)
-    Result2.customer(node)
+    Result.customer(node)
   }
 
   /**
@@ -57,7 +57,7 @@ class CustomerGateway(http: Http, configuration: Configuration) {
    */
   def delete(id: String) = {
     http.delete("/customers/" + id)
-    Result2.deleted[Customer]
+    Result.deleted[Customer]
   }
 
   /**
@@ -94,6 +94,6 @@ class CustomerGateway(http: Http, configuration: Configuration) {
    */
   def update(id: String, request: CustomerRequest) = {
     val node = http.put("/customers/" + id, request)
-    Result2.customer(node)
+    Result.customer(node)
   }
 }

@@ -5,9 +5,9 @@ import com.braintreegateway.{MerchantAccount, MerchantAccountRequest}
 
 class MerchantAccountGateway(http: Http) {
 
-  def create(request: MerchantAccountRequest): Result2[MerchantAccount] = {
+  def create(request: MerchantAccountRequest): Result[MerchantAccount] = {
     val response = http.post(MerchantAccountGateway.CREATE_URL, request)
-    Result2.merchantAccount(response)
+    Result.merchantAccount(response)
   }
 }
 
