@@ -145,7 +145,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
         } yield address
         setup match {
           case Failure(errors, _, _, _, _, _) => {
-            val code = errors.forObject("address").onField("base").get(0).code
+            val code = errors.forObject("address").onField("base")(0).code
             code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
           }
           case _ => fail("expected validation failure")
@@ -163,7 +163,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         createResult match {
           case Failure(errors, _, _, _, _, _) => {
-            val code = errors.forObject("address").onField("countryCodeAlpha2").get(0).code
+            val code = errors.forObject("address").onField("countryCodeAlpha2")(0).code
             code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
           }
           case _ => fail("expected failure")
@@ -181,7 +181,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Failure(errors, _, _, _, _, _) => {
-            val code = errors.forObject("address").onField("countryCodeAlpha3").get(0).code
+            val code = errors.forObject("address").onField("countryCodeAlpha3")(0).code
             code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA3_IS_NOT_ACCEPTED
           }
           case _ => fail("expected failure")
@@ -199,7 +199,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Failure(errors, _, _, _, _, _) => {
-            val code = errors.forObject("address").onField("countryCodeNumeric").get(0).code
+            val code = errors.forObject("address").onField("countryCodeNumeric")(0).code
             code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_NUMERIC_IS_NOT_ACCEPTED
           }
           case _ => fail("expected failure")

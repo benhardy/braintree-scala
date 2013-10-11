@@ -2,7 +2,8 @@ package com.braintreegateway
 
 import com.braintreegateway.util.NodeWrapper
 import com.braintreegateway.util.StringUtils
-import java.util._
+import collection.mutable.ListBuffer
+import scala.collection.mutable.{Map =>MutableMap}
 
 /**
  * Represents an validation error from the gateway.
@@ -38,12 +39,12 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
   }
   def this() = this(None)
 
-  val errors = new ArrayList[ValidationError]
-  val nestedErrors = new HashMap[String, ValidationErrors]
+  val errors = new ListBuffer[ValidationError]
+  val nestedErrors = MutableMap[String, ValidationErrors]()
 
   /** visible for test */
   private[braintreegateway] def addError(error: ValidationError) {
-    errors.add(error)
+    errors += error
   }
 
   /** visible for test */
@@ -58,7 +59,6 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
    * @return the number of errors.
    */
   def deepSize: Int = {
-    import scala.collection.JavaConversions._
     errors.size + nestedErrors.values.toStream.map { _.deepSize }.sum
   }
 
@@ -76,13 +76,9 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
    * @return a { @link ValidationErrors} object.
    */
   def forObject(objectName: String): ValidationErrors = {
-    val errorsOnObject: ValidationErrors = nestedErrors.get(StringUtils.dasherize(objectName))
-    if (errorsOnObject == null) {
-      new ValidationErrors
-    }
-    else {
-      errorsOnObject
-    }
+    nestedErrors.
+      get(StringUtils.dasherize(objectName)).
+      getOrElse { new ValidationErrors() }
   }
 
   /**
@@ -92,12 +88,15 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
    * @return a List of { @link ValidationError} objects.
    */
   def getAllDeepValidationErrors: List[ValidationError] = {
-    val result: List[ValidationError] = new ArrayList[ValidationError](errors)
-    import scala.collection.JavaConversions._
-    for (validationErrors <- nestedErrors.values) {
-      result.addAll(validationErrors.getAllDeepValidationErrors)
+    val result = ListBuffer[ValidationError]()
+    def addBranchErrors(v:ValidationErrors) {
+      result ++= v.errors
+      for (child <- v.nestedErrors.values) {
+        addBranchErrors(child)
+      }
     }
-    result
+    addBranchErrors(this)
+    result.toList
   }
 
   /**
@@ -107,7 +106,7 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
    * @return a List of { @link ValidationError} objects.
    */
   def getAllValidationErrors: List[ValidationError] = {
-    Collections.unmodifiableList(new ArrayList[ValidationError](errors))
+    errors.toList
   }
 
   /**
@@ -119,30 +118,24 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
    * @return a List of { @link ValidationError} objects
    */
   def onField(fieldName: String): List[ValidationError] = {
-    val list: List[ValidationError] = new ArrayList[ValidationError]
-    import scala.collection.JavaConversions._
-    for (error <- errors) {
-      if (error.attribute == StringUtils.underscore(fieldName)) {
-        list.add(error)
-      }
-    }
-    list
+    val field = StringUtils.underscore(fieldName)
+    errors.filter(_.attribute == field).toList
   }
 
   private def populateErrors(node: NodeWrapper) {
+    import scala.collection.JavaConversions._
     val workNode = if (node.getElementName == "api-error-response") {
       node.findFirst("errors")
     } else {
       node
     }
-    val errorResponses: List[NodeWrapper] = workNode.findAll("*")
-    import scala.collection.JavaConversions._
+    val errorResponses: List[NodeWrapper] = workNode.findAll("*").toList
     for (errorResponse <- errorResponses) {
       if (!(errorResponse.getElementName == "errors")) {
         nestedErrors.put(errorResponse.getElementName, new ValidationErrors(errorResponse))
       }
       else {
-        populateTopLevelErrors(errorResponse.findAll("error"))
+        populateTopLevelErrors(errorResponse.findAll("error").toList)
       }
     }
   }

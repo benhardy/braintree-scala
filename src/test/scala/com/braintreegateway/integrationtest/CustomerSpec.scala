@@ -97,7 +97,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val result = gateway.customer.create(customerRequest)
       result match {
         case Failure(errors,_,_,_,_,_) => {
-          val code = errors.forObject("customer").forObject("creditCard").onField("number").get(0).code
+          val code = errors.forObject("customer").forObject("creditCard").onField("number")(0).code
           code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
         }
       }
@@ -184,7 +184,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val result = gateway.customer.create(request)
       result match {
         case Failure(errors,_,_,_,_,_)  => {
-          val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").onField("base").get(0).code
+          val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").onField("base")(0).code
           code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
         }
       }
@@ -289,7 +289,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       result match {
         case Failure(errors,_,_,_,_,_) => {
           val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").
-            onField("base").get(0).code
+            onField("base")(0).code
           code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
         }
       }
@@ -480,7 +480,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       result match {
         case Failure(errors,_,_,_,_,_) => {
           val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").
-            onField("base").get(0).code
+            onField("base")(0).code
           code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
         }
       }
@@ -601,7 +601,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       result match {
         case Failure(errors,_,_,_,_,_) => {
           val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").
-            onField("base").get(0).code
+            onField("base")(0).code
           code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
         }
       }
