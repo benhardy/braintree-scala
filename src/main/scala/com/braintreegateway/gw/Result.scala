@@ -75,7 +75,7 @@ object Result {
       Success(maker(node))
     } else {
       Failure(
-        errors = new ValidationErrors(node),
+        errors = ValidationErrors(node),
         creditCardVerification = Option(node.findFirst("verification")).map {
           new CreditCardVerification(_)
         },

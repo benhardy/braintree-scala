@@ -3,13 +3,13 @@ package com.braintreegateway
 import com.braintreegateway.util.NodeWrapper
 import com.braintreegateway.util.StringUtils
 import collection.mutable.ListBuffer
-import scala.collection.mutable.{Map =>MutableMap}
+import com.braintreegateway.ValidationErrors.NoValidationErrors
 
 /**
  * Represents an validation error from the gateway.
  * @param attribute - the attribute that this error references, e.g. amount or expirationDate.
  * @param code - the ValidationErrorCode for the specific validation error
- * @param message - Messages may change over time; rely on {@link #code()} for comparisons.
+ * @param message - Messages may change over time; rely on @{link #code()} for comparisons.
  */
 case class ValidationError(attribute: String, code: ValidationErrorCode, message: String) {
 }
@@ -32,26 +32,8 @@ case class ValidationError(attribute: String, code: ValidationErrorCode, message
  * target="_blank">http://www.braintreepayments.com/gateway/validation-errors
  * </a>
  */
-class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
-  def this(node:NodeWrapper) = {
-    this(Some(node))
-    populateErrors(node)
-  }
-  def this() = this(None)
 
-  val errors = new ListBuffer[ValidationError]
-  val nestedErrors = MutableMap[String, ValidationErrors]()
-
-  /** visible for test */
-  private[braintreegateway] def addError(error: ValidationError) {
-    errors += error
-  }
-
-  /** visible for test */
-  def addErrors(objectName: String, errors: ValidationErrors) {
-    nestedErrors.put(objectName, errors)
-  }
-
+case class ValidationErrors(errors: List[ValidationError], nestedErrors: Map[String, ValidationErrors]) {
   /**
    * Returns the number of errors on this object and all nested objects.
    *
@@ -76,9 +58,10 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
    * @return a { @link ValidationErrors} object.
    */
   def forObject(objectName: String): ValidationErrors = {
+    val dashedName:String = StringUtils.dasherize(objectName)
     nestedErrors.
-      get(StringUtils.dasherize(objectName)).
-      getOrElse { new ValidationErrors() }
+      get(dashedName).
+      getOrElse(NoValidationErrors)
   }
 
   /**
@@ -122,33 +105,6 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
     errors.filter(_.attribute == field).toList
   }
 
-  private def populateErrors(node: NodeWrapper) {
-    import scala.collection.JavaConversions._
-    val workNode = if (node.getElementName == "api-error-response") {
-      node.findFirst("errors")
-    } else {
-      node
-    }
-    val errorResponses: List[NodeWrapper] = workNode.findAll("*").toList
-    for (errorResponse <- errorResponses) {
-      if (!(errorResponse.getElementName == "errors")) {
-        nestedErrors.put(errorResponse.getElementName, new ValidationErrors(errorResponse))
-      }
-      else {
-        populateTopLevelErrors(errorResponse.findAll("error").toList)
-      }
-    }
-  }
-
-  private def populateTopLevelErrors(childErrors: List[NodeWrapper]) {
-    import scala.collection.JavaConversions._
-    for (childError <- childErrors) {
-      val code: ValidationErrorCode = ValidationErrorCode.findByCode(childError.findString("code"))
-      val message: String = childError.findString("message")
-      errors.add(new ValidationError(childError.findString("attribute"), code, message))
-    }
-  }
-
   /**
    * Returns the number of errors on this object at the current nesting level.
    *
@@ -157,5 +113,43 @@ class ValidationErrors private(nodeOption: Option[NodeWrapper]) {
    */
   def size: Int = {
     errors.size
+  }
+}
+
+object ValidationErrors {
+  object NoValidationErrors extends ValidationErrors(Nil, Map.empty)
+
+  def apply(node:NodeWrapper) = {
+    val allErrors = populateErrors(node)
+    val errors: List[ValidationError] = allErrors._1
+    val nestedErrors: Map[String, ValidationErrors] = allErrors._2
+    new ValidationErrors(errors, nestedErrors)
+  }
+
+  private def populateErrors(node: NodeWrapper): (List[ValidationError], Map[String, ValidationErrors]) = {
+    import scala.collection.JavaConversions._
+    val workNode = if (node.getElementName == "api-error-response") {
+      node.findFirst("errors")
+    } else {
+      node
+    }
+
+    val errorResponses = workNode.findAll("*").toList
+    val (childErrors, others) = errorResponses.partition(_.getElementName == "errors")
+    val topLevel: List[ValidationError] = childErrors.flatMap{
+      er => childErrorsForTopLevel(er.findAll("error").toList)
+    }
+    val nested: Map[String, ValidationErrors] = others.map{e=> e.getElementName -> ValidationErrors(e)}.toMap
+    (topLevel, nested)
+  }
+
+  private def childErrorsForTopLevel(childErrors: List[NodeWrapper]) = {
+    for {
+      childError <- childErrors
+      codeString <- childError.findStringOpt("code")
+      code = ValidationErrorCode.findByCode(codeString)
+      message <- childError.findStringOpt("message")
+      attribute <- childError.findStringOpt("attribute")
+    } yield ValidationError(attribute, code, message)
   }
 }

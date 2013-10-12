@@ -5,71 +5,137 @@ import _root_.org.scalatest.FunSpec
 import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway.util.NodeWrapperFactory
+import gw.{Result, Failure}
 import scala.collection.JavaConversions._
 
 import testhelpers.XmlHelper.xmlAsStringWithHeader
+import com.braintreegateway.ValidationErrors.NoValidationErrors
 
 
 @RunWith(classOf[JUnitRunner])
 class ValidationErrorsSpec extends FunSpec with MustMatchers {
+
+  describe("from gateway response XML via Result") {
+    it("creates proper ValidationErrors tree") {
+      val response = <api-error-response>
+        <errors>
+          <errors type="array"/>
+          <address>
+            <errors type="array">
+              <error>
+                <code>91815</code>
+                <attribute type="symbol">base</attribute>
+                <message>Provided country information is inconsistent.</message>
+              </error>
+            </errors>
+          </address>
+        </errors>
+        <params>
+          <address>
+            <country-name>Tunisia</country-name>
+            <country-code-alpha2>US</country-code-alpha2>
+          </address>
+          <action>create</action>
+          <controller>addresses</controller>
+          <merchant-id>integration_merchant_id</merchant-id>
+          <customer-id>175821</customer-id>
+        </params>
+        <message>Provided country information is inconsistent.</message>
+      </api-error-response>
+
+      val node = NodeWrapperFactory.create(xmlAsStringWithHeader(response))
+      val result = Result.address(node)
+      println(result)
+      result match {
+        case Failure(errors,_,_,_,_,_) => {
+          errors.deepSize must be === 1
+          errors.size must be === 0
+          errors.forObject("address").deepSize must be === 1
+          errors.forObject("address").size must be === 1
+          errors.forObject("address").onField("base").get(0).code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
+        }
+        case _ => fail("expected Failure")
+      }
+    }
+  }
+
   describe("codes") {
     it("onField") {
-      val errors = new ValidationErrors
-      errors.addError(new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
+      val errors = new ValidationErrors(
+        List(
+          new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country")
+        ), Map.empty
+      )
       errors.onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
       errors.onField("countryName").get(0).message must be === "invalid country"
     }
   
     it("onFieldAlsoWorksWithUnderscores") {
-      val errors = new ValidationErrors
-      errors.addError(new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
+      val errors = new ValidationErrors(
+        List(
+          new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country")
+        ), Map.empty
+      )
       errors.onField("country_name").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
       errors.onField("country_name").get(0).message must be === "invalid country"
     }
   
     it("nonExistingField") {
-      val errors = new ValidationErrors
+      val errors = NoValidationErrors
       errors.onField("foo") must be ('empty)
     }
   
     it("forObject") {
-      val addressErrors = new ValidationErrors
-      addressErrors.addError(new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
-      val errors = new ValidationErrors
-      errors.addErrors("address", addressErrors)
+      val addressErrors = new ValidationErrors(
+        List(
+          new ValidationError("country_name", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country")
+        ),
+        Map.empty
+      )
+      val errors = new ValidationErrors(Nil, Map("address" -> addressErrors))
+
       errors.forObject("address").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
       errors.forObject("address").onField("country_name").get(0).message must be === "invalid country"
     }
   
     it("forObjectOnNonExistingObject") {
-      val errors = new ValidationErrors
+      val errors = NoValidationErrors
       errors.forObject("invalid").size must be === 0
     }
   
     it("forObjectAlsoWorksWithUnderscores") {
-      val addressErrors = new ValidationErrors
-      addressErrors.addError(new ValidationError("name", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "invalid name"))
-      val errors = new ValidationErrors
-      errors.addErrors("billing-address", addressErrors)
+      val addressErrors = new ValidationErrors(
+        List(
+          new ValidationError("name", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "invalid name")
+        ),
+        Map.empty
+      )
+      val errors = new ValidationErrors(Nil, Map("billing-address" -> addressErrors))
       errors.forObject("billing_address").onField("name").get(0).code must be === ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG
+
     }
   }
   describe("size") {
     it("reports correct size") {
-      val errors = new ValidationErrors
-      errors.addError(new ValidationError("countryName", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
-      errors.addError(new ValidationError("anotherField", ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG, "another message"))
+      val errors = new ValidationErrors(List(
+        new ValidationError("countryName", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"),
+        new ValidationError("anotherField", ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG, "another message")
+      ), Map.empty)
       errors.size must be === 2
     }
   }
   describe("deepSize") {
     it("reports correct deepSize") {
-      val addressErrors = new ValidationErrors
-      addressErrors.addError(new ValidationError("countryName", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
-      addressErrors.addError(new ValidationError("anotherField", ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG, "another message"))
-      val errors = new ValidationErrors
-      errors.addError(new ValidationError("someField", ValidationErrorCode.ADDRESS_EXTENDED_ADDRESS_IS_TOO_LONG, "some message"))
-      errors.addErrors("address", addressErrors)
+      val addressErrors = new ValidationErrors(List(
+        new ValidationError("countryName", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"),
+        new ValidationError("anotherField", ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG, "another message")
+      ), Map.empty)
+      val errors = new ValidationErrors(
+        List(
+          new ValidationError("someField", ValidationErrorCode.ADDRESS_EXTENDED_ADDRESS_IS_TOO_LONG, "some message")
+        ),
+        Map("address" -> addressErrors)
+      )
       errors.deepSize must be === 3
       errors.size must be === 1
       errors.forObject("address").deepSize must be === 2
@@ -79,23 +145,32 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
 
   describe("getting all validation errors") {
     it("getAllValidationErrors") {
-      val addressErrors = new ValidationErrors
-      addressErrors.addError(new ValidationError("countryName", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"))
-      addressErrors.addError(new ValidationError("anotherField", ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG, "another message"))
-      val errors = new ValidationErrors
-      errors.addError(new ValidationError("someField", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "some message"))
-      errors.addErrors("address", addressErrors)
+      val addressErrors = new ValidationErrors(List(
+        new ValidationError("countryName", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "invalid country"),
+        new ValidationError("anotherField", ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG, "another message")
+      ), Map.empty)
+      val errors = new ValidationErrors(
+        List(
+          new ValidationError("someField", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "some message")
+        ),
+        Map("address" -> addressErrors)
+      )
       errors.getAllValidationErrors.size must be === 1
       errors.getAllValidationErrors.get(0).code must be === ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG
     }
 
     it("getAllDeepValidationErrors") {
-      val addressErrors = new ValidationErrors
-      addressErrors.addError(new ValidationError("countryName", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "1"))
-      addressErrors.addError(new ValidationError("anotherField", ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG, "2"))
-      val errors = new ValidationErrors
-      errors.addError(new ValidationError("someField", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "3"))
-      errors.addErrors("address", addressErrors)
+      val addressErrors = new ValidationErrors(List(
+        new ValidationError("countryName", ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED, "1"),
+        new ValidationError("anotherField", ValidationErrorCode.ADDRESS_COMPANY_IS_TOO_LONG, "2")
+      ), Map.empty)
+      val errors = new ValidationErrors(
+        List(
+          new ValidationError("someField", ValidationErrorCode.ADDRESS_FIRST_NAME_IS_TOO_LONG, "3")
+        ),
+        Map("address" -> addressErrors)
+      )
+
       errors.getAllDeepValidationErrors.size must be === 3
       val validationErrors = errors.getAllDeepValidationErrors.sortWith((a,b) => a.code.compareTo(b.code) < 0)
 
@@ -123,7 +198,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
+      val errors = ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 1
       errors.forObject("address").onField("country_name").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
       errors.forObject("address").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
@@ -150,7 +225,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
+      val errors = ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 2
       errors.forObject("address").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
       errors.forObject("address").onField("streetAddress").get(0).code must be === ValidationErrorCode.ADDRESS_STREET_ADDRESS_IS_TOO_LONG
@@ -177,7 +252,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
+      val errors = ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 2
       errors.forObject("transaction").onField("base").size must be === 2
     }
@@ -201,7 +276,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
+      val errors = ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 1
       errors.forObject("creditCard").forObject("billingAddress").onField("countryName").get(0).code must be === ValidationErrorCode.ADDRESS_COUNTRY_NAME_IS_NOT_ACCEPTED
     }
@@ -240,7 +315,7 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
         </errors>
       </api-error-response>
 
-      val errors = new ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
+      val errors = ValidationErrors(NodeWrapperFactory.create(xmlAsStringWithHeader(xml)))
       errors.deepSize must be === 3
       errors.size must be === 0
       errors.forObject("customer").deepSize must be === 3

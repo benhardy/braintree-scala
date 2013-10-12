@@ -61,7 +61,7 @@ public class WebhookNotification {
         }
 
         if (!wrapperNode.isSuccess()) {
-            this.errors = new ValidationErrors(wrapperNode);
+            this.errors = ValidationErrors.apply(wrapperNode);
         }
     }
 
