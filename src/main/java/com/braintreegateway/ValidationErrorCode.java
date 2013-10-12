@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.util.ValidationErrorCodes;
+
 /**
  * An Enum representing all of the validation errors from the gateway.
  */
@@ -259,8 +261,7 @@ public enum ValidationErrorCode {
     MERCHANT_ACCOUNT_APPLICANT_DETAILS_ADDRESS_STREET_ADDRESS_IS_INVALID("82629"),
     MERCHANT_ACCOUNT_APPLICANT_DETAILS_ADDRESS_STREET_ADDRESS_IS_REQUIRED("82617"),
 
-    @Deprecated
-    UNKOWN_VALIDATION_ERROR("");
+    UNKNOWN_VALIDATION_ERROR("");
 
     public String code;
 
@@ -269,12 +270,7 @@ public enum ValidationErrorCode {
     }
 
     public static ValidationErrorCode findByCode(String code) {
-        for (ValidationErrorCode validationErrorCode : values()) {
-            if (validationErrorCode.code.equals(code)) {
-                return validationErrorCode;
-            }
-        }
-        return UNKOWN_VALIDATION_ERROR;
+        return ValidationErrorCodes.fromString(code);
     }
 
 }

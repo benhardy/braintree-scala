@@ -15,7 +15,7 @@ class ValidationErrorCodeSpec extends FunSpec with MustMatchers {
 
     it("falls back when not found") {
       val code = ValidationErrorCode.findByCode("-9999")
-      code must be === ValidationErrorCode.UNKOWN_VALIDATION_ERROR
+      code must be === ValidationErrorCode.UNKNOWN_VALIDATION_ERROR
     }
   }
 }
