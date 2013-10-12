@@ -75,13 +75,13 @@ class SubscriptionGateway(http: Http) {
    */
   def search(searchRequest: SubscriptionSearchRequest): ResourceCollection[Subscription] = {
     val node = http.post("/subscriptions/advanced_search_ids", searchRequest)
-    new ResourceCollection[Subscription](new SubscriptionPager(this, searchRequest), node)
+    new ResourceCollection[Subscription](Pager.subscription(this, searchRequest), node)
   }
 
-  private[braintreegateway] def fetchSubscriptions(search: SubscriptionSearchRequest, ids: JUList[String]): JUList[Subscription] = {
+  private[braintreegateway] def fetchSubscriptions(search: SubscriptionSearchRequest, ids: List[String]): List[Subscription] = {
     search.ids.in(ids)
     val response = http.post("/subscriptions/advanced_search", search)
-    response.findAll("subscription").map{new Subscription(_)}
+    response.findAll("subscription").map{new Subscription(_)}.toList
   }
 
   private def retryCharge(txnRequest: SubscriptionTransactionRequest): Result[Transaction] = {

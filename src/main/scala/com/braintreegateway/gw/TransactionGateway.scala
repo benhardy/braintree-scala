@@ -113,13 +113,13 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    */
   def search(query: TransactionSearchRequest): ResourceCollection[Transaction] = {
     val node: NodeWrapper = http.post("/transactions/advanced_search_ids", query)
-    new ResourceCollection[Transaction](new TransactionPager(this, query), node)
+    new ResourceCollection[Transaction](Pager.transaction(this, query), node)
   }
 
-  private[braintreegateway] def fetchTransactions(query: TransactionSearchRequest, ids: JUList[String]): JUList[Transaction] = {
+  private[braintreegateway] def fetchTransactions(query: TransactionSearchRequest, ids: List[String]): List[Transaction] = {
     query.ids.in(ids)
     val response: NodeWrapper = http.post("/transactions/advanced_search", query)
-    response.findAll("transaction").map(new Transaction(_))
+    response.findAll("transaction").map(new Transaction(_)).toList
   }
 
   /**

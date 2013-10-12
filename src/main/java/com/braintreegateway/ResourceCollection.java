@@ -5,6 +5,7 @@ import com.braintreegateway.util.NodeWrapper;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import static scala.collection.JavaConversions.*;
 
 /**
  * A collection used to page through query or search results.
@@ -46,7 +47,9 @@ public class ResourceCollection<T> implements Iterable<T> {
         
         public boolean hasNext() {
             if (nextIndexToFetch < ids.size() && index == items.size()) {
-                this.items = resourceCollection.pager.getPage(nextBatchOfIds());
+                // TODO cleanup conversions once this is translated
+                final scala.collection.immutable.List<String> ids1 = collectionAsScalaIterable(nextBatchOfIds()).toList();
+                this.items = asJavaList(resourceCollection.pager.getPage(ids1));
                 this.index = 0;
             }
             
@@ -91,6 +94,7 @@ public class ResourceCollection<T> implements Iterable<T> {
     }
 
     public T getFirst() {
-        return pager.getPage(ids.subList(0, 1)).get(0);
+        // todo cleanup conversions once this file is converted
+        return pager.getPage(asScalaIterable(ids.subList(0, 1)).toList()).head();
     }
 }

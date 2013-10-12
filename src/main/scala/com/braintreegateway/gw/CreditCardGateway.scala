@@ -4,7 +4,6 @@ import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
 import java.text.SimpleDateFormat
 import java.util.Calendar
-import java.util.{List =>JUList}
 import java.util.TimeZone
 import scala.collection.JavaConversions._
 import com.braintreegateway._
@@ -89,13 +88,13 @@ class CreditCardGateway(http: Http, configuration: Configuration) {
    */
   def expired: ResourceCollection[CreditCard] = {
     val response = http.post("/payment_methods/all/expired_ids")
-    new ResourceCollection[CreditCard](new ExpiredCreditCardPager(this), response)
+    new ResourceCollection[CreditCard](Pager.expiredCreditCard(this), response)
   }
 
-  private[braintreegateway] def fetchExpiredCreditCards(ids: JUList[String]): JUList[CreditCard] = {
+  private[braintreegateway] def fetchExpiredCreditCards(ids: List[String]): List[CreditCard] = {
     val query = new IdsSearchRequest().ids.in(ids)
     val response = http.post("/payment_methods/all/expired", query)
-    response.findAll("credit-card").map(new CreditCard(_))
+    response.findAll("credit-card").map(new CreditCard(_)).toList
   }
 
   /**
@@ -107,13 +106,13 @@ class CreditCardGateway(http: Http, configuration: Configuration) {
   def expiringBetween(start: Calendar, end: Calendar): ResourceCollection[CreditCard] = {
     val queryString = dateQueryString(start, end)
     val response = http.post("/payment_methods/all/expiring_ids?" + queryString)
-    new ResourceCollection[CreditCard](new ExpiringCreditCardPager(this, queryString), response)
+    new ResourceCollection[CreditCard](Pager.expiringCreditCard(this, queryString), response)
   }
 
-  private[braintreegateway] def fetchExpiringCreditCards(ids: JUList[String], queryString: String): JUList[CreditCard] = {
+  private[braintreegateway] def fetchExpiringCreditCards(ids: List[String], queryString: String): List[CreditCard] = {
     val query = new IdsSearchRequest().ids.in(ids)
     val response = http.post("/payment_methods/all/expiring?" + queryString, query)
-    response.findAll("credit-card").map{new CreditCard(_)}
+    response.findAll("credit-card").map{new CreditCard(_)}.toList
   }
 
   private def dateQueryString(start: Calendar, end: Calendar): String = {

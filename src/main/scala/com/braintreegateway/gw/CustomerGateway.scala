@@ -2,7 +2,6 @@ package com.braintreegateway.gw
 
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
-import java.util.{List =>JUList}
 import scala.collection.JavaConversions._
 import com.braintreegateway._
 
@@ -27,13 +26,13 @@ class CustomerGateway(http: Http, configuration: Configuration) {
    */
   def all = {
     val response = http.post("/customers/advanced_search_ids")
-    new ResourceCollection[Customer](new CustomerPager(this, new CustomerSearchRequest), response)
+    new ResourceCollection[Customer](Pager.customer(this, new CustomerSearchRequest), response)
   }
 
-  private[braintreegateway] def fetchCustomers(query: CustomerSearchRequest, ids: JUList[String]): JUList[Customer] = {
+  private[braintreegateway] def fetchCustomers(query: CustomerSearchRequest, ids: List[String]): List[Customer] = {
     query.ids.in(ids)
     val response = http.post("/customers/advanced_search", query)
-    response.findAll("customer").map{new Customer(_)}
+    response.findAll("customer").map{new Customer(_)}.toList
   }
 
   /**
@@ -80,7 +79,7 @@ class CustomerGateway(http: Http, configuration: Configuration) {
    */
   def search(query: CustomerSearchRequest) = {
     val node = http.post("/customers/advanced_search_ids", query)
-    new ResourceCollection[Customer](new CustomerPager(this, query), node)
+    new ResourceCollection[Customer](Pager.customer(this, query), node)
   }
 
   /**

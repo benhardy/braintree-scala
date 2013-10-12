@@ -32,7 +32,7 @@ class ResourceCollectionSpec extends FunSpec with MustMatchers {
   private val values = Array("a", "b", "c", "d", "e")
 
   private[braintreegateway] class TestPager extends Pager[String] {
-    def getPage(ids: java.util.List[String]) = {
+    def getPage(ids: List[String]) = {
       ids.map { s => values(Integer.parseInt(s)) }
     }
   }
