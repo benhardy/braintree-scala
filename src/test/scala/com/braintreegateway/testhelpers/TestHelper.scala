@@ -3,9 +3,7 @@ package com.braintreegateway.testhelpers
 import _root_.org.scalatest.matchers.{MatchResult, Matcher}
 import com.braintreegateway._
 import com.braintreegateway.exceptions.UnexpectedException
-import com.braintreegateway.util.Crypto
-import com.braintreegateway.util.Http
-import com.braintreegateway.util.NodeWrapper
+import util.{QueryString, Crypto, Http, NodeWrapper}
 import _root_.org.junit.Ignore
 import gw.{Configuration, BraintreeGateway}
 import java.io.IOException
@@ -102,7 +100,7 @@ object TestHelper {
     try {
       val trData = gateway.transparentRedirect.trData(trParams, "http://example.com")
       val postData = new StringBuilder("tr_data=").
-        append(URLEncoder.encode(trData, "UTF-8")).
+        append(QueryString.encode(trData)).
         append("&").
         append(request.toQueryString)
       val url = new URL(postUrl)

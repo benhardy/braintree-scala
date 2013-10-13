@@ -7,6 +7,7 @@ import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway.exceptions._
 import gw.Configuration
 import java.net.URLEncoder
+import util.QueryString
 
 @RunWith(classOf[JUnitRunner])
 class TransparentRedirectRequestSpec extends FunSpec with MustMatchers {
@@ -48,7 +49,7 @@ class TransparentRedirectRequestSpec extends FunSpec with MustMatchers {
 
     it("raises AuthorizatonExecption With Message If Http Status Is 403 And Message Is In Query String") {
       val message = "Invalid params: transaction[bad]"
-      val encodedMessage = URLEncoder.encode(message, "UTF-8")
+      val encodedMessage = QueryString.encode(message)
       val queryString = s"bt_message=${encodedMessage}&http_status=403&id=6kdj469tw7yck32j&hash=126d5130b71a4907e460fad23876ed70dd41dcd2"
       intercept[AuthorizationException] {
         new TransparentRedirectRequest(configuration, queryString)

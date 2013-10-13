@@ -7,14 +7,14 @@ import java.util.{Map => JMap}
 
 object QueryString {
   def encodeParam(key: String, value: String): String = {
-    val encodedKey: String = encode(key)
-    val encodedValue: String = encode(value)
-    return encodedKey + "=" + encodedValue
+    val encodedKey = encode(key)
+    val encodedValue = encode(value)
+    encodedKey + "=" + encodedValue
   }
 
   def encode(value: String): String = {
     try {
-      return URLEncoder.encode(value, DEFAULT_ENCODING)
+      URLEncoder.encode(value, DEFAULT_ENCODING)
     }
     catch {
       case e: UnsupportedEncodingException => {
@@ -27,7 +27,6 @@ object QueryString {
 }
 
 final class QueryString(content: String = "") {
-  def this() = this("")
 
   private val builder = new StringBuilder(content)
 

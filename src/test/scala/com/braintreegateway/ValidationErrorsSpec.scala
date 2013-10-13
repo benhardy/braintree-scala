@@ -45,7 +45,6 @@ class ValidationErrorsSpec extends FunSpec with MustMatchers {
 
       val node = NodeWrapperFactory.create(xmlAsStringWithHeader(response))
       val result = Result.address(node)
-      println(result)
       result match {
         case Failure(errors,_,_,_,_,_) => {
           errors.deepSize must be === 1

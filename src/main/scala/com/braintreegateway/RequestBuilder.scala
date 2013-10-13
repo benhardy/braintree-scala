@@ -8,6 +8,9 @@ import java.util._
 import java.util
 import collection.immutable
 
+import QueryString.encode
+import QueryString.encodeParam
+
 object RequestBuilder {
   def buildXMLElement(element: AnyRef): String = {
     buildXMLElement("", element)
@@ -15,30 +18,28 @@ object RequestBuilder {
 
   @SuppressWarnings(Array("unchecked"))
   def buildXMLElement(name: String, element: AnyRef): String = {
-    if (element == null) {
-      ""
-    }
-    else if (element.isInstanceOf[Request]) {
-      (element.asInstanceOf[Request]).toXML
-    }
-    else if (element.isInstanceOf[Calendar]) {
-      val dateFormat: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-      dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-      String.format("<%s type=\"datetime\">%s</%s>", name, dateFormat.format((element.asInstanceOf[Calendar]).getTime), name)
-    }
-    else if (element.isInstanceOf[Map[_, _]]) {
-      formatAsXML(name, element.asInstanceOf[Map[String, AnyRef]])
-    }
-    else if (element.isInstanceOf[List[_]]) {
-      val xml: StringBuilder = new StringBuilder
-      import scala.collection.JavaConversions._
-      for (item <- element.asInstanceOf[List[AnyRef]]) {
-        xml.append(buildXMLElement("item", item))
+    element match {
+      case null => ""
+      case request: Request => request.toXML
+      case calendar: Calendar => {
+        val dateFormat: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+        String.format("<%s type=\"datetime\">%s</%s>", name, dateFormat.format(calendar.getTime), name)
       }
-      wrapInXMLTag(name, xml.toString, "array")
-    }
-    else {
-      String.format("<%s>%s</%s>", xmlEscape(name), if (element == null) "" else xmlEscape(element.toString), xmlEscape(name))
+      case map: java.util.Map[String, AnyRef] => {
+        formatAsXML(name, map)
+      }
+      case list: java.util.List[AnyRef] => {
+        val xml: StringBuilder = new StringBuilder
+        import scala.collection.JavaConversions._
+        for (item <- list) {
+          xml.append(buildXMLElement("item", item))
+        }
+        wrapInXMLTag(name, xml.toString, "array")
+      }
+      case x => {
+        String.format("<%s>%s</%s>", xmlEscape(name), if (x == null) "" else xmlEscape(x.toString), xmlEscape(name))
+      }
     }
   }
 
@@ -56,14 +57,7 @@ object RequestBuilder {
 
   def buildQueryStringElement(name: String, value: String): AnyRef = {
     if (value != null) {
-      try {
-        String.format("%s=%s&", URLEncoder.encode(name, "UTF-8"), URLEncoder.encode(value, "UTF-8"))
-      }
-      catch {
-        case e: Exception => {
-          throw new RuntimeException(e)
-        }
-      }
+      QueryString.encodeParam(name, value)
     }
     else {
       ""
