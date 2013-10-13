@@ -63,17 +63,12 @@ public class CreditCardOptionsRequest extends Request {
     }
 
     protected RequestBuilder buildRequest(String root) {
-        RequestBuilder builder = new RequestBuilder(root);
-
-        builder.addElement("failOnDuplicatePaymentMethod", failOnDuplicatePaymentMethod);
-        builder.addElement("verifyCard", verifyCard);
-        builder.addElement("verificationMerchantAccountId", verificationMerchantAccountId);
-        if (makeDefault != null && makeDefault.booleanValue()) {
-            builder.addElement("makeDefault", makeDefault);
-        }
-        builder.addElement("updateExistingToken", updateExistingToken);
-        builder.addElement("venmoSdkSession", venmoSdkSession);
-
-        return builder;
+        return new RequestBuilder(root).
+                addElement("failOnDuplicatePaymentMethod", failOnDuplicatePaymentMethod).
+                addElement("verifyCard", verifyCard).
+                addElement("verificationMerchantAccountId", verificationMerchantAccountId).
+                addElementIf(makeDefault != null && makeDefault.booleanValue(), "makeDefault", makeDefault).
+                addElement("updateExistingToken", updateExistingToken).
+                addElement("venmoSdkSession", venmoSdkSession);
     }
 }

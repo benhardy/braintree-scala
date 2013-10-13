@@ -134,7 +134,7 @@ public class CustomerRequest extends Request {
     }
 
     protected RequestBuilder buildRequest(String root) {
-        RequestBuilder builder = new RequestBuilder(root).
+        return new RequestBuilder(root).
             addElement("deviceData", deviceData).
             addElement("company", company).
             addElement("email", email).
@@ -144,12 +144,7 @@ public class CustomerRequest extends Request {
             addElement("lastName", lastName).
             addElement("phone", phone).
             addElement("website", website).
-            addElement("creditCard", creditCardRequest);
-
-        if (customFields.size() > 0) {
-            builder.addElement("customFields", customFields);
-        }
-
-        return builder;
+            addElement("creditCard", creditCardRequest).
+            addElementIf(customFields.size() > 0, "customFields", customFields);
     }
 }

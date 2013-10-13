@@ -96,6 +96,19 @@ class RequestBuilder(parent: String) {
     this
   }
 
+  def addElementIf(condition: Boolean, name: String, value: AnyRef): RequestBuilder = {
+    if (condition) {
+      elements.put(name, value)
+    }
+    this
+  }
+  def addLowerCaseElementIfPresent(name: String, value: AnyRef): RequestBuilder = {
+    if (value != null) {
+      elements.put(name, value.toString.toLowerCase)
+    }
+    this
+  }
+
   def toQueryString: String = {
     val queryString: QueryString = new QueryString
     import scala.collection.JavaConversions._

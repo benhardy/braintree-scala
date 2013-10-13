@@ -111,7 +111,7 @@ public class SubscriptionRequest extends Request {
     }
 
     protected RequestBuilder buildRequest(String root) {
-        RequestBuilder builder = new RequestBuilder(root).
+        return new RequestBuilder(root).
             addElement("id", id).
             addElement("addOns", addOnsRequest).
             addElement("billingDayOfMonth", billingDayOfMonth).
@@ -126,12 +126,7 @@ public class SubscriptionRequest extends Request {
             addElement("planId", planId).
             addElement("price", price).
             addElement("trialPeriod", hasTrialPeriod).
-            addElement("trialDuration", trialDuration);
-
-        if (trialDurationUnit != null) {
-            builder.addElement("trialDurationUnit", trialDurationUnit.toString().toLowerCase());
-        }
-
-        return builder;
+            addElement("trialDuration", trialDuration).
+            addLowerCaseElementIfPresent("trialDurationUnit", trialDurationUnit);
     }
 }

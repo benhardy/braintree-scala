@@ -23,12 +23,9 @@ public class SettlementBatchSummaryRequest extends Request {
 
 
     protected RequestBuilder buildRequest(String root) {
-        RequestBuilder request = new RequestBuilder(root);
-        request.addElement("settlement-date", dateString(settlementDate));
-        if (groupByCustomField != null) {
-            request.addElement("group-by-custom-field", groupByCustomField);            
-        }
-        return request;
+        return new RequestBuilder(root).
+                addElement("settlement-date", dateString(settlementDate)).
+                addElementIf(groupByCustomField != null, "group-by-custom-field", groupByCustomField);
     }
 
     public static String dateString(Calendar settlementDate) {

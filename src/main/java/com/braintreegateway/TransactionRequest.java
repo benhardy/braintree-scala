@@ -175,7 +175,7 @@ public class TransactionRequest extends Request {
     }
 
     protected RequestBuilder buildRequest(String root) {
-        RequestBuilder builder = new RequestBuilder(root).
+        return new RequestBuilder(root).
             addElement("amount", amount).
             addElement("deviceData", deviceData).
             addElement("channel", channel).
@@ -196,15 +196,8 @@ public class TransactionRequest extends Request {
             addElement("recurring", recurring).
             addElement("deviceSessionId", deviceSessionId).
             addElement("venmoSdkPaymentMethodCode", venmoSdkPaymentMethodCode).
-            addElement("serviceFeeAmount", serviceFeeAmount);
-
-        if (!customFields.isEmpty()) {
-            builder.addElement("customFields", customFields);
-        }
-        if (type != null) {
-            builder.addElement("type", type.toString().toLowerCase());
-        }
-
-        return builder;
+            addElement("serviceFeeAmount", serviceFeeAmount).
+            addElementIf(!customFields.isEmpty(),"customFields", customFields).
+            addLowerCaseElementIfPresent("type", type);
     }
 }
