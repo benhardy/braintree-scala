@@ -5,7 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class SearchRequest extends Request {
+public class SearchRequest extends BaseRequest {
     private Map<String, SearchCriteria> criteria;
     private Map<String, List<SearchCriteria>> rangeCriteria;
     private Map<String, SearchCriteria> multiValueCriteria;

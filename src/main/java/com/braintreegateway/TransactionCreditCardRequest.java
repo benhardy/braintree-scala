@@ -1,6 +1,6 @@
 package com.braintreegateway;
 
-public class TransactionCreditCardRequest extends Request {
+public class TransactionCreditCardRequest extends BaseRequest {
     private String cardholderName;
     private String cvv;
     private String expirationDate;

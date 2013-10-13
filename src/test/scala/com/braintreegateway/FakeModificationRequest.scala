@@ -2,7 +2,7 @@ package com.braintreegateway
 
 import java.math.BigDecimal
 
-class FakeModificationRequest extends Request {
+class FakeModificationRequest extends BaseRequest {
 
   private var amount: BigDecimal = null
   private var description: String = null

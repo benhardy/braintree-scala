@@ -4,7 +4,7 @@ import com.braintreegateway.Transaction.Type;
 
 import java.math.BigDecimal;
 
-public class SubscriptionTransactionRequest extends Request {
+public class SubscriptionTransactionRequest extends BaseRequest {
 
     private BigDecimal amount;
     private String subscriptionId;

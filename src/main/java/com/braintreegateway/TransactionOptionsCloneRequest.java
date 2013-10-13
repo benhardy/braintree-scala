@@ -1,6 +1,6 @@
 package com.braintreegateway;
 
-public class TransactionOptionsCloneRequest extends Request {
+public class TransactionOptionsCloneRequest extends BaseRequest {
     private TransactionCloneRequest parent;
     private Boolean submitForSettlement;
 

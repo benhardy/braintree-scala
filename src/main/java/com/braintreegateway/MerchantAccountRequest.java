@@ -3,7 +3,7 @@ package com.braintreegateway;
 /**
  * Provides a fluent interface to build up requests around {@link MerchantAccount MerchantAccounts}.
  */
-public class MerchantAccountRequest extends Request {
+public class MerchantAccountRequest extends BaseRequest {
 
     private ApplicantDetailsRequest applicantDetails;
     private boolean tosAccepted;

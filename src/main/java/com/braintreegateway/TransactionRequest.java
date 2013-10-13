@@ -10,7 +10,7 @@ import java.util.Map;
 /**
  * Provides a fluent interface to build up requests around {@link Transaction Transactions}.
  */
-public class TransactionRequest extends Request {
+public class TransactionRequest implements Request {
     private BigDecimal amount;
     private TransactionAddressRequest billingAddressRequest;
     private String deviceData;

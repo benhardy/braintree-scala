@@ -1,6 +1,6 @@
 package com.braintreegateway;
 
-public class CreditCardAddressOptionsRequest extends Request {
+public class CreditCardAddressOptionsRequest extends BaseRequest {
 
     private CreditCardAddressRequest parent;
     private Boolean updateExisting;

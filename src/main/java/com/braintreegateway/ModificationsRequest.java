@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class ModificationsRequest extends Request {
+public class ModificationsRequest extends BaseRequest {
     private SubscriptionRequest parent;
     private String name;
     private List<AddModificationRequest> adds;

@@ -5,7 +5,7 @@ import com.braintreegateway.gw.TransparentRedirectGateway;
 /**
  * Provides a fluent interface to build up requests around {@link CreditCard CreditCards}.
  */
-public class CreditCardRequest extends Request {
+public class CreditCardRequest implements Request {
     private CreditCardAddressRequest billingAddressRequest;
     private String billingAddressId;
     private String deviceData;

@@ -2,7 +2,7 @@ package com.braintreegateway;
 
 import java.math.BigDecimal;
 
-public class ModificationRequest extends Request {
+public class ModificationRequest extends BaseRequest {
 
     private BigDecimal amount;
     private Integer numberOfBillingCycles;

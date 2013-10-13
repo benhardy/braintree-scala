@@ -8,7 +8,7 @@ import com.braintreegateway.util.TrUtil;
 import java.util.HashMap;
 import java.util.Map;
 
-public class TransparentRedirectRequest extends Request {
+public class TransparentRedirectRequest extends BaseRequest {
     private String id;
 
     public TransparentRedirectRequest(Configuration configuration, String queryString) {
@@ -36,7 +36,7 @@ public class TransparentRedirectRequest extends Request {
     @Override
     public String toXML() {
         StringBuilder builder = new StringBuilder();
-        builder.append(buildXMLElement("id", id));
+        builder.append(RequestBuilder.buildXMLElement("id", id));
         return builder.toString();
     }
 

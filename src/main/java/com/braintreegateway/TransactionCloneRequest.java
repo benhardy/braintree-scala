@@ -2,7 +2,7 @@ package com.braintreegateway;
 
 import java.math.BigDecimal;
 
-public class TransactionCloneRequest extends Request {
+public class TransactionCloneRequest extends BaseRequest {
     private BigDecimal amount;
     private String channel;
     private TransactionOptionsCloneRequest transactionOptionsCloneRequest;

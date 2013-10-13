@@ -1,6 +1,6 @@
 package com.braintreegateway;
 
-public class SubscriptionOptionsRequest extends Request {
+public class SubscriptionOptionsRequest extends BaseRequest {
     private Boolean doNotInheritAddOnsOrDiscounts;
     private SubscriptionRequest parent;
     private Boolean prorateCharges;

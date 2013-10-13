@@ -1,6 +1,6 @@
 package com.braintreegateway;
 
-public abstract class DescriptorRequest extends Request {
+public abstract class DescriptorRequest extends BaseRequest {
 
     protected String name;
     protected String phone;

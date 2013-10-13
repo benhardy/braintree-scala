@@ -1,6 +1,6 @@
 package com.braintreegateway;
 
-public class CreditCardOptionsRequest extends Request {
+public class CreditCardOptionsRequest extends BaseRequest {
     private CreditCardRequest parent;
     private String verificationMerchantAccountId;
     private Boolean failOnDuplicatePaymentMethod;

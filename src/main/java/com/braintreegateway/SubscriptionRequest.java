@@ -7,7 +7,7 @@ import java.util.Calendar;
  * Provides a fluent interface to build up requests around {@link Subscription
  * Subscriptions}.
  */
-public class SubscriptionRequest extends Request {
+public class SubscriptionRequest extends BaseRequest {
     private ModificationsRequest addOnsRequest;
     private Integer billingDayOfMonth;
     private SubscriptionDescriptorRequest descriptorRequest;

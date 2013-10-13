@@ -3,7 +3,7 @@ package com.braintreegateway;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
-public class SettlementBatchSummaryRequest extends Request {
+public class SettlementBatchSummaryRequest extends BaseRequest {
     
     private Calendar settlementDate;
     private String groupByCustomField;

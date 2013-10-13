@@ -4,7 +4,7 @@ import java.math.BigDecimal
 
 // TODO make this idiomatic scala
 // TODO figure out why this isn't in src/main
-class PlanRequest extends Request {
+class PlanRequest extends BaseRequest {
   private var id: String = null
   private var merchantId: String = null
   private var billingDayOfMonth: Integer = null

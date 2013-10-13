@@ -4,7 +4,7 @@ package com.braintreegateway;
 /**
  * Provides a fluent interface to build up requests around {@link Address Addresses}.
  */
-public class AddressRequest extends Request {
+public class AddressRequest extends BaseRequest {
 
     private String countryCodeAlpha2;
     private String countryCodeAlpha3;

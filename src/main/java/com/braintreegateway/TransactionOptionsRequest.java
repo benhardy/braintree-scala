@@ -1,6 +1,6 @@
 package com.braintreegateway;
 
-public class TransactionOptionsRequest extends Request {
+public class TransactionOptionsRequest extends BaseRequest {
     private Boolean addBillingAddressToPaymentMethod;
     private Boolean holdInEscrow;
     private TransactionRequest parent;

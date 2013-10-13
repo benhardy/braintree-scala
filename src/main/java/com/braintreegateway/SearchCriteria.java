@@ -2,17 +2,17 @@ package com.braintreegateway;
 
 import java.util.List;
 
-public class SearchCriteria extends Request {
+public class SearchCriteria extends BaseRequest {
     private String xml;
 
     public SearchCriteria(String type, Object value) {
-        this.xml = buildXMLElement(type, value);
+        this.xml = RequestBuilder.buildXMLElement(type, value);
     }
 
     public SearchCriteria(List<?> items) {
         StringBuilder builder = new StringBuilder();
         for (Object item : items) {
-            builder.append(buildXMLElement("item", item.toString()));
+            builder.append(RequestBuilder.buildXMLElement("item", item.toString()));
         }
         this.xml = builder.toString();
     }

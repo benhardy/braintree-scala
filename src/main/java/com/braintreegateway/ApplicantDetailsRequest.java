@@ -1,6 +1,6 @@
 package com.braintreegateway;
 
-public class ApplicantDetailsRequest extends Request {
+public class ApplicantDetailsRequest extends BaseRequest {
     private String companyName;
     private String firstName;
     private String lastName;

@@ -9,7 +9,7 @@ import java.util.Map;
 /**
  * Provides a fluent interface to build up requests around {@link Customer Customers}.
  */
-public class CustomerRequest extends Request {
+public class CustomerRequest implements Request {
     private String deviceData;
     private String company;
     private String customerId;
