@@ -11,7 +11,7 @@ import java.util.List;
 public class Plan {
 
     public enum DurationUnit {
-        DAY, MONTH, UNRECOGNIZED
+        DAY, MONTH, UNRECOGNIZED, UNDEFINED
     }
 
     private String id;

@@ -841,7 +841,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         result match {
           case r: Failure => {
             val verification = r.creditCardVerification.get
-            verification.getGatewayRejectionReason must be === null
+            verification.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.UNDEFINED
             verification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
             r.message must be === "Do Not Honor"
           }

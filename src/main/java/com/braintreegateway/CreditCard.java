@@ -23,7 +23,9 @@ public class CreditCard {
         MASTER_CARD("MasterCard"),
         SOLO("Solo"),
         SWITCH("Switch"),
-        VISA("Visa");
+        VISA("Visa"),
+        UNRECOGNIZED("unrecognized"),
+        UNDEFINED("undefined");
 
         private final String name;
 
@@ -39,7 +41,9 @@ public class CreditCard {
 
     public enum CustomerLocation {
         INTERNATIONAL("international"),
-        US("us");
+        US("us"),
+        UNRECOGNIZED("unrecognized"),
+        UNDEFINED("undefined");
 
         private final String name;
 

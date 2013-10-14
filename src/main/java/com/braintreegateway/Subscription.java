@@ -11,7 +11,7 @@ import java.util.List;
 public class Subscription {
 
     public enum DurationUnit {
-        DAY, MONTH, UNRECOGNIZED
+        DAY, MONTH, UNRECOGNIZED, UNDEFINED
     }
 
     public enum Status {
@@ -20,7 +20,8 @@ public class Subscription {
         EXPIRED("Expired"),
         PAST_DUE("Past Due"),
         PENDING("Pending"),
-        UNRECOGNIZED("Unrecognized");
+        UNRECOGNIZED("Unrecognized"),
+        UNDEFINED("Undefined");
 
         private final String name;
 
