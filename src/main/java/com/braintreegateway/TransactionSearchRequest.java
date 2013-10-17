@@ -149,7 +149,7 @@ public class TransactionSearchRequest extends SearchRequest {
         return multiTypeNode("created_using");
     }
 
-    public MultipleValueNode<TransactionSearchRequest, CreditCard.CustomerLocation> creditCardCustomerLocation() {
+    public MultipleValueNode<TransactionSearchRequest, CustomerLocation> creditCardCustomerLocation() {
         return multiTypeNode("credit_card_customer_location");
     }
 
@@ -157,7 +157,7 @@ public class TransactionSearchRequest extends SearchRequest {
         return multiTypeNode("merchant_account_id");
     }
 
-    public MultipleValueNode<TransactionSearchRequest, CreditCard.CardType> creditCardCardType() {
+    public MultipleValueNode<TransactionSearchRequest, CreditCards.CardType> creditCardCardType() {
         return multiTypeNode("credit_card_card_type");
     }
 

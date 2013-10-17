@@ -21,8 +21,8 @@ public class CreditCardVerificationSearchRequest extends SearchRequest {
         return new MultipleValueNode<CreditCardVerificationSearchRequest, String>("ids", this);
     }
 
-    public MultipleValueNode<CreditCardVerificationSearchRequest, CreditCard.CardType> creditCardCardType() {
-        return new MultipleValueNode<CreditCardVerificationSearchRequest, CreditCard.CardType>("credit_card_card_type", this);
+    public MultipleValueNode<CreditCardVerificationSearchRequest, CreditCards.CardType> creditCardCardType() {
+        return new MultipleValueNode<CreditCardVerificationSearchRequest, CreditCards.CardType>("credit_card_card_type", this);
     }
 
     public DateRangeNode<CreditCardVerificationSearchRequest> createdAt() {

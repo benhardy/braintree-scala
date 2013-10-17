@@ -1,6 +1,6 @@
 package com.braintreegateway.util
 
-import com.braintreegateway.{CreditCard, Transaction}
+import com.braintreegateway.{CreditCards, CreditCard, Transaction}
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
 import org.junit.runner.RunWith
@@ -46,13 +46,13 @@ class EnumUtilsSpec extends FunSpec with MustMatchers {
 
   describe("interactions with CreditCard.CardType") {
     it("defaults to UNDEFINED for null values") {
-      EnumUtils.findByName(classOf[CreditCard.CardType], null) must be === CreditCard.CardType.UNDEFINED
+      CreditCards.CardType.fromString(null) must be === CreditCards.CardType.UNDEFINED
     }
     it("defaults to UNRECOGNIZED for garbage values") {
-      EnumUtils.findByName(classOf[CreditCard.CardType], "DERP") must be === CreditCard.CardType.UNRECOGNIZED
+      CreditCards.CardType.fromString("DERP") must be === CreditCards.CardType.UNRECOGNIZED
     }
     it("finds known values") {
-      EnumUtils.findByName(classOf[CreditCard.CardType], "Visa") must be === CreditCard.CardType.VISA
+      CreditCards.CardType.fromString("Visa") must be === CreditCards.CardType.VISA
     }
   }
   describe("interactions with Transaction.GatewayRejectionReason") {

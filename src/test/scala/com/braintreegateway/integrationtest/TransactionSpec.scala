@@ -20,6 +20,7 @@ import scala.collection.JavaConversions._
 import java.util.Random
 import CalendarHelper._
 import TestHelper._
+import com.braintreegateway.CreditCards.CardType
 
 @RunWith(classOf[JUnitRunner])
 class TransactionSpec extends GatewaySpec with MustMatchers {
@@ -140,12 +141,12 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumbers.CardTypeIndicators.Prepaid.getValue).expirationDate("05/2012").done
       val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       val card = transaction.getCreditCard
-      card.getPrepaid must be === CreditCard.Prepaid.YES
-      card.getHealthcare must be === CreditCard.Healthcare.UNKNOWN
-      card.getPayroll must be === CreditCard.Payroll.UNKNOWN
-      card.getDebit must be === CreditCard.Debit.UNKNOWN
-      card.getDurbinRegulated must be === CreditCard.DurbinRegulated.UNKNOWN
-      card.getCommercial must be === CreditCard.Commercial.UNKNOWN
+      card.getPrepaid must be === CreditCard.KindIndicator.YES
+      card.getHealthcare must be === CreditCard.KindIndicator.UNKNOWN
+      card.getPayroll must be === CreditCard.KindIndicator.UNKNOWN
+      card.getDebit must be === CreditCard.KindIndicator.UNKNOWN
+      card.getDurbinRegulated must be === CreditCard.KindIndicator.UNKNOWN
+      card.getCommercial must be === CreditCard.KindIndicator.UNKNOWN
       card.getCountryOfIssuance must be === "Unknown"
       card.getIssuingBank must be === "Unknown"
     }
@@ -917,13 +918,13 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("searchOnCreditCardCustomerLocation") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
       val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
-      var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).creditCardCustomerLocation.is(CreditCard.CustomerLocation.US)
+      var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).creditCardCustomerLocation.is(CustomerLocation.US)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
-      searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCustomerLocation.in(CreditCard.CustomerLocation.US, CreditCard.CustomerLocation.INTERNATIONAL)
+      searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCustomerLocation.in(CustomerLocation.US, CustomerLocation.INTERNATIONAL)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
-      searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCustomerLocation.is(CreditCard.CustomerLocation.INTERNATIONAL)
+      searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCustomerLocation.is(CustomerLocation.INTERNATIONAL)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 0
     }
@@ -945,13 +946,13 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("searchOnCreditCardType") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2010").done
       val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
-      var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).creditCardCardType.is(CreditCard.CardType.VISA)
+      var searchRequest= new TransactionSearchRequest().id.is(transaction.getId).creditCardCardType.is(CardType.VISA)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
-      searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCardType.in(CreditCard.CardType.VISA, CreditCard.CardType.MASTER_CARD)
+      searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCardType.in(CardType.VISA, CardType.MASTER_CARD)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
-      searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCardType.is(CreditCard.CardType.MASTER_CARD)
+      searchRequest = new TransactionSearchRequest().id.is(transaction.getId).creditCardCardType.is(CardType.MASTER_CARD)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 0
     }

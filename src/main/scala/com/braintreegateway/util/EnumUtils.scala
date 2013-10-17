@@ -1,8 +1,13 @@
 package com.braintreegateway.util
 
 object EnumUtils {
-  def findByName[T <: Enum[T]](enumType: Class[T], name: String): T = {
 
+  def createLookupFromString[E <: java.lang.Enum[E]](values:Array[E]): String => Option[E] = {
+    val map = values.toList.map { v => v.toString -> v }.toMap
+    key => map get key
+  }
+
+  def findByName[T <: Enum[T]](enumType: Class[T], name: String): T = {
     if (name == null) {
       lookup(enumType, "UNDEFINED").
         getOrElse {

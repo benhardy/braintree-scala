@@ -47,7 +47,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         result match {
           case Success((customer, card)) => {
             card.getCardholderName must be === "John Doe"
-            card.getCardType must be === "MasterCard"
+            card.getCardType must be === CreditCards.CardType.MASTER_CARD
             card.getCustomerId must be === customer.getId
             card.getCustomerLocation must be === "US"
             card.getBin must be === "510510"
@@ -918,7 +918,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success(card) => {
-            card.getCommercial must be === CreditCard.Commercial.YES
+            card.getCommercial must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -939,7 +939,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success(card) => {
-            card.getDurbinRegulated must be === CreditCard.DurbinRegulated.YES
+            card.getDurbinRegulated must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -960,7 +960,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success(card) => {
-            card.getDebit must be === CreditCard.Debit.YES
+            card.getDebit must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -981,7 +981,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success(card) => {
-            card.getHealthcare must be === CreditCard.Healthcare.YES
+            card.getHealthcare must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -1001,7 +1001,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success(card) => {
-            card.getPayroll must be === CreditCard.Payroll.YES
+            card.getPayroll must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -1021,7 +1021,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success(card) => {
-            card.getPrepaid must be === CreditCard.Prepaid.YES
+            card.getPrepaid must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -1083,12 +1083,12 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success(card) => {
-            card.getCommercial must be === CreditCard.Commercial.NO
-            card.getDebit must be === CreditCard.Debit.NO
-            card.getDurbinRegulated must be === CreditCard.DurbinRegulated.NO
-            card.getHealthcare must be === CreditCard.Healthcare.NO
-            card.getPayroll must be === CreditCard.Payroll.NO
-            card.getPrepaid must be === CreditCard.Prepaid.NO
+            card.getCommercial must be === CreditCard.KindIndicator.NO
+            card.getDebit must be === CreditCard.KindIndicator.NO
+            card.getDurbinRegulated must be === CreditCard.KindIndicator.NO
+            card.getHealthcare must be === CreditCard.KindIndicator.NO
+            card.getPayroll must be === CreditCard.KindIndicator.NO
+            card.getPrepaid must be === CreditCard.KindIndicator.NO
           }
         }
       }
@@ -1104,15 +1104,15 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
 
         } yield card
-
+        import CreditCard.KindIndicator.UNKNOWN
         result match {
           case Success(card) => {
-            card.getCommercial must be === CreditCard.Commercial.UNKNOWN
-            card.getDebit must be === CreditCard.Debit.UNKNOWN
-            card.getDurbinRegulated must be === CreditCard.DurbinRegulated.UNKNOWN
-            card.getHealthcare must be === CreditCard.Healthcare.UNKNOWN
-            card.getPayroll must be === CreditCard.Payroll.UNKNOWN
-            card.getPrepaid must be === CreditCard.Prepaid.UNKNOWN
+            card.getCommercial must be === UNKNOWN
+            card.getDebit must be === UNKNOWN
+            card.getDurbinRegulated must be === UNKNOWN
+            card.getHealthcare must be === UNKNOWN
+            card.getPayroll must be === UNKNOWN
+            card.getPrepaid must be === UNKNOWN
             card.getCountryOfIssuance must be === "Unknown"
             card.getIssuingBank must be === "Unknown"
           }

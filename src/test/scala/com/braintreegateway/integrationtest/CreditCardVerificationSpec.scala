@@ -10,6 +10,7 @@ import testhelpers.CalendarHelper._
 import com.braintreegateway.util.NodeWrapperFactory
 import testhelpers.GatewaySpec
 import testhelpers.XmlHelper._
+import com.braintreegateway.CreditCards.CardType
 
 @RunWith(classOf[JUnitRunner])
 class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewaySpec {
@@ -51,7 +52,7 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
       verification.getAvsStreetAddressResponseCode must be === "I"
       verification.getProcessorResponseText must be === "Do Not Honor"
       verification.getCvvResponseCode must be === "M"
-      verification.getCreditCard.getPrepaid must be === CreditCard.Prepaid.UNKNOWN
+      verification.getCreditCard.getPrepaid must be === CreditCard.KindIndicator.UNKNOWN
     }
   }
 
@@ -90,7 +91,7 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
       val verificationTwo = resultTwo  match { case Failure(_,_,_,Some(verification),_,_) => verification }
       val searchRequest = new CreditCardVerificationSearchRequest().
           ids.in(verificationOne.getId, verificationTwo.getId).
-          creditCardCardType.in(CreditCard.CardType.VISA, CreditCard.CardType.MASTER_CARD)
+          creditCardCardType.in(CardType.VISA, CardType.MASTER_CARD)
 
       val collection = gateway.creditCardVerification.search(searchRequest)
 
@@ -153,12 +154,12 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
         case Failure(_,_,_,Some(verification),_,_) => {
 
           val card = verification.getCreditCard
-          card.getCommercial must be === CreditCard.Commercial.UNKNOWN
-          card.getDebit must be === CreditCard.Debit.UNKNOWN
-          card.getDurbinRegulated must be === CreditCard.DurbinRegulated.UNKNOWN
-          card.getHealthcare must be === CreditCard.Healthcare.UNKNOWN
-          card.getPayroll must be === CreditCard.Payroll.UNKNOWN
-          card.getPrepaid must be === CreditCard.Prepaid.UNKNOWN
+          card.getCommercial must be === CreditCard.KindIndicator.UNKNOWN
+          card.getDebit must be === CreditCard.KindIndicator.UNKNOWN
+          card.getDurbinRegulated must be === CreditCard.KindIndicator.UNKNOWN
+          card.getHealthcare must be === CreditCard.KindIndicator.UNKNOWN
+          card.getPayroll must be === CreditCard.KindIndicator.UNKNOWN
+          card.getPrepaid must be === CreditCard.KindIndicator.UNKNOWN
           card.getCountryOfIssuance must be === "Unknown"
           card.getIssuingBank must be === "Unknown"
         }

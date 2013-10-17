@@ -176,7 +176,7 @@ case class SimpleNodeWrapper(
   def findStringOpt(expression: String): Option[String] = {
     val node: SimpleNodeWrapper = find(expression)
     if (node == null) None
-    else Some(node.stringValue)
+    else Option(node.stringValue)
   }
 
   private def stringValue: String = {
