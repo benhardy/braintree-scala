@@ -721,9 +721,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           case Success((card, subscription)) => {
             val foundCard = gateway.creditCard.find(card.getToken)
 
-            foundCard.getSubscriptions.get(0).getId must be === subscription.getId
-            foundCard.getSubscriptions.get(0).getPrice must be === new BigDecimal("1.00")
-            foundCard.getSubscriptions.get(0).getPlanId must be === "integration_trialless_plan"
+            foundCard.getSubscriptions.get(0).id must be === subscription.id
+            foundCard.getSubscriptions.get(0).price must be === new BigDecimal("1.00")
+            foundCard.getSubscriptions.get(0).planId must be === "integration_trialless_plan"
           }
         }
     }

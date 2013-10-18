@@ -38,7 +38,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUBSCRIPTION_WENT_PAST_DUE, "my_id")
         val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
         notification.kind must be === WebhookNotifications.Kind.SUBSCRIPTION_WENT_PAST_DUE
-        notification.subscription.get.getId must be === "my_id"
+        notification.subscription.get.id must be === "my_id"
         notification.timestamp must beSameDayAs(Calendar.getInstance)
     }
 

@@ -5,12 +5,27 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.SandboxValues.TransactionAmount
-import com.braintreegateway.Subscription.Status
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.gw.{Success, BraintreeGateway, Failure}
 import com.braintreegateway.testhelpers.{PlanFixture, MerchantAccountTestConstants, TestHelper, GatewaySpec}
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapperFactory
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
 import com.braintreegateway.gw.Failure
 import com.braintreegateway.gw.Success
 import com.braintreegateway.gw.Failure
@@ -37,6 +52,15 @@ import scala.Some
 import scala.Some
 import scala.Some
 import com.braintreegateway.Transactions.Type
+import scala.Some
+import scala.Some
+import com.braintreegateway.Subscriptions.{Status, DurationUnit}
+import scala.Some
+import scala.Some
+import scala.Some
+import scala.Some
+import scala.Some
+import scala.Some
 import scala.Some
 import scala.Some
 
@@ -82,24 +106,23 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val expectedBillingPeriodStartDate = rightAboutNow
         val expectedFirstDate = rightAboutNow
 
-        subscription.getPaymentMethodToken must be === creditCard.getToken
-        subscription.getPlanId must be === plan.getId
-        subscription.getPrice must be === plan.getPrice
-        subscription.getBalance must be === new BigDecimal("0.00")
-        subscription.getCurrentBillingCycle must be === new Integer(1)
-        subscription.getNextBillAmount must be === new BigDecimal("12.34")
-        subscription.getNextBillingPeriodAmount must be === new BigDecimal("12.34")
-        subscription.getId must fullyMatch regex ("^\\w{6}$")
-        subscription.getStatus must be === Subscription.Status.ACTIVE
-        subscription.getFailureCount must be === new Integer(0)
+        subscription.paymentMethodToken must be === creditCard.getToken
+        subscription.planId must be === plan.getId
+        subscription.price must be === plan.getPrice
+        subscription.balance must be === new BigDecimal("0.00")
+        subscription.currentBillingCycle must be === new Integer(1)
+        subscription.nextBillingPeriodAmount must be === new BigDecimal("12.34")
+        subscription.id must fullyMatch regex ("^\\w{6}$")
+        subscription.status must be === Subscriptions.Status.ACTIVE
+        subscription.failureCount must be === new Integer(0)
         subscription.hasTrialPeriod must be === false
-        subscription.getMerchantAccountId must be === DEFAULT_MERCHANT_ACCOUNT_ID
-        subscription.getBillingPeriodEndDate must beSameDayAs(expectedBillingPeriodEndDate)
-        subscription.getBillingPeriodEndDate must beSameDayAs(expectedBillingPeriodEndDate)
-        subscription.getBillingPeriodStartDate must beSameDayAs(expectedBillingPeriodStartDate)
-        subscription.getPaidThroughDate must beSameDayAs(expectedBillingPeriodEndDate)
-        subscription.getNextBillingDate must beSameDayAs(expectedNextBillingDate)
-        subscription.getFirstBillingDate must beSameDayAs(expectedFirstDate)
+        subscription.merchantAccountId must be === DEFAULT_MERCHANT_ACCOUNT_ID
+        subscription.billingPeriodEndDate must beSameDayAs(expectedBillingPeriodEndDate)
+        subscription.billingPeriodEndDate must beSameDayAs(expectedBillingPeriodEndDate)
+        subscription.billingPeriodStartDate must beSameDayAs(expectedBillingPeriodStartDate)
+        subscription.paidThroughDate must beSameDayAs(expectedBillingPeriodEndDate)
+        subscription.nextBillingDate must beSameDayAs(expectedNextBillingDate)
+        subscription.firstBillingDate must beSameDayAs(expectedFirstDate)
     }
 
     onGatewayIt("createReturnsTransactionWithSubscriptionBillingPeriod") {
@@ -109,9 +132,9 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val createResult = gateway.subscription.create(request)
         createResult match {
           case Success(subscription) => {
-            val transaction = subscription.getTransactions.get(0)
-            transaction.getSubscription.getBillingPeriodStartDate must be === subscription.getBillingPeriodStartDate
-            transaction.getSubscription.getBillingPeriodEndDate must be === subscription.getBillingPeriodEndDate
+            val transaction = subscription.transactions.get(0)
+            transaction.getSubscription.billingPeriodStartDate must be === subscription.billingPeriodStartDate
+            transaction.getSubscription.billingPeriodEndDate must be === subscription.billingPeriodEndDate
           }
         }
     }
@@ -125,35 +148,35 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription = createResult match { case Success(sub) => sub }
         val expectedFirstAndNextBillingDate = (now in mountainTimeZone) + plan.getTrialDuration.days
 
-        subscription.getPlanId must be === plan.getId
-        subscription.getPrice must be === plan.getPrice
-        subscription.getPaymentMethodToken must be === creditCard.getToken
-        subscription.getId must fullyMatch regex "^\\w{6}$"
-        subscription.getStatus must be === Subscription.Status.ACTIVE
-        subscription.getBillingPeriodStartDate must be === null
-        subscription.getBillingPeriodEndDate must be === null
-        subscription.getCurrentBillingCycle must be === new Integer(0)
-        subscription.getFailureCount must be === new Integer(0)
+        subscription.planId must be === plan.getId
+        subscription.price must be === plan.getPrice
+        subscription.paymentMethodToken must be === creditCard.getToken
+        subscription.id must fullyMatch regex "^\\w{6}$"
+        subscription.status must be === Subscriptions.Status.ACTIVE
+        subscription.billingPeriodStartDate must be === null
+        subscription.billingPeriodEndDate must be === null
+        subscription.currentBillingCycle must be === new Integer(0)
+        subscription.failureCount must be === new Integer(0)
         subscription.hasTrialPeriod must be === true
-        subscription.getTrialDuration must be === plan.getTrialDuration
-        subscription.getTrialDurationUnit.toString must be === plan.getTrialDurationUnit.toString
-        subscription.getNextBillingDate must beSameDayAs(expectedFirstAndNextBillingDate)
-        subscription.getFirstBillingDate must beSameDayAs(expectedFirstAndNextBillingDate)
+        subscription.trialDuration must be === plan.getTrialDuration
+        subscription.trialDurationUnit.toString must be === plan.getTrialDurationUnit.toString
+        subscription.nextBillingDate must beSameDayAs(expectedFirstAndNextBillingDate)
+        subscription.firstBillingDate must beSameDayAs(expectedFirstAndNextBillingDate)
     }
 
     onGatewayIt("overridePlanAddTrial") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
         val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
-            trialPeriod(true).trialDuration(2).trialDurationUnit(Subscription.DurationUnit.MONTH)
+            trialPeriod(true).trialDuration(2).trialDurationUnit(Subscriptions.DurationUnit.MONTH)
 
         val createResult = gateway.subscription.create(request)
 
         createResult match {
           case Success(subscription) => {
             subscription.hasTrialPeriod must be === true
-            subscription.getTrialDuration must be === new Integer(2)
-            subscription.getTrialDurationUnit must be === Subscription.DurationUnit.MONTH
+            subscription.trialDuration must be === new Integer(2)
+            subscription.trialDurationUnit must be === Subscriptions.DurationUnit.MONTH
            }
         }
 
@@ -181,7 +204,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getPrice must be === new BigDecimal("482.48")
+            subscription.price must be === new BigDecimal("482.48")
           }
         }
     }
@@ -194,7 +217,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getNumberOfBillingCycles must be === plan.getNumberOfBillingCycles
+            subscription.numberOfBillingCycles must be === plan.getNumberOfBillingCycles
           }
         }
         val overrideRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
@@ -202,7 +225,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val overrideResult = gateway.subscription.create(overrideRequest)
         overrideResult match {
           case Success(overriddenSubscription) => {
-            overriddenSubscription.getNumberOfBillingCycles must be === new Integer(10)
+            overriddenSubscription.numberOfBillingCycles must be === new Integer(10)
             overriddenSubscription.neverExpires must be === false
           }
         }
@@ -216,7 +239,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getNumberOfBillingCycles must be(null) // TODO wrap this in a case
+            subscription.numberOfBillingCycles must be(null) // TODO wrap this in a case
             subscription.neverExpires must be === true
           }
         }
@@ -230,12 +253,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
          subscription <- gateway.subscription.create(request)
          updateRequest = new SubscriptionRequest().neverExpires(true)
-         updated <- gateway.subscription.update(subscription.getId, updateRequest)
+         updated <- gateway.subscription.update(subscription.id, updateRequest)
         } yield updated
 
         result match {
           case Success(updatedSubscription) => {
-            updatedSubscription.getNumberOfBillingCycles must be (null)
+            updatedSubscription.numberOfBillingCycles must be (null)
             updatedSubscription.neverExpires must be === true
           }
         }
@@ -248,12 +271,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           subscription <- gateway.subscription.create(request)
           updateRequest = new SubscriptionRequest().numberOfBillingCycles(14)
-          updated <- gateway.subscription.update(subscription.getId, updateRequest)
+          updated <- gateway.subscription.update(subscription.id, updateRequest)
         } yield updated
 
         result match {
           case Success(updatedSubscription) => {
-            updatedSubscription.getNumberOfBillingCycles must be === new Integer(14)
+            updatedSubscription.numberOfBillingCycles must be === new Integer(14)
           }
         }
     }
@@ -267,7 +290,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getBillingDayOfMonth must be === new Integer(5)
+            subscription.billingDayOfMonth must be === new Integer(5)
           }
         }
     }
@@ -279,7 +302,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val createResult = gateway.subscription.create(request)
         createResult match {
           case Success(subscription) => {
-            subscription.getBillingDayOfMonth must be === new Integer(19)
+            subscription.billingDayOfMonth must be === new Integer(19)
           }
         }
     }
@@ -291,7 +314,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val createResult = gateway.subscription.create(request)
         createResult match {
           case Success(subscription) => {
-            subscription.getTransactions.size must be === 1
+            subscription.transactions.size must be === 1
           }
         }
     }
@@ -308,8 +331,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getFirstBillingDate must beSameDayAs(firstBillingDate)
-            subscription.getStatus must be === Subscription.Status.PENDING
+            subscription.firstBillingDate must beSameDayAs(firstBillingDate)
+            subscription.status must be === Subscriptions.Status.PENDING
           }
         }
     }
@@ -341,7 +364,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getId must be === newId
+            subscription.id must be === newId
           }
         }
     }
@@ -356,7 +379,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+            subscription.merchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
           }
         }
     }
@@ -370,12 +393,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
-            subscription.getTransactions.size must be === 1
-            val transaction = subscription.getTransactions.get(0)
+            subscription.merchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+            subscription.transactions.size must be === 1
+            val transaction = subscription.transactions.get(0)
             transaction.getAmount must be === new BigDecimal("482.48")
             transaction.getType must be === Transactions.Type.SALE
-            transaction.getSubscriptionId must be === subscription.getId
+            transaction.getSubscriptionId must be === subscription.id
           }
         }
     }
@@ -400,7 +423,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getTransactions.size must be === 0
+            subscription.transactions.size must be === 0
           }
         }
     }
@@ -413,8 +436,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         createResult match {
           case Success(subscription) => {
-            subscription.getAddOns.size must be === 0
-            subscription.getDiscounts.size must be === 0
+            subscription.addOns.size must be === 0
+            subscription.discounts.size must be === 0
           }
         }
     }
@@ -426,7 +449,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = gateway.subscription.create(request)
         result must be('success)
         val subscription = result match { case Success(sub) => sub }
-        val addOns = subscription.getAddOns.sortWith(SortById).toVector
+        val addOns = subscription.addOns.sortWith(SortById).toVector
         addOns.size must be === 2
         addOns.get(0).getId must be === "increase_10"
         addOns.get(0).getAmount must be === new BigDecimal("10.00")
@@ -438,7 +461,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         addOns.get(1).getQuantity must be === new Integer(1)
         addOns.get(1).neverExpires must be === true
         addOns.get(1).getNumberOfBillingCycles must be(null)
-        val discounts = subscription.getDiscounts.sortWith(SortById).toVector
+        val discounts = subscription.discounts.sortWith(SortById).toVector
         discounts.size must be === 2
         discounts.get(0).getId must be === "discount_11"
         discounts.get(0).getAmount must be === new BigDecimal("11.00")
@@ -459,7 +482,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = gateway.subscription.create(request)
         result must be('success)
         val subscription = result match { case Success(sub) => sub }
-        val addOns = subscription.getAddOns.sortWith(SortById).toVector
+        val addOns = subscription.addOns.sortWith(SortById).toVector
         addOns.size must be === 2
         addOns.get(0).getId must be === "increase_10"
         addOns.get(0).getAmount must be === new BigDecimal("30.00")
@@ -469,7 +492,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         addOns.get(1).getId must be === "increase_20"
         addOns.get(1).getAmount must be === new BigDecimal("40.00")
         addOns.get(1).getQuantity must be === new Integer(1)
-        val discounts = subscription.getDiscounts.sortWith(SortById).toVector
+        val discounts = subscription.discounts.sortWith(SortById).toVector
         discounts.size must be === 2
         discounts.get(0).getId must be === "discount_11"
         discounts.get(0).getAmount must be === new BigDecimal("23.00")
@@ -488,8 +511,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = gateway.subscription.create(request)
         result match {
           case Success(subscription) => {
-            subscription.getAddOns.size must be === 0
-            subscription.getDiscounts.size must be === 0
+            subscription.addOns.size must be === 0
+            subscription.discounts.size must be === 0
           }
           case _ => fail("expected success")
         }
@@ -504,8 +527,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = gateway.subscription.create(request)
         result match {
           case Success(subscription) => {
-            subscription.getAddOns.size must be === 0
-            subscription.getDiscounts.size must be === 0
+            subscription.addOns.size must be === 0
+            subscription.discounts.size must be === 0
           }
         }
     }
@@ -517,16 +540,16 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = gateway.subscription.create(request)
         result match {
           case Success(subscription) => {
-            subscription.getAddOns.size must be === 1
-            subscription.getAddOns.get(0).getAmount must be === new BigDecimal("40.00")
-            subscription.getAddOns.get(0).getNumberOfBillingCycles must be === new Integer(6)
-            subscription.getAddOns.get(0).neverExpires must be === false
-            subscription.getAddOns.get(0).getQuantity must be === new Integer(3)
-            subscription.getDiscounts.size must be === 1
-            subscription.getDiscounts.get(0).getAmount must be === new BigDecimal("17.00")
-            subscription.getDiscounts.get(0).getNumberOfBillingCycles must be(null)
-            subscription.getDiscounts.get(0).neverExpires must be === true
-            subscription.getDiscounts.get(0).getQuantity must be === new Integer(2)
+            subscription.addOns.size must be === 1
+            subscription.addOns.get(0).getAmount must be === new BigDecimal("40.00")
+            subscription.addOns.get(0).getNumberOfBillingCycles must be === new Integer(6)
+            subscription.addOns.get(0).neverExpires must be === false
+            subscription.addOns.get(0).getQuantity must be === new Integer(3)
+            subscription.discounts.size must be === 1
+            subscription.discounts.get(0).getAmount must be === new BigDecimal("17.00")
+            subscription.discounts.get(0).getNumberOfBillingCycles must be(null)
+            subscription.discounts.get(0).neverExpires must be === true
+            subscription.discounts.get(0).getQuantity must be === new Integer(2)
           }
         }
     }
@@ -576,8 +599,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).descriptor.name("123*123456789012345678").phone("3334445555").done
         val createResult = gateway.subscription.create(request)
         val subscription = createResult match { case Success(sub) => sub }
-        subscription.getDescriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
-        val transaction = subscription.getTransactions.get(0)
+        subscription.descriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
+        val transaction = subscription.transactions.get(0)
         transaction.getDescriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
     }
 
@@ -614,10 +637,10 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
         val createResult = gateway.subscription.create(createRequest)
         val subscription = createResult match { case Success(sub) => sub }
-        val foundSubscription = gateway.subscription.find(subscription.getId)
-        foundSubscription.getId must be === subscription.getId
-        creditCard.getToken must be === subscription.getPaymentMethodToken
-        plan.getId must be === subscription.getPlanId
+        val foundSubscription = gateway.subscription.find(subscription.id)
+        foundSubscription.id must be === subscription.id
+        creditCard.getToken must be === subscription.paymentMethodToken
+        plan.getId must be === subscription.planId
     }
 
     onGatewayIt("find throws NotFoundException on empty id list") {
@@ -633,8 +656,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val createResult = gateway.subscription.create(createRequest)
         val subscription = createResult match { case Success(sub) => sub }
         makePastDue(gateway, subscription, 1)
-        val foundSubscription = gateway.subscription.find(subscription.getId)
-        foundSubscription.getStatus must be === Status.PAST_DUE
+        val foundSubscription = gateway.subscription.find(subscription.id)
+        foundSubscription.status must be === Status.PAST_DUE
     }
   }
 
@@ -654,7 +677,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         result match {
           case Success(subscription) => {
-            subscription.getId must be === newId
+            subscription.id must be === newId
             (gateway.subscription.find(newId)) must not be (null)
           }
         }
@@ -668,12 +691,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           created <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID)
-          updated <- gateway.subscription.update(created.getId, updateRequest)
+          updated <- gateway.subscription.update(created.id, updateRequest)
         } yield updated
 
         result match {
           case Success(subscription) => {
-            subscription.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+            subscription.merchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
           }
         }
     }
@@ -688,12 +711,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           created <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().planId(newPlan.getId)
-          updated <- gateway.subscription.update(created.getId, updateRequest)
+          updated <- gateway.subscription.update(created.id, updateRequest)
         } yield updated
 
         result match {
           case Success(subscription) => {
-            subscription.getPlanId must be === newPlan.getId
+            subscription.planId must be === newPlan.getId
           }
         }
     }
@@ -712,12 +735,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
           created <- gateway.subscription.create(createRequest)
           newCreditCard <- gateway.creditCard.create(cardRequest)
           updateRequest = new SubscriptionRequest().paymentMethodToken(newCreditCard.getToken)
-          updated <- gateway.subscription.update(created.getId, updateRequest)
+          updated <- gateway.subscription.update(created.id, updateRequest)
         } yield (newCreditCard,updated)
 
         result match {
           case Success((newCreditCard,subscription)) => {
-            subscription.getPaymentMethodToken must be === newCreditCard.getToken
+            subscription.paymentMethodToken must be === newCreditCard.getToken
           }
         }
     }
@@ -731,13 +754,13 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().price(new BigDecimal("4.56"))
-          updated <- gateway.subscription.update(subscription.getId, updateRequest)
+          updated <- gateway.subscription.update(subscription.id, updateRequest)
         } yield updated
 
         result match {
           case Success(subscription) => {
-            subscription.getPrice must be === new BigDecimal("4.56")
-            subscription.getTransactions.size must be === 2
+            subscription.price must be === new BigDecimal("4.56")
+            subscription.transactions.size must be === 2
           }
         }
     }
@@ -750,13 +773,13 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().price(new BigDecimal("4.56")).options.prorateCharges(true).done
-          updated <- gateway.subscription.update(subscription.getId, updateRequest)
+          updated <- gateway.subscription.update(subscription.id, updateRequest)
         } yield updated
 
         result match {
           case Success(subscription) => {
-            subscription.getPrice must be === new BigDecimal("4.56")
-            subscription.getTransactions.size must be === 2
+            subscription.price must be === new BigDecimal("4.56")
+            subscription.transactions.size must be === 2
           }
       }
     }
@@ -769,13 +792,13 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().price(new BigDecimal("4.56")).options.prorateCharges(false).done
-          updated <- gateway.subscription.update(subscription.getId, updateRequest)
+          updated <- gateway.subscription.update(subscription.id, updateRequest)
         } yield updated
 
         result match {
           case Success(subscription) => {
-            subscription.getPrice must be === new BigDecimal("4.56")
-            subscription.getTransactions.size must be === 1
+            subscription.price must be === new BigDecimal("4.56")
+            subscription.transactions.size must be === 1
           }
         }
     }
@@ -790,15 +813,15 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         val result = for {
           original <- gateway.subscription.create(createRequest)
-          updated <- gateway.subscription.update(original.getId, updateRequest)
+          updated <- gateway.subscription.update(original.id, updateRequest)
         } yield (original, updated)
 
         result match {
           case Success((original,updated)) => {
-            updated.getTransactions.size must be === (original.getTransactions.size + 1)
-            updated.getTransactions.get(0).getStatus must be === Transactions.Status.PROCESSOR_DECLINED
-            updated.getBalance must be === new BigDecimal("0.00")
-            updated.getPrice must be === new BigDecimal("1.23")
+            updated.transactions.size must be === (original.transactions.size + 1)
+            updated.transactions.get(0).getStatus must be === Transactions.Status.PROCESSOR_DECLINED
+            updated.balance must be === new BigDecimal("0.00")
+            updated.price must be === new BigDecimal("1.23")
           }
         }
     }
@@ -812,15 +835,15 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           createdSubscription <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().price(new BigDecimal("2100")).options.prorateCharges(true).revertSubscriptionOnProrationFailure(false).done
-          updated <- gateway.subscription.update(createdSubscription.getId, updateRequest)
+          updated <- gateway.subscription.update(createdSubscription.id, updateRequest)
         } yield (createdSubscription, updated)
 
         result match {
           case Success((original, updatedSubscription)) => {
-            updatedSubscription.getTransactions.size must be === (original.getTransactions.size + 1)
-            updatedSubscription.getTransactions.get(0).getStatus must be === Transactions.Status.PROCESSOR_DECLINED
-            updatedSubscription.getBalance must be === original.getTransactions.get(0).getAmount
-            updatedSubscription.getPrice must be === new BigDecimal("2100.00")
+            updatedSubscription.transactions.size must be === (original.transactions.size + 1)
+            updatedSubscription.transactions.get(0).getStatus must be === Transactions.Status.PROCESSOR_DECLINED
+            updatedSubscription.balance must be === original.transactions.get(0).getAmount
+            updatedSubscription.price must be === new BigDecimal("2100.00")
           }
         }
     }
@@ -834,13 +857,13 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().price(new BigDecimal("4.56"))
-          updated <- gateway.subscription.update(subscription.getId, updateRequest)
+          updated <- gateway.subscription.update(subscription.id, updateRequest)
         } yield updated
 
         result match {
           case Success(updatedSubscription) => {
-            updatedSubscription.getPrice must be === new BigDecimal("4.56")
-            updatedSubscription.getTransactions.size must be === 1
+            updatedSubscription.price must be === new BigDecimal("4.56")
+            updatedSubscription.transactions.size must be === 1
           }
         }
     }
@@ -853,18 +876,18 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
           request = new SubscriptionRequest().addOns.update("increase_10").amount(new BigDecimal("30.00")).quantity(9).done.remove("increase_20").add.inheritedFromId("increase_30").amount(new BigDecimal("31.00")).quantity(7).done.done.discounts.update("discount_7").amount(new BigDecimal("15.00")).done.remove("discount_11").add.inheritedFromId("discount_15").amount(new BigDecimal("23.00")).done.done
-          updated <- gateway.subscription.update(subscription.getId, request)
+          updated <- gateway.subscription.update(subscription.id, request)
         } yield updated
 
         result match {
           case Success(updatedSubscription) => {
-            val addOns = updatedSubscription.getAddOns.sortWith(SortById).toVector
+            val addOns = updatedSubscription.addOns.sortWith(SortById).toVector
             addOns.size must be === 2
             addOns.get(0).getAmount must be === new BigDecimal("30.00")
             addOns.get(0).getQuantity must be === new Integer(9)
             addOns.get(1).getAmount must be === new BigDecimal("31.00")
             addOns.get(1).getQuantity must be === new Integer(7)
-            val discounts = updatedSubscription.getDiscounts.sortWith(SortById).toVector
+            val discounts = updatedSubscription.discounts.sortWith(SortById).toVector
             discounts.size must be === 2
             discounts.get(0).getId must be === "discount_15"
             discounts.get(0).getAmount must be === new BigDecimal("23.00")
@@ -887,13 +910,13 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
           request = new SubscriptionRequest().addOns.add.inheritedFromId("increase_30").done.done.
             discounts.add.inheritedFromId("discount_15").done.done.options.replaceAllAddOnsAndDiscounts(true).done
 
-          updated <- gateway.subscription.update(subscription.getId, request)
+          updated <- gateway.subscription.update(subscription.id, request)
         } yield updated
 
         result match {
           case Success(updatedSubscription) => {
-            updatedSubscription.getAddOns.size must be === 1
-            updatedSubscription.getDiscounts.size must be === 1
+            updatedSubscription.addOns.size must be === 1
+            updatedSubscription.discounts.size must be === 1
           }
         }
     }
@@ -910,12 +933,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
           updateRequest = new SubscriptionRequest().descriptor.name("999*99").phone("1234567891").done
 
-          updatedSubscription <- gateway.subscription.update(subscription.getId, updateRequest)
+          updatedSubscription <- gateway.subscription.update(subscription.id, updateRequest)
         } yield updatedSubscription
 
         result match {
           case Success(updatedSubscription) => {
-            updatedSubscription.getDescriptor must be === Descriptor(name="999*99", phone="1234567891")
+            updatedSubscription.descriptor must be === Descriptor(name="999*99", phone="1234567891")
           }
         }
     }
@@ -929,7 +952,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         createResult must be('success)
         val createdSubscription = createResult match { case Success(sub) => sub }
         val updateRequest = new SubscriptionRequest().id("invalid id")
-        val result = gateway.subscription.update(createdSubscription.getId, updateRequest)
+        val result = gateway.subscription.update(createdSubscription.id, updateRequest)
         result match {
           case Failure(errors,_,_,_,_,_) => {
             val code = errors.forObject("subscription").onField("id").get(0).code
@@ -961,13 +984,13 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
         val result = for {
           subscription <- gateway.subscription.create(request)
-          cancellation <- gateway.subscription.cancel(subscription.getId)
+          cancellation <- gateway.subscription.cancel(subscription.id)
         } yield (subscription, cancellation)
 
         result match {
           case Success((subscription, cancellation)) => {
-            cancellation.getStatus must be === Subscription.Status.CANCELED
-            gateway.subscription.find(subscription.getId).getStatus must be === Subscription.Status.CANCELED
+            cancellation.status must be === Subscriptions.Status.CANCELED
+            gateway.subscription.find(subscription.id).status must be === Subscriptions.Status.CANCELED
           }
         }
     }
@@ -997,7 +1020,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val results = gateway.subscription.search(search)
         results.getMaximumSize > 0 must be === true
         for (foundSubscription <- results) {
-          foundSubscription.getDaysPastDue >= 2 && foundSubscription.getDaysPastDue <= 10 must be === true
+          foundSubscription.daysPastDue >= 2 && foundSubscription.daysPastDue <= 10 must be === true
         }
     }
 
@@ -1054,10 +1077,10 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         val request1 = new SubscriptionRequest().merchantAccountId(DEFAULT_MERCHANT_ACCOUNT_ID).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(5))
         val subscription = gateway.subscription.create(request1) match { case Success(sub) => sub }
-        var search = new SubscriptionSearchRequest().merchantAccountId.is(subscription.getMerchantAccountId).price.is(new BigDecimal(5))
+        var search = new SubscriptionSearchRequest().merchantAccountId.is(subscription.merchantAccountId).price.is(new BigDecimal(5))
         var results = gateway.subscription.search(search)
         results must includeSubscription(subscription)
-        search = new SubscriptionSearchRequest().merchantAccountId.in(subscription.getMerchantAccountId, "totally_bogus").price.is(new BigDecimal(5))
+        search = new SubscriptionSearchRequest().merchantAccountId.in(subscription.merchantAccountId, "totally_bogus").price.is(new BigDecimal(5))
         results = gateway.subscription.search(search)
         results must includeSubscription(subscription)
         search = new SubscriptionSearchRequest().merchantAccountId.is("totally_bogus").price.is(new BigDecimal(5))
@@ -1178,7 +1201,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(12))
         val subscription1 = gateway.subscription.create(request1) match { case Success(sub) => sub }
         val subscription2 = gateway.subscription.create(request2) match { case Success(sub) => sub }
-        gateway.subscription.cancel(subscription2.getId)
+        gateway.subscription.cancel(subscription2.id)
         val search = new SubscriptionSearchRequest().status.in(Status.ACTIVE).price.is(new BigDecimal(12))
         val results = gateway.subscription.search(search)
         results must includeSubscription(subscription1)
@@ -1191,7 +1214,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val results = gateway.subscription.search(search)
         results.getMaximumSize > 0 must be === true
         for (subscription <- results) {
-          subscription.getStatus must be === Status.EXPIRED
+          subscription.status must be === Status.EXPIRED
         }
     }
 
@@ -1203,7 +1226,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(13))
         val subscription1 = gateway.subscription.create(request1) match { case Success(sub) => sub }
         val subscription2 = gateway.subscription.create(request2) match { case Success(sub) => sub }
-        gateway.subscription.cancel(subscription2.getId)
+        gateway.subscription.cancel(subscription2.id)
 
         val statuses = List(Status.ACTIVE, Status.CANCELED)
         val search = new SubscriptionSearchRequest().status.in(statuses).price.is(new BigDecimal(13))
@@ -1219,7 +1242,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(14))
         val subscription1 = gateway.subscription.create(request1) match { case Success(sub) => sub }
         val subscription2 = gateway.subscription.create(request2) match { case Success(sub) => sub }
-        gateway.subscription.cancel(subscription2.getId)
+        gateway.subscription.cancel(subscription2.id)
         
         val search = new SubscriptionSearchRequest().status.in(Status.ACTIVE, Status.CANCELED).price.is(new BigDecimal(14))
         val results = gateway.subscription.search(search)
@@ -1245,7 +1268,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val (subscription1, subscription2) = result match {
           case Success((sub1, sub2)) => (sub1, sub2)
         }
-        val search = new SubscriptionSearchRequest().transactionId.is(subscription1.getTransactions.get(0).getId)
+        val search = new SubscriptionSearchRequest().transactionId.is(subscription1.transactions.get(0).getId)
         val results = gateway.subscription.search(search)
         results must includeSubscription(subscription1)
         results must not (includeSubscription(subscription2))
@@ -1260,7 +1283,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
                     <status>foobar</status>
                   </subscription>
         val transaction = new Subscription(NodeWrapperFactory.create(xml.toString))
-        transaction.getStatus must be === Subscription.Status.UNRECOGNIZED
+        transaction.status must be === Subscriptions.Status.UNRECOGNIZED
     }
 
     onGatewayIt("unrecognizedDurationUnit") {
@@ -1269,7 +1292,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
           <trial-duration-unit>foobar</trial-duration-unit>
         </subscription>
         val transaction = new Subscription(NodeWrapperFactory.create(xml.toString))
-        transaction.getTrialDurationUnit must be === Subscription.DurationUnit.UNRECOGNIZED
+        transaction.trialDurationUnit must be === Subscriptions.DurationUnit.UNRECOGNIZED
     }
   }
 
@@ -1281,7 +1304,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           subscription <- gateway.subscription.create(request)
           updated = makePastDue(gateway, subscription, 1)
-          retry <- gateway.subscription.retryCharge(subscription.getId, TransactionAmount.AUTHORIZE.amount)
+          retry <- gateway.subscription.retryCharge(subscription.id, TransactionAmount.AUTHORIZE.amount)
         } yield retry
         
         result match {
@@ -1303,12 +1326,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val result = for {
           subscription <- gateway.subscription.create(request)
           updated = makePastDue(gateway, subscription, 1)
-          retriedCharge <- gateway.subscription.retryCharge(subscription.getId)
+          retriedCharge <- gateway.subscription.retryCharge(subscription.id)
         } yield (subscription, retriedCharge)
 
         result match {
           case Success((subscription, transaction)) => {
-            transaction.getAmount must be === subscription.getPrice
+            transaction.getAmount must be === subscription.price
             transaction.getProcessorAuthorizationCode must not be (null)
             transaction.getType must be === Transactions.Type.SALE
             transaction.getStatus must be === Transactions.Status.AUTHORIZED
@@ -1322,7 +1345,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
   private def makePastDue(gateway: BraintreeGateway, subscription: Subscription, numberOfDaysPastDue: Int) = {
     val response = new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
       Environment.DEVELOPMENT.certificateFilenames, BraintreeGateway.VERSION).
-      put("/subscriptions/" + subscription.getId + "/make_past_due?days_past_due=" + numberOfDaysPastDue)
+      put("/subscriptions/" + subscription.id + "/make_past_due?days_past_due=" + numberOfDaysPastDue)
     response must be('success)
     subscription
   }

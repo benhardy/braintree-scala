@@ -4,10 +4,10 @@ import _root_.org.junit.runner.RunWith
 import _root_.org.scalatest.FunSpec
 import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
-import com.braintreegateway.Subscription.Status
 import scala.collection.JavaConversions._
 
 import java.math.BigDecimal
+import com.braintreegateway.Subscriptions.Status
 
 
 @RunWith(classOf[JUnitRunner])

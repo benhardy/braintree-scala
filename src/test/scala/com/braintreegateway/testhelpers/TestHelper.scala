@@ -55,9 +55,9 @@ object TestHelper {
 
   def includeSubscription(item: Subscription) = Matcher {
     (collection: ResourceCollection[Subscription]) => {
-      val subIds = "Subscription list " + collection.map(_.getId).toList.toString
-      val id = item.getId
-      MatchResult(collection.exists(_.getId == item.getId),
+      val subIds = "Subscription list " + collection.map(_.id).toList.toString
+      val id = item.id
+      MatchResult(collection.exists(_.id == item.id),
         subIds + "does not contain " + id,
         subIds + "contains " + id)
     }

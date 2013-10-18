@@ -1508,7 +1508,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
           add.amount(new BigDecimal("21.00")).inheritedFromId("increase_20").numberOfBillingCycles(6).quantity(3).done.
           done.discounts.add.amount(new BigDecimal("7.50")).inheritedFromId("discount_7").neverExpires(true).quantity(2).done.done
         subscription <- gateway.subscription.create(request)
-        transaction = subscription.getTransactions.get(0)
+        transaction = subscription.transactions.get(0)
       } yield transaction
 
       val transaction = result match {

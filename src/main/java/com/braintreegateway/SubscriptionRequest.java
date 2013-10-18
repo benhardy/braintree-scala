@@ -23,7 +23,7 @@ public class SubscriptionRequest extends BaseRequest {
     private String planId;
     private BigDecimal price;
     private Integer trialDuration;
-    private Subscription.DurationUnit trialDurationUnit;
+    private Subscriptions.DurationUnit trialDurationUnit;
 
     public ModificationsRequest addOns() {
         addOnsRequest = new ModificationsRequest(this, "addOns");
@@ -100,7 +100,7 @@ public class SubscriptionRequest extends BaseRequest {
         return this;
     }
 
-    public SubscriptionRequest trialDurationUnit(Subscription.DurationUnit trialDurationUnit) {
+    public SubscriptionRequest trialDurationUnit(Subscriptions.DurationUnit trialDurationUnit) {
         this.trialDurationUnit = trialDurationUnit;
         return this;
     }

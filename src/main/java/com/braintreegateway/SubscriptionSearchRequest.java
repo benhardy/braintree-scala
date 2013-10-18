@@ -41,8 +41,8 @@ public class SubscriptionSearchRequest extends SearchRequest {
         return new RangeNode<SubscriptionSearchRequest>("price", this);
     }
 
-    public MultipleValueNode<SubscriptionSearchRequest, Subscription.Status> status() {
-        return new MultipleValueNode<SubscriptionSearchRequest, Subscription.Status>("status", this);
+    public MultipleValueNode<SubscriptionSearchRequest, Subscriptions.Status> status() {
+        return new MultipleValueNode<SubscriptionSearchRequest, Subscriptions.Status>("status", this);
     }
     
     public TextNode<SubscriptionSearchRequest> transactionId() {
