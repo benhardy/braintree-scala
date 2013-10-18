@@ -55,8 +55,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
           case Success(transaction) => {
-            transaction.getDescriptor.getName must be === "123*123456789012345678"
-            transaction.getDescriptor.getPhone must be === "3334445555"
+            transaction.getDescriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
           }
           case _ => fail("expected success")
         }

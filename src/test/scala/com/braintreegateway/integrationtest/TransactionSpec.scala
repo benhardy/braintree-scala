@@ -540,8 +540,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Success(transaction) => {
-          transaction.getDescriptor.getName must be === "123*123456789012345678"
-          transaction.getDescriptor.getPhone must be === "3334445555"
+          transaction.getDescriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
         }
       }
     }

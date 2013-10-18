@@ -554,11 +554,9 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).descriptor.name("123*123456789012345678").phone("3334445555").done
         val createResult = gateway.subscription.create(request)
         val subscription = createResult match { case Success(sub) => sub }
-        subscription.getDescriptor.getName must be === "123*123456789012345678"
-        subscription.getDescriptor.getPhone must be === "3334445555"
+        subscription.getDescriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
         val transaction = subscription.getTransactions.get(0)
-        transaction.getDescriptor.getName must be === "123*123456789012345678"
-        transaction.getDescriptor.getPhone must be === "3334445555"
+        transaction.getDescriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
     }
 
     onGatewayIt("createWithDescriptorValidation") {
@@ -895,8 +893,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
 
         result match {
           case Success(updatedSubscription) => {
-            updatedSubscription.getDescriptor.getName must be === "999*99"
-            updatedSubscription.getDescriptor.getPhone must be === "1234567891"
+            updatedSubscription.getDescriptor must be === Descriptor(name="999*99", phone="1234567891")
           }
         }
     }

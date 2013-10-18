@@ -75,7 +75,7 @@ public class Subscription {
         currentBillingCycle = node.findInteger("current-billing-cycle");
         daysPastDue = node.findInteger("days-past-due");
         if (node.findFirst("descriptor") != null) {
-            descriptor = new Descriptor(node.findFirst("descriptor"));
+            descriptor = Descriptor.apply(node.findFirst("descriptor"));
         }
         discounts = new ArrayList<Discount>();
         for (NodeWrapper discountResponse : node.findAll("discounts/discount")) {

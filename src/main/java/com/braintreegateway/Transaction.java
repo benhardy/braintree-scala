@@ -161,7 +161,7 @@ public class Transaction {
         customer = new Customer(node.findFirst("customer"));
         cvvResponseCode = node.findString("cvv-response-code");
         disbursementDetails = new DisbursementDetails(node.findFirst("disbursement-details"));
-        descriptor = new Descriptor(node.findFirst("descriptor"));
+        descriptor = Descriptor.apply(node.findFirst("descriptor"));
         escrowStatus = EnumUtils.findByName(EscrowStatus.class, node.findString("escrow-status"));
         gatewayRejectionReason = EnumUtils.findByName(GatewayRejectionReason.class, node.findString("gateway-rejection-reason"));
         id = node.findString("id");
