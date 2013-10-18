@@ -34,13 +34,16 @@ class EnumUtilsSpec extends FunSpec with MustMatchers {
 
   describe("interactions with DurationUnit") {
     it("defaults to UNDEFINED for null values") {
-      EnumUtils.findByName(classOf[DurationUnit], null) must be === DurationUnit.UNDEFINED
+      DurationUnit.fromString(null) must be === DurationUnit.UNDEFINED
     }
     it("defaults to UNRECOGNIZED for garbage values") {
-      EnumUtils.findByName(classOf[DurationUnit], "DERP") must be === DurationUnit.UNRECOGNIZED
+      DurationUnit.fromString("DERP") must be === DurationUnit.UNRECOGNIZED
     }
-    it("finds known values") {
-      EnumUtils.findByName(classOf[DurationUnit], "day") must be === DurationUnit.DAY
+    it("finds known values even if lowercase") {
+      DurationUnit.fromString("day") must be === DurationUnit.DAY
+    }
+    it("finds known values  if uppercase") {
+      DurationUnit.fromString("MONTH") must be === DurationUnit.MONTH
     }
   }
 

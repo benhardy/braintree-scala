@@ -16,6 +16,7 @@ abstract class NodeWrapper {
 
   import NodeWrapper._
 
+  // TODO convert to Scala lists once models using this are converted
   def findAll(expression: String): JList[NodeWrapper]
 
   def findAllStrings(expression: String): JList[String] = {
