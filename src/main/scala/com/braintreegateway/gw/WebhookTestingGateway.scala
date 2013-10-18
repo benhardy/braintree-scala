@@ -2,16 +2,15 @@ package com.braintreegateway.gw
 
 import com.braintreegateway.org.apache.commons.codec.binary.Base64
 import com.braintreegateway.util.Crypto
-import java.text.DateFormat
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.HashMap
 import java.util.TimeZone
-import com.braintreegateway.WebhookNotification
+import com.braintreegateway.WebhookNotifications
 
 class WebhookTestingGateway(configuration: Configuration) {
 
-  private def buildPayload(kind: WebhookNotification.Kind, id: String): String = {
+  private def buildPayload(kind: WebhookNotifications.Kind, id: String): String = {
     val dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
     val timestamp = dateFormat.format(new Date)
@@ -23,7 +22,7 @@ class WebhookTestingGateway(configuration: Configuration) {
     String.format("%s|%s", configuration.publicKey, new Crypto().hmacHash(configuration.privateKey, stringToSign))
   }
 
-  def sampleNotification(kind: WebhookNotification.Kind, id: String): HashMap[String, String] = {
+  def sampleNotification(kind: WebhookNotifications.Kind, id: String): HashMap[String, String] = {
     val response: HashMap[String, String] = new HashMap[String, String]
     val payload: String = buildPayload(kind, id)
     response.put("payload", payload)
@@ -31,14 +30,14 @@ class WebhookTestingGateway(configuration: Configuration) {
     response
   }
 
-  private def subjectXml(kind: WebhookNotification.Kind, id: String): String = {
-    if (kind eq WebhookNotification.Kind.SUB_MERCHANT_ACCOUNT_APPROVED) {
+  private def subjectXml(kind: WebhookNotifications.Kind, id: String): String = {
+    if (kind eq WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_APPROVED) {
       merchantAccountXmlActive(id)
     }
-    else if (kind eq WebhookNotification.Kind.SUB_MERCHANT_ACCOUNT_DECLINED) {
+    else if (kind eq WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED) {
       merchantAccountXmlDeclined(id)
     }
-    else if (kind eq WebhookNotification.Kind.TRANSACTION_DISBURSED) {
+    else if (kind eq WebhookNotifications.Kind.TRANSACTION_DISBURSED) {
       transactionXml(id)
     }
     else {
