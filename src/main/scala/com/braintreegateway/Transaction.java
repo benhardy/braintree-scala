@@ -16,95 +16,6 @@ public class Transaction {
         return getDisbursementDetails().isValid();
     }
 
-    public enum CreatedUsing {
-        FULL_INFORMATION("full_information"),
-        TOKEN("token");
-
-        private final String name;
-
-        CreatedUsing(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    public enum EscrowStatus {
-        HELD,
-        HOLD_PENDING,
-        RELEASE_PENDING,
-        RELEASED,
-        REFUNDED,
-        UNRECOGNIZED,
-        UNDEFINED;
-    }
-
-    public enum GatewayRejectionReason {
-        AVS("avs"),
-        AVS_AND_CVV("avs_and_cvv"),
-        CVV("cvv"),
-        DUPLICATE("duplicate"),
-        UNRECOGNIZED("unrecognized"),
-        UNDEFINED("undefined");
-
-        private final String name;
-
-        GatewayRejectionReason(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    public enum Source {
-        API("api"),
-        CONTROL_PANEL("control_panel"),
-        UNRECOGNIZED("unrecognized"),
-        UNDEFINED("undefined");
-
-        private final String name;
-
-        Source(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
-    public enum Status {
-        AUTHORIZATION_EXPIRED, AUTHORIZED, AUTHORIZING, FAILED, GATEWAY_REJECTED,
-        PROCESSOR_DECLINED, SETTLED, SETTLING, SUBMITTED_FOR_SETTLEMENT, VOIDED,
-        UNRECOGNIZED,
-        UNDEFINED;
-    }
-
-    public enum Type {
-        CREDIT("credit"),
-        SALE("sale"),
-        UNRECOGNIZED("unrecognized"),
-        UNDEFINED("undefined"); // absent
-
-        private final String name;
-
-        Type(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public String toString() {
-            return name;
-        }
-    }
-
     private List<AddOn> addOns;
     private BigDecimal amount;
     private String avsErrorResponseCode;
@@ -121,8 +32,8 @@ public class Transaction {
     private DisbursementDetails disbursementDetails;
     private Descriptor descriptor;
     private List<Discount> discounts;
-    private EscrowStatus escrowStatus;
-    private GatewayRejectionReason gatewayRejectionReason;
+    private Transactions.EscrowStatus escrowStatus;
+    private Transactions.GatewayRejectionReason gatewayRejectionReason;
     private String id;
     private String merchantAccountId;
     private String orderId;
@@ -137,13 +48,13 @@ public class Transaction {
     private List<String> refundIds;
     private String settlementBatchId;
     private Address shippingAddress;
-    private Status status;
+    private Transactions.Status status;
     private List<StatusEvent> statusHistory;
     private String subscriptionId;
     private Subscription subscription;
     private BigDecimal taxAmount;
     private Boolean taxExempt;
-    private Type type;
+    private Transactions.Type type;
     private Calendar updatedAt;
     private BigDecimal serviceFeeAmount;
 
@@ -162,8 +73,8 @@ public class Transaction {
         cvvResponseCode = node.findString("cvv-response-code");
         disbursementDetails = new DisbursementDetails(node.findFirst("disbursement-details"));
         descriptor = Descriptor.apply(node.findFirst("descriptor"));
-        escrowStatus = EnumUtils.findByName(EscrowStatus.class, node.findString("escrow-status"));
-        gatewayRejectionReason = EnumUtils.findByName(GatewayRejectionReason.class, node.findString("gateway-rejection-reason"));
+        escrowStatus = EnumUtils.findByName(Transactions.EscrowStatus.class, node.findString("escrow-status"));
+        gatewayRejectionReason = EnumUtils.findByName(Transactions.GatewayRejectionReason.class, node.findString("gateway-rejection-reason"));
         id = node.findString("id");
         merchantAccountId = node.findString("merchant-account-id");
         orderId = node.findString("order-id");
@@ -178,12 +89,12 @@ public class Transaction {
         serviceFeeAmount = node.findBigDecimal("service-fee-amount");
         settlementBatchId = node.findString("settlement-batch-id");
         shippingAddress = new Address(node.findFirst("shipping"));
-        status = EnumUtils.findByName(Status.class, node.findString("status"));
+        status = EnumUtils.findByName(Transactions.Status.class, node.findString("status"));
         subscription = new Subscription(node.findFirst("subscription"));
         subscriptionId = node.findString("subscription-id");
         taxAmount = node.findBigDecimal("tax-amount");
         taxExempt = node.findBoolean("tax-exempt");
-        type = EnumUtils.findByName(Type.class, node.findString("type"));
+        type = EnumUtils.findByName(Transactions.Type.class, node.findString("type"));
         updatedAt = node.findDateTime("updated-at");
 
         refundIds = new ArrayList<String>();
@@ -271,11 +182,11 @@ public class Transaction {
         return discounts;
     }
 
-    public EscrowStatus getEscrowStatus() {
+    public Transactions.EscrowStatus getEscrowStatus() {
         return escrowStatus;
     }
 
-    public GatewayRejectionReason getGatewayRejectionReason() {
+    public Transactions.GatewayRejectionReason getGatewayRejectionReason() {
         return gatewayRejectionReason;
     }
 
@@ -339,7 +250,7 @@ public class Transaction {
         return shippingAddress;
     }
 
-    public Status getStatus() {
+    public Transactions.Status getStatus() {
         return status;
     }
 
@@ -359,7 +270,7 @@ public class Transaction {
         return taxAmount;
     }
 
-    public Type getType() {
+    public Transactions.Type getType() {
         return type;
     }
 

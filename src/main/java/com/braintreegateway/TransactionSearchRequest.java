@@ -145,7 +145,7 @@ public class TransactionSearchRequest extends SearchRequest {
         return textNode("shipping_street_address");
     }
 
-    public MultipleValueNode<TransactionSearchRequest, Transaction.CreatedUsing> createdUsing() {
+    public MultipleValueNode<TransactionSearchRequest, Transactions.CreatedUsing> createdUsing() {
         return multiTypeNode("created_using");
     }
 
@@ -161,15 +161,15 @@ public class TransactionSearchRequest extends SearchRequest {
         return multiTypeNode("credit_card_card_type");
     }
 
-    public MultipleValueNode<TransactionSearchRequest, Transaction.Status> status() {
+    public MultipleValueNode<TransactionSearchRequest, Transactions.Status> status() {
         return multiTypeNode("status");
     }
 
-    public MultipleValueNode<TransactionSearchRequest, Transaction.Source> source() {
+    public MultipleValueNode<TransactionSearchRequest, Transactions.Source> source() {
         return multiTypeNode("source");
     }
 
-    public MultipleValueNode<TransactionSearchRequest, Transaction.Type> type() {
+    public MultipleValueNode<TransactionSearchRequest, Transactions.Type> type() {
         return multiTypeNode("type");
     }
 

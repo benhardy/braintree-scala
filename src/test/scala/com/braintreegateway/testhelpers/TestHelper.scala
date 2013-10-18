@@ -12,6 +12,7 @@ import java.net.URL
 import java.net.URLEncoder
 import java.util.Calendar
 import scala.collection.JavaConversions._
+import com.braintreegateway.Transactions.Status
 
 
 @Ignore("Testing utility class")
@@ -62,7 +63,7 @@ object TestHelper {
     }
   }
 
-  def includeStatus(status: Transaction.Status) = Matcher {
+  def includeStatus(status: Status) = Matcher {
     (collection: ResourceCollection[Transaction]) => {
       val tInfos = collection.map(t => s"${t.getId}:${t.getStatus}").toList
       val transactions = "Transaction list " + tInfos.toString

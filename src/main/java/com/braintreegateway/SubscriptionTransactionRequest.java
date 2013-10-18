@@ -1,7 +1,5 @@
 package com.braintreegateway;
 
-import com.braintreegateway.Transaction.Type;
-
 import java.math.BigDecimal;
 
 public class SubscriptionTransactionRequest extends BaseRequest {
@@ -28,6 +26,6 @@ public class SubscriptionTransactionRequest extends BaseRequest {
         return new RequestBuilder(root).
             addElement("amount", amount).
             addElement("subscriptionId", subscriptionId).
-            addElement("type", Type.SALE.toString().toLowerCase());
+            addElement("type", Transactions.Type.SALE.toString().toLowerCase());
     }
 }

@@ -7,16 +7,38 @@ import com.braintreegateway._
 import com.braintreegateway.SandboxValues.TransactionAmount
 import com.braintreegateway.Subscription.Status
 import com.braintreegateway.exceptions.NotFoundException
-import gw.{Success, BraintreeGateway, Failure}
-import testhelpers.{PlanFixture, MerchantAccountTestConstants, TestHelper, GatewaySpec}
+import com.braintreegateway.gw.{Success, BraintreeGateway, Failure}
+import com.braintreegateway.testhelpers.{PlanFixture, MerchantAccountTestConstants, TestHelper, GatewaySpec}
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapperFactory
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import com.braintreegateway.gw.Failure
+import com.braintreegateway.gw.Success
+import gw.Failure
+import gw.Success
 import java.math.BigDecimal
 import java.util.{Calendar, TimeZone, Random}
 import MerchantAccountTestConstants._
 import scala.collection.JavaConversions._
 import TestHelper._
 import com.braintreegateway.testhelpers.CalendarHelper._
+import scala.Some
+import scala.Some
+import scala.Some
+import scala.Some
+import scala.Some
+import com.braintreegateway.Transactions.Type
+import scala.Some
+import scala.Some
 
 @RunWith(classOf[JUnitRunner])
 class SubscriptionSpec extends GatewaySpec with MustMatchers {
@@ -352,7 +374,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
             subscription.getTransactions.size must be === 1
             val transaction = subscription.getTransactions.get(0)
             transaction.getAmount must be === new BigDecimal("482.48")
-            transaction.getType must be === Transaction.Type.SALE
+            transaction.getType must be === Transactions.Type.SALE
             transaction.getSubscriptionId must be === subscription.getId
           }
         }
@@ -366,7 +388,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val transaction = result match {
           case Failure(_,_,_,_,Some(txn),_)  => txn
         }
-        transaction.getStatus must be === Transaction.Status.PROCESSOR_DECLINED
+        transaction.getStatus must be === Transactions.Status.PROCESSOR_DECLINED
     }
 
     onGatewayIt("hasNoTransactionOnCreateWithATrial") {
@@ -774,7 +796,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         result match {
           case Success((original,updated)) => {
             updated.getTransactions.size must be === (original.getTransactions.size + 1)
-            updated.getTransactions.get(0).getStatus must be === Transaction.Status.PROCESSOR_DECLINED
+            updated.getTransactions.get(0).getStatus must be === Transactions.Status.PROCESSOR_DECLINED
             updated.getBalance must be === new BigDecimal("0.00")
             updated.getPrice must be === new BigDecimal("1.23")
           }
@@ -796,7 +818,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         result match {
           case Success((original, updatedSubscription)) => {
             updatedSubscription.getTransactions.size must be === (original.getTransactions.size + 1)
-            updatedSubscription.getTransactions.get(0).getStatus must be === Transaction.Status.PROCESSOR_DECLINED
+            updatedSubscription.getTransactions.get(0).getStatus must be === Transactions.Status.PROCESSOR_DECLINED
             updatedSubscription.getBalance must be === original.getTransactions.get(0).getAmount
             updatedSubscription.getPrice must be === new BigDecimal("2100.00")
           }
@@ -1266,8 +1288,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
           case Success(transaction) => {
             transaction.getAmount must be === TransactionAmount.AUTHORIZE.amount
             transaction.getProcessorAuthorizationCode must not be (null)
-            transaction.getType must be === Transaction.Type.SALE
-            transaction.getStatus must be === Transaction.Status.AUTHORIZED
+            transaction.getType must be === Transactions.Type.SALE
+            transaction.getStatus must be === Transactions.Status.AUTHORIZED
             transaction.getCreatedAt.year must be === Calendar.getInstance.year
             transaction.getUpdatedAt.year must be === Calendar.getInstance.year
           }
@@ -1288,8 +1310,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
           case Success((subscription, transaction)) => {
             transaction.getAmount must be === subscription.getPrice
             transaction.getProcessorAuthorizationCode must not be (null)
-            transaction.getType must be === Transaction.Type.SALE
-            transaction.getStatus must be === Transaction.Status.AUTHORIZED
+            transaction.getType must be === Transactions.Type.SALE
+            transaction.getStatus must be === Transactions.Status.AUTHORIZED
             transaction.getCreatedAt.year must be === Calendar.getInstance.year
             transaction.getUpdatedAt.year must be === Calendar.getInstance.year
           }

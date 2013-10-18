@@ -1,6 +1,5 @@
 package com.braintreegateway.gw
 
-import com.braintreegateway.Transaction.Type
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapper
@@ -9,6 +8,7 @@ import java.math.BigDecimal
 import java.util.{List=>JUList}
 import scala.collection.JavaConversions._
 import com.braintreegateway._
+import com.braintreegateway.Transactions.Type
 
 
 /**

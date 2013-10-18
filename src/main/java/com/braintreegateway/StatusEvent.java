@@ -1,7 +1,7 @@
 package com.braintreegateway;
 
-import com.braintreegateway.Transaction.Source;
-import com.braintreegateway.Transaction.Status;
+import com.braintreegateway.Transactions.Source;
+import com.braintreegateway.Transactions.Status;
 import com.braintreegateway.util.EnumUtils;
 import com.braintreegateway.util.NodeWrapper;
 

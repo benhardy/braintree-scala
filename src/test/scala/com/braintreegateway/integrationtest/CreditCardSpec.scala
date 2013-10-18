@@ -6,7 +6,9 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
-import gw.{Deleted, Failure, BraintreeGateway, Success}
+import com.braintreegateway.gw.{Deleted, Failure, BraintreeGateway, Success}
+import gw.Failure
+import gw.Success
 import test.{CreditCardDefaults, CreditCardNumbers, VenmoSdk}
 import com.braintreegateway.testhelpers.{GatewaySpec, MerchantAccountTestConstants, TestHelper}
 import java.util.Random
@@ -15,6 +17,7 @@ import scala.collection.JavaConversions._
 import MerchantAccountTestConstants._
 import TestHelper._
 import com.braintreegateway.testhelpers.CalendarHelper._
+import com.braintreegateway.Transactions.GatewayRejectionReason
 
 @RunWith(classOf[JUnitRunner])
 class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
@@ -841,7 +844,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         result match {
           case r: Failure => {
             val verification = r.creditCardVerification.get
-            verification.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.UNDEFINED
+            verification.getGatewayRejectionReason must be === Transactions.GatewayRejectionReason.UNDEFINED
             verification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
             r.message must be === "Do Not Honor"
           }
@@ -863,7 +866,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       result match {
         case r: Failure => {
           val verification = r.creditCardVerification.get
-          verification.getGatewayRejectionReason must be === Transaction.GatewayRejectionReason.CVV
+          verification.getGatewayRejectionReason must be === Transactions.GatewayRejectionReason.CVV
         }
       }
     }
