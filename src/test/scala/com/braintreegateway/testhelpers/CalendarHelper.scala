@@ -64,6 +64,12 @@ object CalendarHelper {
     getCalendar(dateString, NodeWrapper.DATE_FORMAT, UTC)
   }
 
+  def date(year:Int, month:Int, day:Int) = {
+    val calendar = Calendar.getInstance
+    calendar.set(year, month, day)
+    calendar
+  }
+
   def dateTime(dateString: String, timeZoneName: String = UTC) = {
     getCalendar(dateString, NodeWrapper.DATE_TIME_FORMAT, timeZoneName)
   }

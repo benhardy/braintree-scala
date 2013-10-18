@@ -867,11 +867,11 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val foundTransaction = gateway.transaction.find(DISBURSEMENT_TRANSACTION_ID)
       val disbursementDetails = foundTransaction.getDisbursementDetails
       foundTransaction.isDisbursed must be === true
-      disbursementDetails.getDisbursementDate must be === disbursementDate
-      disbursementDetails.getSettlementCurrencyIsoCode must be === "USD"
+      disbursementDetails.disbursementDate must be === Some(disbursementDate)
+      disbursementDetails.settlementCurrencyIsoCode must be === "USD"
       disbursementDetails.isFundsHeld must be === false
-      disbursementDetails.getSettlementCurrencyExchangeRate must be === new BigDecimal("1")
-      disbursementDetails.getSettlementAmount must be === new BigDecimal("100.00")
+      disbursementDetails.settlementCurrencyExchangeRate must be === new BigDecimal("1")
+      disbursementDetails.settlementAmount must be === new BigDecimal("100.00")
     }
   }
 

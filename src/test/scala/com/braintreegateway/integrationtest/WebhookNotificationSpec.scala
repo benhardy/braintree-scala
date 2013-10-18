@@ -3,7 +3,7 @@ package com.braintreegateway.integrationtest
 import com.braintreegateway.MerchantAccount
 import com.braintreegateway.WebhookNotification
 import com.braintreegateway.exceptions.InvalidSignatureException
-import com.braintreegateway.testhelpers.{TestHelper,GatewaySpec}
+import com.braintreegateway.testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
 import com.braintreegateway.util.NodeWrapperFactory
 import com.braintreegateway.ValidationErrorCode
 import java.util.Calendar
@@ -97,9 +97,10 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
         notification.getKind must be === WebhookNotification.Kind.TRANSACTION_DISBURSED
         notification.getTransaction.getId must be === "my_id"
-        notification.getTransaction.getDisbursementDetails.getDisbursementDate.get(Calendar.YEAR) must be === 2013
-        notification.getTransaction.getDisbursementDetails.getDisbursementDate.get(Calendar.MONTH) must be === Calendar.JULY
-        notification.getTransaction.getDisbursementDetails.getDisbursementDate.get(Calendar.DAY_OF_MONTH) must be === 9
+        val actualDate = notification.getTransaction.getDisbursementDetails.disbursementDate.get
+        val expected = CalendarHelper.date(2013, Calendar.JULY, 9).in(actualDate.getTimeZone)
+        actualDate must beSameDayAs(expected)
+
     }
   }
 }

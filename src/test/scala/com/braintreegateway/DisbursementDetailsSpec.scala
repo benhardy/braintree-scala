@@ -15,7 +15,7 @@ class DisbursementDetailsSpec extends FunSpec with MustMatchers with MockitoSuga
     it("is true when disbursement date is present") {
       val wrapper = mock[NodeWrapper]
       val disbursementDate = CalendarHelper.date("2013-04-10")
-      when(wrapper.findDate("disbursement-date")).thenReturn(disbursementDate)
+      when(wrapper.findDateOpt("disbursement-date")).thenReturn(Some(disbursementDate))
 
       val detail = new DisbursementDetails(wrapper)
 
@@ -24,7 +24,7 @@ class DisbursementDetailsSpec extends FunSpec with MustMatchers with MockitoSuga
 
     it("is false when disbursement date is absent") {
       val wrapper = mock[NodeWrapper]
-      when(wrapper.findDate("disbursement-date")).thenReturn(null)
+      when(wrapper.findDateOpt("disbursement-date")).thenReturn(None)
 
       val detail = new DisbursementDetails(wrapper)
 
