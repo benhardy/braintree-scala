@@ -132,7 +132,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       result must not be ('success)
       result match {
         case Failure(_,_,_,Some(verification),_,_) => {
-          verification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
+          verification.status must be === CreditCardVerification.Status.PROCESSOR_DECLINED
         }
       }
     }

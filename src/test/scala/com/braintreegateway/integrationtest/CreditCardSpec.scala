@@ -824,7 +824,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case r: Failure => {
-            r.creditCardVerification.get.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+            r.creditCardVerification.get.merchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
           }
         }
     }
@@ -844,8 +844,8 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         result match {
           case r: Failure => {
             val verification = r.creditCardVerification.get
-            verification.getGatewayRejectionReason must be === Transactions.GatewayRejectionReason.UNDEFINED
-            verification.getStatus must be === CreditCardVerification.Status.PROCESSOR_DECLINED
+            verification.gatewayRejectionReason must be === Transactions.GatewayRejectionReason.UNDEFINED
+            verification.status must be === CreditCardVerification.Status.PROCESSOR_DECLINED
             r.message must be === "Do Not Honor"
           }
         }
@@ -866,7 +866,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
       result match {
         case r: Failure => {
           val verification = r.creditCardVerification.get
-          verification.getGatewayRejectionReason must be === Transactions.GatewayRejectionReason.CVV
+          verification.gatewayRejectionReason must be === Transactions.GatewayRejectionReason.CVV
         }
       }
     }
