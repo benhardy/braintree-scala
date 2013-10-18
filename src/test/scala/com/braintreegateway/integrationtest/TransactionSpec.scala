@@ -927,9 +927,10 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
       result match {
         case Success(settledTransaction) => {
-          settledTransaction.getStatusHistory.size must be === 2
-          settledTransaction.getStatusHistory.get(0).getStatus must be === Transactions.Status.AUTHORIZED
-          settledTransaction.getStatusHistory.get(1).getStatus must be === Transactions.Status.SUBMITTED_FOR_SETTLEMENT
+          settledTransaction.getStatusHistory.map {_.status} must be === List(
+            Transactions.Status.AUTHORIZED,
+            Transactions.Status.SUBMITTED_FOR_SETTLEMENT
+          )
         }
       }
     }
