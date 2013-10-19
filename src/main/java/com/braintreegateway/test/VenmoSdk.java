@@ -2,9 +2,10 @@ package com.braintreegateway.test;
 
 public class VenmoSdk {
     public enum PaymentMethodCode {
-        Visa("4111111111111111"), Invalid("invalid-payment-method-code");
+        Visa("4111111111111111"),
+        Invalid("invalid-payment-method-code");
 
-        public String code;
+        public final String code;
 
         private PaymentMethodCode(String number) {
             this.code = VenmoSdk.generateTestPaymentMethodCode(number);
@@ -16,9 +17,10 @@ public class VenmoSdk {
     }
 
     public enum Session {
-        Valid("stub-session"), Invalid("stub-invalid-session");
+        Valid("stub-session"),
+        Invalid("stub-invalid-session");
 
-        public String value;
+        public final String value;
 
         private Session(String validity) {
             this.value = validity;
