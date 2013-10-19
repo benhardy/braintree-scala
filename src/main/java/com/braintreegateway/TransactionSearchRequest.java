@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.search.*;
+
 public class TransactionSearchRequest extends SearchRequest {
     public TextNode<TransactionSearchRequest> id() {
         return textNode("id");

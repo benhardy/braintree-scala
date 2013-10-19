@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.search.*;
+
 /**
  * Provides a fluent interface to build up requests around {@link Subscription}
  * searches.

@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.search.SearchCriteria;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;

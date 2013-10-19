@@ -1148,11 +1148,11 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.SALE)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
-      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.CREDIT).refund.is(true)
+      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.CREDIT).refund.is(java.lang.Boolean.TRUE)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
       collection.getFirst.getId must be === refundTransaction.getId
-      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.CREDIT).refund.is(false)
+      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.CREDIT).refund.is(java.lang.Boolean.FALSE)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
       collection.getFirst.getId must be === creditTransaction.getId

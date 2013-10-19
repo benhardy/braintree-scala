@@ -161,7 +161,7 @@ class SubscriptionSearchRequestSpec extends FunSpec with MustMatchers {
 
     it("priceXmlDeprecatedGreaterThanOrEqualOperator") {
       val expected = <search><price><min>5</min></price></search>
-      val actual = new SubscriptionSearchRequest().price.greaterThanOrEqual(new BigDecimal(5)).toXML
+      val actual = new SubscriptionSearchRequest().price.greaterThanOrEqualTo(new BigDecimal(5)).toXML
       actual must be === (expected.toString)
     }
 
@@ -173,7 +173,7 @@ class SubscriptionSearchRequestSpec extends FunSpec with MustMatchers {
 
     it("priceXmlDeprecatedLessThanOrEqualOperator") {
       val expected = <search><price><max>5</max></price></search>
-      val actual = new SubscriptionSearchRequest().price.lessThanOrEqual(new BigDecimal(5)).toXML
+      val actual = new SubscriptionSearchRequest().price.lessThanOrEqualTo(new BigDecimal(5)).toXML
       actual must be === (expected.toString)
     }
 

@@ -1,5 +1,7 @@
 package com.braintreegateway;
 
+import com.braintreegateway.search.*;
+
 public class CreditCardVerificationSearchRequest extends SearchRequest {
     public TextNode<CreditCardVerificationSearchRequest> id() {
         return new TextNode<CreditCardVerificationSearchRequest>("id", this);
