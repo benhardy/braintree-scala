@@ -7,6 +7,7 @@ import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
 import gw.{Deleted, Success, Failure}
 import java.util.{Random, Calendar}
+import search.CustomerSearchRequest
 import test.VenmoSdk
 import testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
 import CalendarHelper._

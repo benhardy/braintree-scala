@@ -6,6 +6,7 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import gw.Failure
+import search.CreditCardVerificationSearchRequest
 import testhelpers.CalendarHelper._
 import com.braintreegateway.util.NodeWrapperFactory
 import testhelpers.GatewaySpec

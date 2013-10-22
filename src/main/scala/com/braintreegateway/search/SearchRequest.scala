@@ -73,4 +73,22 @@ abstract class SearchRequest[R <: SearchRequest[R]] extends BaseRequest {
     builder.toString
   }
 
+  protected def textNode(nodeName: String) = new TextNode[R](nodeName, getThis)
+
+  protected def isNode(nodeName: String) = new IsNode[R](nodeName, getThis)
+
+  protected def rangeNode(nodeName: String) = new RangeNode[R](nodeName, getThis)
+
+  protected def equalityNode(nodeName: String) = new EqualityNode[R](nodeName, getThis)
+
+  protected def keyValueNode(nodeName: String) = new KeyValueNode[R](nodeName, getThis)
+
+  protected def dateRangeNode(nodeName: String) = new DateRangeNode[R](nodeName, getThis)
+
+  protected def partialMatchNode(nodeName: String) = new PartialMatchNode[R](nodeName, getThis)
+
+  protected def multipleValueNode[T](nodeName: String) = new MultipleValueNode[R, T](nodeName, getThis)
+
+  protected def multipleValueOrTextNode[T](nodeName: String) = new MultipleValueOrTextNode[R, T](nodeName, getThis)
+
 }

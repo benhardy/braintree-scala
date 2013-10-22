@@ -44,6 +44,7 @@ import java.math.BigDecimal
 import java.util.{Calendar, TimeZone, Random}
 import MerchantAccountTestConstants._
 import scala.collection.JavaConversions._
+import search.SubscriptionSearchRequest
 import TestHelper._
 import com.braintreegateway.testhelpers.CalendarHelper._
 import scala.Some

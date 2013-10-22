@@ -6,6 +6,7 @@ import java.math.BigDecimal
 import java.util.{List=>JUList}
 import scala.collection.JavaConversions._
 import com.braintreegateway._
+import search.SubscriptionSearchRequest
 
 /**
  * Provides methods to interact with {@link Subscription Subscriptions}.

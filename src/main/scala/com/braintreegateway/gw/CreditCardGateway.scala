@@ -7,6 +7,7 @@ import java.util.Calendar
 import java.util.TimeZone
 import scala.collection.JavaConversions._
 import com.braintreegateway._
+import search.IdsSearchRequest
 
 /**
  * Provides methods to create, delete, find, and update {@link CreditCard}

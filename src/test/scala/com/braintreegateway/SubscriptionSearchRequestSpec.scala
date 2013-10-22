@@ -8,6 +8,7 @@ import scala.collection.JavaConversions._
 
 import java.math.BigDecimal
 import com.braintreegateway.Subscriptions.Status
+import search.SubscriptionSearchRequest
 
 
 @RunWith(classOf[JUnitRunner])

@@ -111,6 +111,7 @@ import MerchantAccountTestConstants._
 import scala.collection.JavaConversions._
 import java.util.Random
 import CalendarHelper._
+import search.TransactionSearchRequest
 import TestHelper._
 import com.braintreegateway.CreditCards.CardType
 import com.braintreegateway.Transactions._
@@ -1142,17 +1143,17 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val saleTransaction = gateway.transaction.sale(request) match { case Success(txn) => txn}
       saleTransaction must settle(gateway)
       val refundTransaction = gateway.transaction.refund(saleTransaction.getId)  match { case Success(txn) => txn}
-      var searchRequest= new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.CREDIT)
+      var searchRequest= new TransactionSearchRequest().creditCardCardholderName.is(name).transactionType.is(Transactions.Type.CREDIT)
       var collection= gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 2
-      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.SALE)
+      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).transactionType.is(Transactions.Type.SALE)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
-      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.CREDIT).refund.is(java.lang.Boolean.TRUE)
+      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).transactionType.is(Transactions.Type.CREDIT).refund.is(java.lang.Boolean.TRUE)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
       collection.getFirst.getId must be === refundTransaction.getId
-      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).`type`.is(Transactions.Type.CREDIT).refund.is(java.lang.Boolean.FALSE)
+      searchRequest = new TransactionSearchRequest().creditCardCardholderName.is(name).transactionType.is(Transactions.Type.CREDIT).refund.is(java.lang.Boolean.FALSE)
       collection = gateway.transaction.search(searchRequest)
       collection.getMaximumSize must be === 1
       collection.getFirst.getId must be === creditTransaction.getId
@@ -1280,20 +1281,20 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       processingRulesGateway.transaction.search(searchRequest).getMaximumSize must be === 1
 
       searchRequest = new TransactionSearchRequest().
-        id().is(transaction.getId).
-        gatewayRejectedAt().greaterThanOrEqualTo(oneDayEarlier)
+        id.is(transaction.getId).
+        gatewayRejectedAt.greaterThanOrEqualTo(oneDayEarlier)
 
       processingRulesGateway.transaction.search(searchRequest).getMaximumSize must be === 1
 
       searchRequest = new TransactionSearchRequest().
-        id().is(transaction.getId).
-        gatewayRejectedAt().lessThanOrEqualTo(oneDayLater)
+        id.is(transaction.getId).
+        gatewayRejectedAt.lessThanOrEqualTo(oneDayLater)
 
       processingRulesGateway.transaction.search(searchRequest).getMaximumSize must be === 1
 
       searchRequest = new TransactionSearchRequest().
-        id().is(transaction.getId).
-        gatewayRejectedAt().between(threeDaysEarlier, oneDayEarlier)
+        id.is(transaction.getId).
+        gatewayRejectedAt.between(threeDaysEarlier, oneDayEarlier)
 
       processingRulesGateway.transaction.search(searchRequest).getMaximumSize must be === 0
     }

@@ -9,6 +9,7 @@ import java.util.{List=>JUList}
 import scala.collection.JavaConversions._
 import com.braintreegateway._
 import com.braintreegateway.Transactions.Type
+import search.TransactionSearchRequest
 
 
 /**

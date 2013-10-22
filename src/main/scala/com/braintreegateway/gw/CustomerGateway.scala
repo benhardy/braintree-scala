@@ -4,6 +4,7 @@ import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
 import scala.collection.JavaConversions._
 import com.braintreegateway._
+import search.CustomerSearchRequest
 
 
 /**

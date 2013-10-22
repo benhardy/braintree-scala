@@ -3,7 +3,8 @@ package com.braintreegateway.gw
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
 import scala.collection.JavaConversions._
-import com.braintreegateway.{CreditCardVerificationPager, ResourceCollection, CreditCardVerification, CreditCardVerificationSearchRequest}
+import com.braintreegateway.{CreditCardVerificationPager, ResourceCollection, CreditCardVerification}
+import com.braintreegateway.search.CreditCardVerificationSearchRequest
 
 class CreditCardVerificationGateway(http: Http, configuration: Configuration) {
 

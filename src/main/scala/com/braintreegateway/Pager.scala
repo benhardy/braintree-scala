@@ -1,6 +1,7 @@
 package com.braintreegateway
 
 import gw._
+import search.{TransactionSearchRequest, SubscriptionSearchRequest, CustomerSearchRequest, CreditCardVerificationSearchRequest}
 
 abstract trait Pager[T] {
   def getPage(ids: List[String]): List[T]
