@@ -1,9 +1,8 @@
 package com.braintreegateway.search
 
-import com.braintreegateway.SearchRequest
 import java.math.BigDecimal
 
-class RangeNode[T <: SearchRequest](nodeName: String, parent: T) extends SearchNode[T](nodeName, parent) {
+class RangeNode[T <: SearchRequest[T]](nodeName: String, parent: T) extends SearchNode[T](nodeName, parent) {
 
   def between(min: BigDecimal, max: BigDecimal): T = {
     between(min.toString, max.toString)
@@ -16,7 +15,6 @@ class RangeNode[T <: SearchRequest](nodeName: String, parent: T) extends SearchN
   def between(min: String, max: String): T = {
     greaterThanOrEqualTo(min)
     lessThanOrEqualTo(max)
-    parent
   }
 
   def greaterThanOrEqualTo(min: BigDecimal): T = {
@@ -29,7 +27,6 @@ class RangeNode[T <: SearchRequest](nodeName: String, parent: T) extends SearchN
 
   def greaterThanOrEqualTo(min: String): T = {
     parent.addRangeCriteria(nodeName, new SearchCriteria("min", min))
-    parent
   }
 
   def lessThanOrEqualTo(max: BigDecimal): T = {
@@ -42,7 +39,6 @@ class RangeNode[T <: SearchRequest](nodeName: String, parent: T) extends SearchN
 
   def lessThanOrEqualTo(max: String): T = {
     parent.addRangeCriteria(nodeName, new SearchCriteria("max", max))
-    parent
   }
 
   def is(value: BigDecimal): T = {

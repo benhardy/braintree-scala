@@ -1,9 +1,6 @@
 package com.braintreegateway.search
 
-import com.braintreegateway.SearchRequest
-
-
-class MultipleValueNode[T <: SearchRequest, S](nodeName: String, parent: T) extends SearchNode[T](nodeName, parent) {
+class MultipleValueNode[T <: SearchRequest[T], S](nodeName: String, parent: T) extends SearchNode[T](nodeName, parent) {
 
   def in(items: List[S]): T = {
     assembleMultiValueCriteria(items)

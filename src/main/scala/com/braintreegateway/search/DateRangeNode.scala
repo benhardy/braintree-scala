@@ -1,9 +1,8 @@
 package com.braintreegateway.search
 
 import java.util.Calendar
-import com.braintreegateway.SearchRequest
 
-class DateRangeNode[P <: SearchRequest](nodeName: String, parent: P) extends SearchNode[P](nodeName, parent) {
+class DateRangeNode[P <: SearchRequest[P]](nodeName: String, parent: P) extends SearchNode[P](nodeName, parent) {
 
   def between(min: Calendar, max: Calendar): P = {
     this greaterThanOrEqualTo min

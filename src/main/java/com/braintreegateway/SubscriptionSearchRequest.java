@@ -6,7 +6,7 @@ import com.braintreegateway.search.*;
  * Provides a fluent interface to build up requests around {@link Subscription}
  * searches.
  */
-public class SubscriptionSearchRequest extends SearchRequest {
+public class SubscriptionSearchRequest extends SearchRequest<SubscriptionSearchRequest> {
     public SubscriptionSearchRequest() {
         super();
     }
@@ -53,5 +53,10 @@ public class SubscriptionSearchRequest extends SearchRequest {
 
     public RangeNode<SubscriptionSearchRequest> billingCyclesRemaining() {
         return new RangeNode<SubscriptionSearchRequest>("billing_cycles_remaining", this);
+    }
+
+    @Override
+    public SubscriptionSearchRequest getThis() {
+        return this;
     }
 }

@@ -2,7 +2,7 @@ package com.braintreegateway;
 
 import com.braintreegateway.search.*;
 
-public class CreditCardVerificationSearchRequest extends SearchRequest {
+public class CreditCardVerificationSearchRequest extends SearchRequest<CreditCardVerificationSearchRequest> {
     public TextNode<CreditCardVerificationSearchRequest> id() {
         return new TextNode<CreditCardVerificationSearchRequest>("id", this);
     }
@@ -29,5 +29,10 @@ public class CreditCardVerificationSearchRequest extends SearchRequest {
 
     public DateRangeNode<CreditCardVerificationSearchRequest> createdAt() {
         return new DateRangeNode<CreditCardVerificationSearchRequest>("created_at", this);
+    }
+
+    @Override
+    public CreditCardVerificationSearchRequest getThis() {
+        return this;
     }
 }

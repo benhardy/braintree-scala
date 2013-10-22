@@ -2,7 +2,7 @@ package com.braintreegateway;
 
 import com.braintreegateway.search.*;
 
-public class TransactionSearchRequest extends SearchRequest {
+public class TransactionSearchRequest extends SearchRequest<TransactionSearchRequest> {
     public TextNode<TransactionSearchRequest> id() {
         return textNode("id");
     }
@@ -233,5 +233,10 @@ public class TransactionSearchRequest extends SearchRequest {
 
     private <T> MultipleValueNode<TransactionSearchRequest, T> multiTypeNode(String type) {
         return new MultipleValueNode<TransactionSearchRequest, T>(type, this);
+    }
+
+    @Override
+    public TransactionSearchRequest getThis() {
+        return this;
     }
 }

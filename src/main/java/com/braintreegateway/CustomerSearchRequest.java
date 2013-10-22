@@ -2,7 +2,7 @@ package com.braintreegateway;
 
 import com.braintreegateway.search.*;
 
-public class CustomerSearchRequest extends SearchRequest {
+public class CustomerSearchRequest extends SearchRequest<CustomerSearchRequest> {
     public TextNode<CustomerSearchRequest> addressCountryName() {
         return textNode("address_country_name");
     }
@@ -97,5 +97,10 @@ public class CustomerSearchRequest extends SearchRequest {
 
     private TextNode<CustomerSearchRequest> textNode(String fieldName) {
         return new TextNode<CustomerSearchRequest>(fieldName, this);
+    }
+
+    @Override
+    public CustomerSearchRequest getThis() {
+        return this;
     }
 }
