@@ -64,20 +64,17 @@ final class QueryString(content: String = "") {
   }
 
   private def addItem(item: String): QueryString = {
-    ensureSeparation
-    builder.append(item)
+    builder append separator append item
     this
   }
 
-  private def ensureSeparation: Unit = {
-    if (builder.length > 0) {
-      builder.append("&")
-    }
+  private def separator = {
+    if (builder.length > 0) "&" else ""
   }
 
   private def appendRequest(parent: String, request: Request): QueryString = {
     if (request != null) {
-      val requestQueryString: String = request.toQueryString(parent)
+      val requestQueryString = request.toQueryString(parent)
       if (requestQueryString.length > 0) {
         addItem(requestQueryString)
       }

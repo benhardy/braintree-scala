@@ -10,6 +10,9 @@ import collection.immutable
 
 import QueryString.encode
 import QueryString.encodeParam
+import xml._
+import scala.collection.JavaConversions._
+
 
 object RequestBuilder {
   def buildXMLElement(element: AnyRef): String = {
@@ -21,17 +24,12 @@ object RequestBuilder {
     element match {
       case null => ""
       case request: Request => request.toXML
-      case calendar: Calendar => {
-        val dateFormat: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
-        dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-        String.format("<%s type=\"datetime\">%s</%s>", name, dateFormat.format(calendar.getTime), name)
-      }
+      case calendar: Calendar => calendarElement(name, calendar).toString
       case map: java.util.Map[String, AnyRef] => {
         formatAsXML(name, map)
       }
       case list: java.util.List[AnyRef] => {
-        val xml: StringBuilder = new StringBuilder
-        import scala.collection.JavaConversions._
+        val xml = new StringBuilder
         for (item <- list) {
           xml.append(buildXMLElement("item", item))
         }
@@ -43,11 +41,21 @@ object RequestBuilder {
     }
   }
 
+
+  def calendarElement(name: String, calendar: Calendar): xml.Elem = {
+
+    val dateFormat: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
+    dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
+
+    val content = dateFormat.format(calendar.getTime)
+    val attributes = new UnprefixedAttribute("type", "datetime", Null)
+    Elem(null, name, attributes, TopScope, true, Text(content))
+  }
+
   def formatAsXML(name: String, map: Map[String, AnyRef]): String = {
     if (map == null) ""
     val xml: StringBuilder = new StringBuilder
     xml.append(String.format("<%s>", name))
-    import scala.collection.JavaConversions._
     for (entry <- map.entrySet) {
       xml.append(buildXMLElement(entry.getKey, entry.getValue))
     }
@@ -55,7 +63,7 @@ object RequestBuilder {
     xml.toString
   }
 
-  def buildQueryStringElement(name: String, value: String): AnyRef = {
+  def buildQueryStringElement(name: String, value: String): String = {
     if (value != null) {
       QueryString.encodeParam(name, value)
     }
@@ -102,6 +110,7 @@ class RequestBuilder(parent: String) {
     }
     this
   }
+
   def addLowerCaseElementIfPresent(name: String, value: AnyRef): RequestBuilder = {
     if (value != null) {
       elements.put(name, value.toString.toLowerCase)
@@ -110,12 +119,10 @@ class RequestBuilder(parent: String) {
   }
 
   def toQueryString: String = {
-    val queryString: QueryString = new QueryString
-    import scala.collection.JavaConversions._
+    val queryString = new QueryString
     for (entry <- topLevelElements.entrySet) {
       queryString.append(StringUtils.underscore(entry.getKey), entry.getValue)
     }
-    import scala.collection.JavaConversions._
     for (entry <- elements.entrySet) {
       queryString.append(RequestBuilder.parentBracketChildString(StringUtils.underscore(parent), StringUtils.underscore(entry.getKey)), entry.getValue)
     }
@@ -123,9 +130,8 @@ class RequestBuilder(parent: String) {
   }
 
   def toXML: String = {
-    val builder: StringBuilder = new StringBuilder
+    val builder = new StringBuilder
     builder.append(String.format("<%s>", parent))
-    import scala.collection.JavaConversions._
     for (entry <- elements.entrySet) {
       builder.append(RequestBuilder.buildXMLElement(entry.getKey, entry.getValue))
     }
