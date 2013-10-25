@@ -127,8 +127,8 @@ public class CreditCardRequest implements Request {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("creditCard").toXML();
+    public String toXmlString() {
+        return buildRequest("creditCard").toXmlString();
     }
 
     @Override

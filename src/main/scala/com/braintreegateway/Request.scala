@@ -5,7 +5,7 @@ package com.braintreegateway
  */
 trait Request {
   // TODO (big) have this actually return xml.Elem objects
-  def toXML:String
+  def toXmlString:String
 
   def toQueryString(parent:String): String
 
@@ -17,7 +17,7 @@ trait Request {
 // this class appears mostly useless TODO can we ditch it?
 abstract class BaseRequest extends Request {
   // TODO (big) have this actually return xml.Elem objects
-  def toXML:String = throw new UnsupportedOperationException()
+  def toXmlString:String = throw new UnsupportedOperationException()
 
   def toQueryString(parent:String): String = throw new UnsupportedOperationException()
 

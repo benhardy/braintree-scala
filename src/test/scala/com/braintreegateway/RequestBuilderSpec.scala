@@ -27,7 +27,7 @@ class RequestBuilderSpec extends FunSpec with MustMatchers {
     it("produces xml from builder") {
       val builder = new RequestBuilder("myparent")
       builder.addElement("name", "value")
-      val result = builder.toXML
+      val result = builder.toXmlString
       result must be === "<myparent><name>value</name></myparent>"
     }
   }

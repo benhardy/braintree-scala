@@ -95,8 +95,8 @@ public class AddressRequest extends BaseRequest {
     }
     
     @Override
-    public String toXML() {
-        return buildRequest(this.tagName).toXML();
+    public String toXmlString() {
+        return buildRequest(this.tagName).toXmlString();
     }
     
     protected RequestBuilder buildRequest(String root) {

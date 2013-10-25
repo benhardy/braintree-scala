@@ -18,8 +18,8 @@ public class SubscriptionTransactionRequest extends BaseRequest {
     }
     
     @Override
-    public String toXML() {
-        return buildRequest("transaction").toXML();
+    public String toXmlString() {
+        return buildRequest("transaction").toXmlString();
     }
 
     protected RequestBuilder buildRequest(String root) {

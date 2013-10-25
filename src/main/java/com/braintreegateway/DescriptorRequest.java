@@ -20,8 +20,8 @@ public abstract class DescriptorRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("descriptor").toXML();
+    public String toXmlString() {
+        return buildRequest("descriptor").toXmlString();
     }
 
     @Override

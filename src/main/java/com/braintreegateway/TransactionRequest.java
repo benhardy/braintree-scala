@@ -165,8 +165,8 @@ public class TransactionRequest implements Request {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("transaction").toXML();
+    public String toXmlString() {
+        return buildRequest("transaction").toXmlString();
     }
 
     public TransactionRequest type(Type type) {

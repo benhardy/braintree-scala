@@ -50,21 +50,21 @@ abstract class SearchRequest[R <: SearchRequest[R]] extends BaseRequest {
     null
   }
 
-  override def toXML: String = {
+  override def toXmlString: String = {
     val builder = new StringBuilder
     builder.append("<search>")
     for ((key, value) <- criteria.result) {
-      builder.append(RequestBuilder.wrapInXMLTag(key, value.toXML))
+      builder.append(RequestBuilder.wrapInXMLTag(key, value.toXmlString))
     }
     for ((key:String, criteria:ListBuffer[SearchCriteria]) <- rangeCriteria.result) {
       builder.append("<%s>".format(RequestBuilder.xmlEscape(key)))
       for (criterium <- criteria.toList) {
-        builder.append(criterium.toXML)
+        builder.append(criterium.toXmlString)
       }
       builder.append(String.format("</%s>", RequestBuilder.xmlEscape(key)))
     }
     for ((key, value) <- multiValueCriteria.result) {
-      builder.append(RequestBuilder.wrapInXMLTag(key, value.toXML, "array"))
+      builder.append(RequestBuilder.wrapInXMLTag(key, value.toXmlString, "array"))
     }
     for ((key, value) <- keyValueCriteria.result) {
       builder.append(RequestBuilder.wrapInXMLTag(key, value))

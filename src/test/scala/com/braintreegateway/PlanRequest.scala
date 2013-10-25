@@ -78,8 +78,8 @@ class PlanRequest extends BaseRequest {
     this
   }
 
-  override def toXML: String = {
-    buildRequest("plan").toXML
+  override def toXmlString: String = {
+    buildRequest("plan").toXmlString
   }
 
   private def buildRequest(root: String): RequestBuilder = {

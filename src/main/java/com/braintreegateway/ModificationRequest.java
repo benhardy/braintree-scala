@@ -39,8 +39,8 @@ public class ModificationRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("modification").toXML();
+    public String toXmlString() {
+        return buildRequest("modification").toXmlString();
     }
 
     protected RequestBuilder buildRequest(String root) {

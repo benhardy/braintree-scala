@@ -53,8 +53,8 @@ class FakeModificationRequest extends BaseRequest {
     this
   }
 
-  override def toXML: String = {
-    buildRequest("modification").toXML
+  override def toXmlString: String = {
+    buildRequest("modification").toXmlString
   }
 
   protected def buildRequest(root: String): RequestBuilder = {

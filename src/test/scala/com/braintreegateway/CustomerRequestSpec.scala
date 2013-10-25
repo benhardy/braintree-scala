@@ -14,7 +14,7 @@ class CustomerRequestSpec extends FunSpec with MustMatchers {
       val deviceData = "{\"device_session_id\": \"devicesession123\"}"
       val request = new CustomerRequest().deviceData(deviceData)
 
-      val xmlString = request.toXML
+      val xmlString = request.toXmlString
       xmlString must include ("devicesession123")
 
       val customerNode = XML.loadString(xmlString)
@@ -25,7 +25,7 @@ class CustomerRequestSpec extends FunSpec with MustMatchers {
       val deviceSessionId = "devicesession123"
       val request = new CustomerRequest().creditCard.deviceSessionId(deviceSessionId).done
 
-      val xmlString = request.toXML
+      val xmlString = request.toXmlString
       xmlString must include (deviceSessionId)
 
       val customerNode = XML.loadString(xmlString)

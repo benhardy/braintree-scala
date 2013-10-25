@@ -10,17 +10,17 @@ class CreditCardRequestSpec extends FunSpec with MustMatchers {
   describe("toXml") {
     it("escapes xml chars") {
       val request = new CreditCardRequest().cardholderName("Special Xml Chars <>&\"'")
-      request.toXML must be === "<creditCard><cardholderName>Special Xml Chars &lt;&gt;&amp;&quot;&apos;</cardholderName></creditCard>"
+      request.toXmlString must be === "<creditCard><cardholderName>Special Xml Chars &lt;&gt;&amp;&quot;&apos;</cardholderName></creditCard>"
     }
 
     it("includes bundle") {
       val request = new CreditCardRequest().deviceData("{\"deviceSessionId\": \"dsid_abc123\"")
-      request.toXML must include ("dsid_abc123")
+      request.toXmlString must include ("dsid_abc123")
     }
 
     it("includes security params") {
       val request = new CreditCardRequest().deviceSessionId("dsid_abc123")
-      request.toXML must include ("dsid_abc123")
+      request.toXmlString must include ("dsid_abc123")
     }
   }
 

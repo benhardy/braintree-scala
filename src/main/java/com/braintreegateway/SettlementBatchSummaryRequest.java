@@ -12,8 +12,8 @@ public class SettlementBatchSummaryRequest extends BaseRequest {
         super();
     }
     
-    public String toXML() {
-        return buildRequest("settlement-batch-summary").toXML();
+    public String toXmlString() {
+        return buildRequest("settlement-batch-summary").toXmlString();
     }
     
     public SettlementBatchSummaryRequest settlementDate(Calendar settlementDate) {

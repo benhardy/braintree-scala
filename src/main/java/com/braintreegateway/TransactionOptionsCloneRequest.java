@@ -18,8 +18,8 @@ public class TransactionOptionsCloneRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("options").toXML();
+    public String toXmlString() {
+        return buildRequest("options").toXmlString();
     }
 
     @Override

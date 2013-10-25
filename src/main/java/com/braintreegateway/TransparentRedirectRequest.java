@@ -34,7 +34,7 @@ public class TransparentRedirectRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
+    public String toXmlString() {
         StringBuilder builder = new StringBuilder();
         builder.append(RequestBuilder.buildXMLElement("id", id));
         return builder.toString();

@@ -117,8 +117,8 @@ public class CustomerRequest implements Request {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("customer").toXML();
+    public String toXmlString() {
+        return buildRequest("customer").toXmlString();
     }
 
     @Override

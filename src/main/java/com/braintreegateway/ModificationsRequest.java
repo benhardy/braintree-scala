@@ -45,8 +45,8 @@ public class ModificationsRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest(name).toXML();
+    public String toXmlString() {
+        return buildRequest(name).toXmlString();
     }
 
     protected RequestBuilder buildRequest(String root) {

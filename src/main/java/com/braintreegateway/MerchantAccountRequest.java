@@ -41,8 +41,8 @@ public class MerchantAccountRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("merchant_account").toXML();
+    public String toXmlString() {
+        return buildRequest("merchant_account").toXmlString();
     }
 
     protected RequestBuilder buildRequest(String root) {

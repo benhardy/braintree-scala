@@ -17,7 +17,7 @@ class SearchCriteria private(val xml: String) extends BaseRequest {
     this(RequestBuilder.buildXMLElement(searchType, value))
   }
 
-  override def toXML = xml
+  override def toXmlString = xml
 
   override def toQueryString(parent: String): String = {
     throw new UnsupportedOperationException

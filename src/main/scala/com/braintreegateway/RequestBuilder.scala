@@ -23,7 +23,7 @@ object RequestBuilder {
   def buildXMLElement(name: String, element: AnyRef): String = {
     element match {
       case null => ""
-      case request: Request => request.toXML
+      case request: Request => request.toXmlString
       case calendar: Calendar => calendarElement(name, calendar).toString
       case map: java.util.Map[String, AnyRef] => {
         formatAsXML(name, map)
@@ -129,7 +129,7 @@ class RequestBuilder(parent: String) {
     queryString.toString
   }
 
-  def toXML: String = {
+  def toXmlString: String = {
     val builder = new StringBuilder
     builder.append(String.format("<%s>", parent))
     for (entry <- elements.entrySet) {

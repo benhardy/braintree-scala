@@ -79,7 +79,7 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
   }
 
   def post(url: String, request: Request): NodeWrapper = {
-    return httpRequest(RequestMethod.POST, url, request.toXML)
+    return httpRequest(RequestMethod.POST, url, request.toXmlString)
   }
 
   def put(url: String): NodeWrapper = {
@@ -87,7 +87,7 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
   }
 
   def put(url: String, request: Request): NodeWrapper = {
-    return httpRequest(RequestMethod.PUT, url, request.toXML)
+    return httpRequest(RequestMethod.PUT, url, request.toXmlString)
   }
 
   private def httpRequest(requestMethod: Http.RequestMethod, url: String): NodeWrapper = {

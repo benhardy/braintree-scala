@@ -22,16 +22,16 @@ class TransactionRequestSpec extends FunSpec with MustMatchers {
     }
   }
 
-  describe("toXML") {
+  describe("toXmlString") {
     it("escapes custom field keys and values") {
       val request = new TransactionRequest().customField("ke&y", "va<lue")
-      val xmlString = request.toXML
+      val xmlString = request.toXmlString
       xmlString must include ("<customFields><ke&amp;y>va&lt;lue</ke&amp;y></customFields>")
     }
 
     it("includes security params") {
       val request = new TransactionRequest().deviceSessionId("device_session")
-      val xmlString = request.toXML
+      val xmlString = request.toXmlString
       xmlString must include ("device_session")
       val root = XML.loadString(xmlString)
       (root \ "deviceSessionId").head.text must be === "device_session"
@@ -39,7 +39,7 @@ class TransactionRequestSpec extends FunSpec with MustMatchers {
 
     it("includes deviceData bundle") {
       val request = new TransactionRequest().deviceData("{\"device_session_id\": \"mydsid\"}")
-      val xmlString = request.toXML
+      val xmlString = request.toXmlString
       xmlString must include ("mydsid")
       val root = XML.loadString(xmlString)
       val expectedBundleText = "{\"device_session_id\": \"mydsid\"}"

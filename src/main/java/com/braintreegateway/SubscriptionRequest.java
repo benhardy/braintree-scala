@@ -91,8 +91,8 @@ public class SubscriptionRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("subscription").toXML();
+    public String toXmlString() {
+        return buildRequest("subscription").toXmlString();
     }
 
     public SubscriptionRequest trialDuration(Integer trialDuration) {

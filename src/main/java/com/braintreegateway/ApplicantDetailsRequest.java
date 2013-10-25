@@ -88,8 +88,8 @@ public class ApplicantDetailsRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("applicant_details").toXML();
+    public String toXmlString() {
+        return buildRequest("applicant_details").toXmlString();
     }
 
     protected RequestBuilder buildRequest(String root) {

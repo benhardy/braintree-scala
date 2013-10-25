@@ -58,8 +58,8 @@ public class TransactionCreditCardRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("creditCard").toXML();
+    public String toXmlString() {
+        return buildRequest("creditCard").toXmlString();
     }
 
     @Override

@@ -23,8 +23,8 @@ public class TransactionCloneRequest extends BaseRequest {
     }
 
     @Override
-    public String toXML() {
-        return buildRequest("transactionClone").toXML();
+    public String toXmlString() {
+        return buildRequest("transactionClone").toXmlString();
     }
 
     protected RequestBuilder buildRequest(String root) {
