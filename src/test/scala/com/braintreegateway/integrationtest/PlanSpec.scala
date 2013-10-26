@@ -51,12 +51,12 @@ class PlanSpec extends GatewaySpec with MustMatchers {
         actualPlan.hasTrialPeriod must be === false
 
         val addOn = actualPlan.getAddOns.get(0)
-        addOn.getAmount must be === new BigDecimal("100.00")
-        addOn.getKind must be === "add_on"
+        addOn.amount must be === new BigDecimal("100.00")
+        addOn.kind must be === "add_on"
 
         val discount = actualPlan.getDiscounts.get(0)
-        discount.getAmount must be === new BigDecimal("100.00")
-        discount.getKind must be === "discount"
+        discount.amount must be === new BigDecimal("100.00")
+        discount.kind must be === "discount"
     }
   }
 }

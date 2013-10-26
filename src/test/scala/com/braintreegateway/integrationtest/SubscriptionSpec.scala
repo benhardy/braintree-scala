@@ -6,38 +6,10 @@ import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import com.braintreegateway.SandboxValues.TransactionAmount
 import com.braintreegateway.exceptions.NotFoundException
-import com.braintreegateway.gw.{Success, BraintreeGateway, Failure}
+import com.braintreegateway.gw.BraintreeGateway
 import com.braintreegateway.testhelpers.{PlanFixture, MerchantAccountTestConstants, TestHelper, GatewaySpec}
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapperFactory
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
 import gw.Failure
 import gw.Success
 import java.math.BigDecimal
@@ -47,22 +19,7 @@ import scala.collection.JavaConversions._
 import search.SubscriptionSearchRequest
 import TestHelper._
 import com.braintreegateway.testhelpers.CalendarHelper._
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import com.braintreegateway.Transactions.Type
-import scala.Some
-import scala.Some
-import com.braintreegateway.Subscriptions.{Status, DurationUnit}
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
+import com.braintreegateway.Subscriptions.Status
 import scala.Some
 
 @RunWith(classOf[JUnitRunner])
@@ -88,7 +45,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
       block(creditCard)
   }
 
-  def SortById[T <: Modification](a: T, b: T) = a.getId.compareTo(b.getId) < 0
+  def SortById[T <: Modification](a: T, b: T) = a.id.compareTo(b.id) < 0
 
   describe("create") {
     val mountainTimeZone = TimeZone.getTimeZone("US/Mountain")
@@ -452,28 +409,28 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription = result match { case Success(sub) => sub }
         val addOns = subscription.addOns.sortWith(SortById).toVector
         addOns.size must be === 2
-        addOns.get(0).getId must be === "increase_10"
-        addOns.get(0).getAmount must be === new BigDecimal("10.00")
-        addOns.get(0).getQuantity must be === new Integer(1)
+        addOns.get(0).id must be === "increase_10"
+        addOns.get(0).amount must be === new BigDecimal("10.00")
+        addOns.get(0).quantity must be === new Integer(1)
         addOns.get(0).neverExpires must be === true
-        addOns.get(0).getNumberOfBillingCycles must be(null)
-        addOns.get(1).getId must be === "increase_20"
-        addOns.get(1).getAmount must be === new BigDecimal("20.00")
-        addOns.get(1).getQuantity must be === new Integer(1)
+        addOns.get(0).numberOfBillingCycles must be(null)
+        addOns.get(1).id must be === "increase_20"
+        addOns.get(1).amount must be === new BigDecimal("20.00")
+        addOns.get(1).quantity must be === new Integer(1)
         addOns.get(1).neverExpires must be === true
-        addOns.get(1).getNumberOfBillingCycles must be(null)
+        addOns.get(1).numberOfBillingCycles must be(null)
         val discounts = subscription.discounts.sortWith(SortById).toVector
         discounts.size must be === 2
-        discounts.get(0).getId must be === "discount_11"
-        discounts.get(0).getAmount must be === new BigDecimal("11.00")
-        discounts.get(0).getQuantity must be === new Integer(1)
+        discounts.get(0).id must be === "discount_11"
+        discounts.get(0).amount must be === new BigDecimal("11.00")
+        discounts.get(0).quantity must be === new Integer(1)
         discounts.get(0).neverExpires must be === true
-        discounts.get(0).getNumberOfBillingCycles must be(null)
-        discounts.get(1).getId must be === "discount_7"
-        discounts.get(1).getAmount must be === new BigDecimal("7.00")
-        discounts.get(1).getQuantity must be === new Integer(1)
+        discounts.get(0).numberOfBillingCycles must be(null)
+        discounts.get(1).id must be === "discount_7"
+        discounts.get(1).amount must be === new BigDecimal("7.00")
+        discounts.get(1).quantity must be === new Integer(1)
         discounts.get(1).neverExpires must be === true
-        discounts.get(1).getNumberOfBillingCycles must be(null)
+        discounts.get(1).numberOfBillingCycles must be(null)
     }
 
     onGatewayIt("createOverridesInheritedAddOnsAndDiscounts") {
@@ -485,30 +442,32 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
         val subscription = result match { case Success(sub) => sub }
         val addOns = subscription.addOns.sortWith(SortById).toVector
         addOns.size must be === 2
-        addOns.get(0).getId must be === "increase_10"
-        addOns.get(0).getAmount must be === new BigDecimal("30.00")
-        addOns.get(0).getNumberOfBillingCycles must be === new Integer(3)
+        addOns.get(0).id must be === "increase_10"
+        addOns.get(0).amount must be === new BigDecimal("30.00")
+        addOns.get(0).numberOfBillingCycles must be === new Integer(3)
         addOns.get(0).neverExpires must be === false
-        addOns.get(0).getQuantity must be === new Integer(9)
-        addOns.get(1).getId must be === "increase_20"
-        addOns.get(1).getAmount must be === new BigDecimal("40.00")
-        addOns.get(1).getQuantity must be === new Integer(1)
+        addOns.get(0).quantity must be === new Integer(9)
+        addOns.get(1).id must be === "increase_20"
+        addOns.get(1).amount must be === new BigDecimal("40.00")
+        addOns.get(1).quantity must be === new Integer(1)
         val discounts = subscription.discounts.sortWith(SortById).toVector
         discounts.size must be === 2
-        discounts.get(0).getId must be === "discount_11"
-        discounts.get(0).getAmount must be === new BigDecimal("23.00")
-        discounts.get(0).getNumberOfBillingCycles must be(null)
+        discounts.get(0).id must be === "discount_11"
+        discounts.get(0).amount must be === new BigDecimal("23.00")
+        discounts.get(0).numberOfBillingCycles must be(null)
         discounts.get(0).neverExpires must be === true
-        discounts.get(0).getQuantity must be === new Integer(1)
-        discounts.get(1).getId must be === "discount_7"
-        discounts.get(1).getAmount must be === new BigDecimal("15.00")
-        discounts.get(1).getQuantity must be === new Integer(1)
+        discounts.get(0).quantity must be === new Integer(1)
+        discounts.get(1).id must be === "discount_7"
+        discounts.get(1).amount must be === new BigDecimal("15.00")
+        discounts.get(1).quantity must be === new Integer(1)
     }
 
     onGatewayIt("createRemovesInheritedAddOnsAndDiscounts") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).addOns.remove("increase_10", "increase_20").done.discounts.remove("discount_7", "discount_11").done
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+          addOns.remove("increase_10", "increase_20").done.
+          discounts.remove("discount_7", "discount_11").done
         val result = gateway.subscription.create(request)
         result match {
           case Success(subscription) => {
@@ -537,20 +496,24 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("createAddsNewAddOnsAndDiscounts") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).addOns.remove("increase_10", "increase_20").add.inheritedFromId("increase_30").amount(new BigDecimal("40.00")).neverExpires(false).numberOfBillingCycles(6).quantity(3).done.done.discounts.remove("discount_7", "discount_11").add.inheritedFromId("discount_15").amount(new BigDecimal("17.00")).neverExpires(true).numberOfBillingCycles(null).quantity(2).done.done
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+          addOns.remove("increase_10", "increase_20").
+          add.inheritedFromId("increase_30").amount(new BigDecimal("40.00")).neverExpires(false).numberOfBillingCycles(6).quantity(3).done.
+          done.discounts.remove("discount_7", "discount_11").
+          add.inheritedFromId("discount_15").amount(new BigDecimal("17.00")).neverExpires(true).numberOfBillingCycles(null).quantity(2).done.done
         val result = gateway.subscription.create(request)
         result match {
           case Success(subscription) => {
             subscription.addOns.size must be === 1
-            subscription.addOns.get(0).getAmount must be === new BigDecimal("40.00")
-            subscription.addOns.get(0).getNumberOfBillingCycles must be === new Integer(6)
+            subscription.addOns.get(0).amount must be === new BigDecimal("40.00")
+            subscription.addOns.get(0).numberOfBillingCycles must be === new Integer(6)
             subscription.addOns.get(0).neverExpires must be === false
-            subscription.addOns.get(0).getQuantity must be === new Integer(3)
+            subscription.addOns.get(0).quantity must be === new Integer(3)
             subscription.discounts.size must be === 1
-            subscription.discounts.get(0).getAmount must be === new BigDecimal("17.00")
-            subscription.discounts.get(0).getNumberOfBillingCycles must be(null)
+            subscription.discounts.get(0).amount must be === new BigDecimal("17.00")
+            subscription.discounts.get(0).numberOfBillingCycles must be(null)
             subscription.discounts.get(0).neverExpires must be === true
-            subscription.discounts.get(0).getQuantity must be === new Integer(2)
+            subscription.discounts.get(0).quantity must be === new Integer(2)
           }
         }
     }
@@ -884,18 +847,18 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers {
           case Success(updatedSubscription) => {
             val addOns = updatedSubscription.addOns.sortWith(SortById).toVector
             addOns.size must be === 2
-            addOns.get(0).getAmount must be === new BigDecimal("30.00")
-            addOns.get(0).getQuantity must be === new Integer(9)
-            addOns.get(1).getAmount must be === new BigDecimal("31.00")
-            addOns.get(1).getQuantity must be === new Integer(7)
+            addOns.get(0).amount must be === new BigDecimal("30.00")
+            addOns.get(0).quantity must be === new Integer(9)
+            addOns.get(1).amount must be === new BigDecimal("31.00")
+            addOns.get(1).quantity must be === new Integer(7)
             val discounts = updatedSubscription.discounts.sortWith(SortById).toVector
             discounts.size must be === 2
-            discounts.get(0).getId must be === "discount_15"
-            discounts.get(0).getAmount must be === new BigDecimal("23.00")
-            discounts.get(0).getQuantity must be === new Integer(1)
-            discounts.get(1).getAmount must be === new BigDecimal("15.00")
-            discounts.get(1).getId must be === "discount_7"
-            discounts.get(1).getQuantity must be === new Integer(1)
+            discounts.get(0).id must be === "discount_15"
+            discounts.get(0).amount must be === new BigDecimal("23.00")
+            discounts.get(0).quantity must be === new Integer(1)
+            discounts.get(1).amount must be === new BigDecimal("15.00")
+            discounts.get(1).id must be === "discount_7"
+            discounts.get(1).quantity must be === new Integer(1)
           }
         }
     }

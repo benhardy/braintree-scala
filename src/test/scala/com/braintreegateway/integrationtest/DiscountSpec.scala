@@ -31,14 +31,14 @@ class DiscountSpec extends FunSpec with MustMatchers with GatewaySpec {
       http.post("/modifications/create_modification_for_tests", discountRequest)
       val discounts = gateway.discount.all
 
-      val actualDiscount = discounts.find(_.getId == discountId).get
+      val actualDiscount = discounts.find(_.id == discountId).get
 
-      actualDiscount.getAmount must be === new BigDecimal("100.00")
-      actualDiscount.getDescription must be === "scala test discount description"
-      actualDiscount.getKind must be === "discount"
-      actualDiscount.getName must be === "scala test discount name"
+      actualDiscount.amount must be === new BigDecimal("100.00")
+      actualDiscount.description must be === "scala test discount description"
+      actualDiscount.kind must be === "discount"
+      actualDiscount.name must be === "scala test discount name"
       actualDiscount.neverExpires must be === false
-      actualDiscount.getNumberOfBillingCycles must be === new Integer("12")
+      actualDiscount.numberOfBillingCycles must be === new Integer("12")
     }
   }
 

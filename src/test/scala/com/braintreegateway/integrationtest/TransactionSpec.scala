@@ -1517,25 +1517,25 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
         case _ => fail("expected success")
       }
       transaction.getPlanId must be === PlanFixture.PLAN_WITHOUT_TRIAL.getId
-      val addOns = transaction.getAddOns.sortWith((a,b) => a.getId < b.getId)
+      val addOns = transaction.getAddOns.sortWith((a,b) => a.id < b.id)
 
       addOns.size must be === 2
-      addOns.get(0).getId must be === "increase_10"
-      addOns.get(0).getAmount must be === new BigDecimal("11.00")
-      addOns.get(0).getNumberOfBillingCycles must be === new Integer(5)
-      addOns.get(0).getQuantity must be === new Integer(2)
+      addOns.get(0).id must be === "increase_10"
+      addOns.get(0).amount must be === new BigDecimal("11.00")
+      addOns.get(0).numberOfBillingCycles must be === new Integer(5)
+      addOns.get(0).quantity must be === new Integer(2)
       addOns.get(0).neverExpires must be === false
-      addOns.get(1).getId must be === "increase_20"
-      addOns.get(1).getAmount must be === new BigDecimal("21.00")
-      addOns.get(1).getNumberOfBillingCycles must be === new Integer(6)
-      addOns.get(1).getQuantity must be === new Integer(3)
+      addOns.get(1).id must be === "increase_20"
+      addOns.get(1).amount must be === new BigDecimal("21.00")
+      addOns.get(1).numberOfBillingCycles must be === new Integer(6)
+      addOns.get(1).quantity must be === new Integer(3)
       addOns.get(1).neverExpires must be === false
       val discounts = transaction.getDiscounts
       discounts.size must be === 1
-      discounts.get(0).getId must be === "discount_7"
-      discounts.get(0).getAmount must be === new BigDecimal("7.50")
-      discounts.get(0).getNumberOfBillingCycles must be === (null)
-      discounts.get(0).getQuantity must be === new Integer(2)
+      discounts.get(0).id must be === "discount_7"
+      discounts.get(0).amount must be === new BigDecimal("7.50")
+      discounts.get(0).numberOfBillingCycles must be === (null)
+      discounts.get(0).quantity must be === new Integer(2)
       discounts.get(0).neverExpires must be === true
     }
   }

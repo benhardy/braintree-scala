@@ -43,14 +43,14 @@ class AddOnSpec extends FunSpec with MustMatchers {
 
       val addOns = fix.gateway.addOn.all
 
-      val actualAddOn = addOns.filter(_.getId == addOnId).head
+      val actualAddOn = addOns.filter(_.id == addOnId).head
 
-      actualAddOn.getAmount must be === new BigDecimal("100.00")
-      actualAddOn.getDescription must be === "java test add-on description"
-      actualAddOn.getKind must be === "add_on"
-      actualAddOn.getName must be === "java test add-on name"
+      actualAddOn.amount must be === new BigDecimal("100.00")
+      actualAddOn.description must be === "java test add-on description"
+      actualAddOn.kind must be === "add_on"
+      actualAddOn.name must be === "java test add-on name"
       actualAddOn.neverExpires must be === false
-      actualAddOn.getNumberOfBillingCycles must be === new Integer("12")
+      actualAddOn.numberOfBillingCycles must be === new Integer("12")
     }
   }
 
