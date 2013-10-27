@@ -15,7 +15,7 @@ class RequestBuilderSpec extends FunSpec with MustMatchers {
 
   class OpenTestBuilder extends RequestBuilder("open") {
     def publicBuildXmlElement(name: String, value: AnyRef): String = {
-      RequestBuilder.buildXMLElement(name, value)
+      RequestBuilder.buildXmlElementString(name, value)
     }
 
     def formatMap(name: String, map: JUMap[String, AnyRef]): String = {

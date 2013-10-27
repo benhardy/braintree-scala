@@ -14,11 +14,11 @@ import java.util.{TimeZone, Calendar}
 
 object RequestBuilder {
   def buildXMLElement(element: AnyRef): String = {
-    buildXMLElement("", element)
+    buildXmlElementString("", element)
   }
 
   @SuppressWarnings(Array("unchecked"))
-  def buildXMLElement(name: String, element: AnyRef): String = {
+  def buildXmlElementString(name: String, element: AnyRef): String = {
     element match {
       case null => ""
       case request: Request => request.toXmlString
@@ -26,18 +26,23 @@ object RequestBuilder {
       case map: java.util.Map[String, AnyRef] => {
         formatAsXML(name, map)
       }
-      case scalaMap: MMap[String, AnyRef] => {
+      case scalaMutableMap: MMap[String, AnyRef] => {
+        formatAsXML(name, mapAsJavaMap(scalaMutableMap))
+      }
+      case scalaMap: Map[String, AnyRef] => {
         formatAsXML(name, mapAsJavaMap(scalaMap))
       }
       case list: java.util.List[AnyRef] => {
         val xml = new StringBuilder
         for (item <- list) {
-          xml.append(buildXMLElement("item", item))
+          xml.append(buildXmlElementString("item", item))
         }
         wrapInXMLTag(name, xml.toString, "array")
       }
       case x => {
-        String.format("<%s>%s</%s>", xmlEscape(name), if (x == null) "" else xmlEscape(x.toString), xmlEscape(name))
+        val someValue = Option(x).map { item => xmlEscape(item.toString) }.getOrElse("")
+        val xmlName = xmlEscape(name)
+        String.format("<%s>%s</%s>", xmlName, someValue, xmlName)
       }
     }
   }
@@ -58,7 +63,7 @@ object RequestBuilder {
     val xml: StringBuilder = new StringBuilder
     xml.append(String.format("<%s>", name))
     for (entry <- map.entrySet) {
-      xml.append(buildXMLElement(entry.getKey, entry.getValue))
+      xml.append(buildXmlElementString(entry.getKey, entry.getValue))
     }
     xml.append(String.format("</%s>", name))
     xml.toString
@@ -85,8 +90,10 @@ object RequestBuilder {
     String.format("<%s type=\"%s\">%s</%s>", tagName, `type`, xml, tagName)
   }
 
+  // TODO this needs to begone.
   def xmlEscape(input: String): String = {
-    input.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("'", "&apos;").replaceAll("\"", "&quot;")
+    input.replaceAll("&", "&amp;").replaceAll("<", "&lt;").
+      replaceAll(">", "&gt;").replaceAll("'", "&apos;").replaceAll("\"", "&quot;")
   }
 }
 
@@ -137,7 +144,7 @@ class RequestBuilder(parent: String) {
     val builder = new StringBuilder
     builder.append(String.format("<%s>", parent))
     for ((key:String, value:AnyRef) <- elements) {
-      builder.append(RequestBuilder.buildXMLElement(key, value))
+      builder.append(RequestBuilder.buildXmlElementString(key, value))
     }
     builder.append(String.format("</%s>", parent))
     builder.toString

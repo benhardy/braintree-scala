@@ -8,13 +8,13 @@ class SearchCriteria private(val xml: String) extends BaseRequest {
   def this(items: List[_]) = {
     this(items.foldLeft(new StringBuilder) {
       (buf, item) => buf.append(
-        RequestBuilder.buildXMLElement("item", item.toString)
+        RequestBuilder.buildXmlElementString("item", item.toString)
       )
     }.toString)
   }
 
   def this(searchType: String, value: AnyRef) = {
-    this(RequestBuilder.buildXMLElement(searchType, value))
+    this(RequestBuilder.buildXmlElementString(searchType, value))
   }
 
   override def toXmlString = xml
