@@ -2,16 +2,14 @@ package com.braintreegateway
 
 import com.braintreegateway.util.QueryString
 import com.braintreegateway.util.StringUtils
-import java.net.URLEncoder
 import java.text.SimpleDateFormat
-import java.util._
-import java.util
-import collection.immutable
 
-import QueryString.encode
-import QueryString.encodeParam
 import xml._
+import scala.collection.mutable.{Map => MMap}
+
 import scala.collection.JavaConversions._
+import StringUtils.underscore
+import java.util.{TimeZone, Calendar}
 
 
 object RequestBuilder {
@@ -27,6 +25,9 @@ object RequestBuilder {
       case calendar: Calendar => calendarElement(name, calendar).toString
       case map: java.util.Map[String, AnyRef] => {
         formatAsXML(name, map)
+      }
+      case scalaMap: MMap[String, AnyRef] => {
+        formatAsXML(name, mapAsJavaMap(scalaMap))
       }
       case list: java.util.List[AnyRef] => {
         val xml = new StringBuilder
@@ -52,7 +53,7 @@ object RequestBuilder {
     Elem(null, name, attributes, TopScope, true, Text(content))
   }
 
-  def formatAsXML(name: String, map: Map[String, AnyRef]): String = {
+  def formatAsXML(name: String, map: java.util.Map[String, AnyRef]): String = {
     if (map == null) ""
     val xml: StringBuilder = new StringBuilder
     xml.append(String.format("<%s>", name))
@@ -91,8 +92,8 @@ object RequestBuilder {
 
 class RequestBuilder(parent: String) {
 
-  val topLevelElements: Map[String, String] = new HashMap[String, String]()
-  val elements: Map[String, AnyRef] = new HashMap[String, AnyRef]
+  val topLevelElements = MMap[String, String]()
+  val elements = MMap[String, AnyRef]()
 
   def addTopLevelElement(name: String, value: String): RequestBuilder = {
     topLevelElements.put(name, value)
@@ -100,31 +101,34 @@ class RequestBuilder(parent: String) {
   }
 
   def addElement(name: String, value: AnyRef): RequestBuilder = {
-    elements.put(name, value)
+    elements(name) = value
     this
   }
 
   def addElementIf(condition: Boolean, name: String, value: AnyRef): RequestBuilder = {
     if (condition) {
-      elements.put(name, value)
+      elements(name)= value
     }
     this
   }
 
   def addLowerCaseElementIfPresent(name: String, value: AnyRef): RequestBuilder = {
     if (value != null) {
-      elements.put(name, value.toString.toLowerCase)
+      elements(name)= value.toString.toLowerCase
     }
     this
   }
 
   def toQueryString: String = {
+    val parentUnderscored = underscore(parent)
     val queryString = new QueryString
-    for (entry <- topLevelElements.entrySet) {
-      queryString.append(StringUtils.underscore(entry.getKey), entry.getValue)
+    for ((key:String, value:String) <- topLevelElements) {
+      val underscoredKey = StringUtils.underscore(key)
+      queryString.append(underscoredKey, value)
     }
-    for (entry <- elements.entrySet) {
-      queryString.append(RequestBuilder.parentBracketChildString(StringUtils.underscore(parent), StringUtils.underscore(entry.getKey)), entry.getValue)
+    for ((key:String, value:AnyRef) <- elements) {
+      val bracketedKeyOffParent = RequestBuilder.parentBracketChildString(parentUnderscored, underscore(key))
+      queryString.append(bracketedKeyOffParent, value)
     }
     queryString.toString
   }
@@ -132,8 +136,8 @@ class RequestBuilder(parent: String) {
   def toXmlString: String = {
     val builder = new StringBuilder
     builder.append(String.format("<%s>", parent))
-    for (entry <- elements.entrySet) {
-      builder.append(RequestBuilder.buildXMLElement(entry.getKey, entry.getValue))
+    for ((key:String, value:AnyRef) <- elements) {
+      builder.append(RequestBuilder.buildXMLElement(key, value))
     }
     builder.append(String.format("</%s>", parent))
     builder.toString
