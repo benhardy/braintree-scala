@@ -1,6 +1,7 @@
 package com.braintreegateway.integrationtest
 
 import _root_.org.junit.runner.RunWith
+import _root_.org.scalatest.Inside
 import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
@@ -9,17 +10,22 @@ import gw.{Success, Failure}
 import java.util.Random
 
 @RunWith(classOf[JUnitRunner])
-class MerchantAccountSpec extends GatewaySpec with MustMatchers {
+class MerchantAccountSpec extends GatewaySpec with MustMatchers with Inside {
 
   describe("create") {
     onGatewayIt("requires no id") {
       gateway =>
         gateway.merchantAccount.create(creationRequest) match {
           case Success(ma) => {
-            ma.getStatus must be === MerchantAccount.Status.PENDING
-            ma.getMasterMerchantAccount.getId must be === "sandbox_master_merchant_account"
+            ma.status must be === MerchantAccount.Status.PENDING
             ma must be('subMerchant)
-            ma.getMasterMerchantAccount must not be ('subMerchant)
+            inside(ma.masterMerchantAccount) {
+              case Some(master) => {
+                master.id must be === "sandbox_master_merchant_account"
+                master must not be ('subMerchant)
+              }
+              case None => fail("expected a master to be present")
+            }
           }
           case _ => fail("expected success")
         }
@@ -32,11 +38,16 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers {
         val request = creationRequest.id(subMerchantAccountId)
         gateway.merchantAccount.create(request) match {
           case Success(ma) => {
-            ma.getStatus must be === MerchantAccount.Status.PENDING
-            subMerchantAccountId must be === ma.getId
-            ma.getMasterMerchantAccount.getId must be === "sandbox_master_merchant_account"
+            ma.status must be === MerchantAccount.Status.PENDING
+            subMerchantAccountId must be === ma.id
             ma must be('subMerchant)
-            ma.getMasterMerchantAccount must not be ('subMerchant)
+            inside(ma.masterMerchantAccount) {
+              case Some(master) => {
+                master.id must be === "sandbox_master_merchant_account"
+                master must not be ('subMerchant)
+              }
+              case None => fail("expected a master to be present")
+            }
           }
           case _ => fail("expected success")
         }

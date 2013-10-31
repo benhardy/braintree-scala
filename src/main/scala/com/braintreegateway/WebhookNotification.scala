@@ -19,7 +19,7 @@ final class WebhookNotification(node: NodeWrapper) {
   }
 
   val merchantAccount = wrapperNode.findFirstOpt("merchant-account") map {
-    new MerchantAccount(_)
+    MerchantAccount(_)
   }
 
   val transaction = wrapperNode.findFirstOpt("transaction") map {

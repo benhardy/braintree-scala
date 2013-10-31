@@ -68,7 +68,7 @@ object Result {
 
   def creditCard(node: NodeWrapper): Result[CreditCard] = apply(node, new CreditCard(_))
 
-  def merchantAccount(node: NodeWrapper): Result[MerchantAccount] = apply(node, new MerchantAccount(_))
+  def merchantAccount(node: NodeWrapper): Result[MerchantAccount] = apply(node, MerchantAccount(_))
 
   def apply[T](node: NodeWrapper, maker: NodeWrapper => T): Result[T] = {
     if (node.isSuccess) {

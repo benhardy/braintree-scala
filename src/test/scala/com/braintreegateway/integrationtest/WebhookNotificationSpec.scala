@@ -47,8 +47,8 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_APPROVED, "my_id")
         val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
         notification.kind must be === WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_APPROVED
-        notification.merchantAccount.get.getId must be === "my_id"
-        notification.merchantAccount.get.getStatus must be === MerchantAccount.Status.ACTIVE
+        notification.merchantAccount.get.id must be === "my_id"
+        notification.merchantAccount.get.status must be === MerchantAccount.Status.ACTIVE
         notification.timestamp must beSameDayAs(Calendar.getInstance)
     }
 
@@ -57,8 +57,8 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED, "my_id")
         val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
         notification.kind must be === WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED
-        notification.merchantAccount.get.getId must be === "my_id"
-        notification.merchantAccount.get.getStatus must be === MerchantAccount.Status.SUSPENDED
+        notification.merchantAccount.get.id must be === "my_id"
+        notification.merchantAccount.get.status must be === MerchantAccount.Status.SUSPENDED
         notification.timestamp must beSameDayAs(Calendar.getInstance)
     }
 
@@ -67,7 +67,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED, "my_id")
         val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
         notification.kind must be === WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED
-        notification.merchantAccount.get.getId must be === "my_id"
+        notification.merchantAccount.get.id must be === "my_id"
         notification.timestamp must beSameDayAs(Calendar.getInstance)
         val code = notification.errors.forObject("merchantAccount").onField("base")(0).code
         code must be === ValidationErrorCode.MERCHANT_ACCOUNT_APPLICANT_DETAILS_DECLINED_OFAC
