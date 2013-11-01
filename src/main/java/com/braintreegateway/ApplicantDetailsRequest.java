@@ -44,7 +44,7 @@ public class ApplicantDetailsRequest extends BaseRequest {
     }
 
     public ApplicantDetailsAddressRequest address() {
-        this.address = new ApplicantDetailsAddressRequest(this);
+        this.address = AddressRequest.applicantDetails(this);
         return address;
     }
 

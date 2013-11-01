@@ -45,7 +45,7 @@ public class TransactionRequest implements Request {
     }
 
     public TransactionAddressRequest billingAddress() {
-        billingAddressRequest = new TransactionAddressRequest(this, "billing");
+        billingAddressRequest = AddressRequest.transactionBilling(this);
         return billingAddressRequest;
     }
 
@@ -130,7 +130,7 @@ public class TransactionRequest implements Request {
     }
 
     public TransactionAddressRequest shippingAddress() {
-        shippingAddressRequest = new TransactionAddressRequest(this, "shipping");
+        shippingAddressRequest = AddressRequest.transactionShipping(this);
         return shippingAddressRequest;
     }
 

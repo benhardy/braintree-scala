@@ -31,7 +31,7 @@ public class CreditCardRequest implements Request {
     }
 
     public CreditCardAddressRequest billingAddress() {
-        billingAddressRequest = new CreditCardAddressRequest(this);
+        billingAddressRequest = AddressRequest.creditCard(this);
         return billingAddressRequest;
     }
 
