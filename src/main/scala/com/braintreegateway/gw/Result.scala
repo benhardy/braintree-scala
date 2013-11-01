@@ -54,9 +54,7 @@ case object Deleted extends Result[Nothing] {
 }
 
 object Result {
-  def settlementBatchSummary(node: NodeWrapper): Result[SettlementBatchSummary] = {
-    apply(node, new SettlementBatchSummary(_))
-  }
+  def settlementBatchSummary(node: NodeWrapper) = apply(node, SettlementBatchSummary(_))
 
   def address(node: NodeWrapper): Result[Address] = apply(node, new Address(_))
 

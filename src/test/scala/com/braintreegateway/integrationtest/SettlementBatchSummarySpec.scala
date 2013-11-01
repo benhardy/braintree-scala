@@ -1,6 +1,7 @@
 package com.braintreegateway.integrationtest
 
 import _root_.org.junit.runner.RunWith
+import _root_.org.scalatest.Inside
 import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
@@ -14,7 +15,7 @@ import TestHelper._
 import CalendarHelper._
 
 @RunWith(classOf[JUnitRunner])
-class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
+class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers with Inside {
 
   val eastern_timezone = TimeZone.getTimeZone("America/New_York")
 
@@ -52,16 +53,17 @@ class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
       val transaction = gateway.transaction.sale(request) match { case Success(t) => t }
       transaction must settle(gateway)
       val estTime = now in eastern_timezone
+
       val summaryResult = gateway.settlementBatchSummary.generate(estTime)
 
       summaryResult match {
         case Success(summary) => {
-          summary.getRecords.size must be > 0
-          val first = summary.getRecords.get(0)
-          first.containsKey("kind") must be === true
-          first.containsKey("count") must be === true
-          first.containsKey("amount_settled") must be === true
-          first.containsKey("merchant_account_id") must be === true
+          inside(summary.records) { case firstMap :: _ =>
+            firstMap must contain key("kind")
+            firstMap must contain key("count")
+            firstMap must contain key("amount_settled")
+            firstMap must contain key("merchant_account_id")
+          }
         }
       }
     }
@@ -79,9 +81,9 @@ class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers {
 
       summaryResult match {
         case Success(summary) => {
-          summary.getRecords.size must be > 0
-          val first = summary.getRecords.get(0)
-          first.containsKey("store_me") must be === true
+          inside(summary.records) { case firstMap :: _ =>
+            firstMap must contain key("store_me")
+          }
         }
       }
     }
