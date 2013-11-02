@@ -112,6 +112,11 @@ class RequestBuilder(parent: String) {
     this
   }
 
+  def addElement(name: String, value: Boolean): RequestBuilder = {
+    elements(name) = java.lang.Boolean.valueOf(value)
+    this
+  }
+
   def addElementIf(condition: Boolean, name: String, value: AnyRef): RequestBuilder = {
     if (condition) {
       elements(name)= value
