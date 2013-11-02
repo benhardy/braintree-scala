@@ -60,8 +60,8 @@ class TransactionRequest extends Request {
     this
   }
 
-  def descriptor: TransactionDescriptorRequest = {
-    descriptorRequest = new TransactionDescriptorRequest(this)
+  def descriptor: DescriptorRequest[TransactionRequest] = {
+    descriptorRequest = DescriptorRequest(this)
     descriptorRequest
   }
 
@@ -182,7 +182,7 @@ class TransactionRequest extends Request {
   private var purchaseOrderNumber: String = null
   private var recurring: java.lang.Boolean = null
   private var shippingAddressId: String = null
-  private var descriptorRequest: TransactionDescriptorRequest = null
+  private var descriptorRequest: DescriptorRequest[TransactionRequest] = null
   private var shippingAddressRequest: TransactionAddressRequest = null
   private var transactionOptionsRequest: TransactionOptionsRequest = null
   private var taxAmount: BigDecimal = null
