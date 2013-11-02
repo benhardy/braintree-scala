@@ -25,3 +25,7 @@ abstract class BaseRequest extends Request {
 
   def getKind: String = null
 }
+
+trait HasParent[P <: Request] {
+  def done: P
+}

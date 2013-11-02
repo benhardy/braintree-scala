@@ -110,11 +110,7 @@ class AddressRequest extends BaseRequest {
   }
 }
 
-trait ReturnParentOnDone[P <: Request] {
-  def done: P
-}
-
-class AddressRequestWithParent[P <: Request](val done:P) extends AddressRequest with ReturnParentOnDone[P]
+class AddressRequestWithParent[P <: Request](val done:P) extends AddressRequest with HasParent[P]
 
 class TransactionAddressRequest(parent:TransactionRequest, override val tagName:String)
   extends AddressRequestWithParent[TransactionRequest](parent)
