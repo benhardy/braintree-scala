@@ -95,36 +95,40 @@ class AddressRequest extends BaseRequest {
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).
-        addElement("firstName", firstName).
-        addElement("lastName", lastName).
-        addElement("company", company).
-        addElement("countryName", countryName).
-        addElement("countryCodeAlpha2", countryCodeAlpha2).
-        addElement("countryCodeAlpha3", countryCodeAlpha3).
-        addElement("countryCodeNumeric", countryCodeNumeric).
-        addElement("extendedAddress", extendedAddress).
-        addElement("locality", locality).
-        addElement("postalCode", postalCode).
-        addElement("region", region).
-        addElement("streetAddress", streetAddress)
+      addElement("firstName", firstName).
+      addElement("lastName", lastName).
+      addElement("company", company).
+      addElement("countryName", countryName).
+      addElement("countryCodeAlpha2", countryCodeAlpha2).
+      addElement("countryCodeAlpha3", countryCodeAlpha3).
+      addElement("countryCodeNumeric", countryCodeNumeric).
+      addElement("extendedAddress", extendedAddress).
+      addElement("locality", locality).
+      addElement("postalCode", postalCode).
+      addElement("region", region).
+      addElement("streetAddress", streetAddress)
   }
 }
 
-class AddressRequestWithParent[P <: Request](val done:P) extends AddressRequest with HasParent[P]
+class AddressRequestWithParent[P <: Request](val done: P) extends AddressRequest with HasParent[P]
 
-class TransactionAddressRequest(parent:TransactionRequest, override val tagName:String)
+class TransactionAddressRequest(parent: TransactionRequest, override val tagName: String)
   extends AddressRequestWithParent[TransactionRequest](parent)
 
-class ApplicantDetailsAddressRequest(parent:ApplicantDetailsRequest)
+class ApplicantDetailsAddressRequest(parent: ApplicantDetailsRequest)
   extends AddressRequestWithParent[ApplicantDetailsRequest](parent)
 
-class CreditCardAddressRequest(val parent: CreditCardRequest) extends AddressRequestWithParent[CreditCardRequest](parent) {
-  protected var optionsRequest: CreditCardAddressOptionsRequest = null
+/**
+ * CreditCardAddressRequests always have a parent which is some subtype P of CreditCardRequest (which may or
+ * may not have a parent).
+ */
+class CreditCardAddressRequest[P <: CreditCardRequest](val parent: P) extends AddressRequestWithParent[P](parent) {
+  private var optionsRequest: CreditCardAddressOptionsRequest[CreditCardAddressRequest[P]] = null
 
   protected override def tagName = "billingAddress"
 
-  def options: CreditCardAddressOptionsRequest = {
-    optionsRequest = new CreditCardAddressOptionsRequest(this)
+  def options = {
+    optionsRequest = new CreditCardAddressOptionsRequest[CreditCardAddressRequest[P]](this)
     optionsRequest
   }
 
@@ -141,5 +145,5 @@ object AddressRequest {
 
   def applicantDetails(parent: ApplicantDetailsRequest) = new ApplicantDetailsAddressRequest(parent)
 
-  def creditCard(parent: CreditCardRequest) = new CreditCardAddressRequest(parent)
+  def creditCard[P <: CreditCardRequest](parent: P) = new CreditCardAddressRequest[P](parent)
 }

@@ -11,6 +11,7 @@ import search.CustomerSearchRequest
 import test.VenmoSdk
 import testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
 import CalendarHelper._
+import com.braintreegateway.CreditCardRequest.ForCustomer
 
 
 @RunWith(classOf[JUnitRunner])

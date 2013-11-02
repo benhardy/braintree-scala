@@ -1,12 +1,12 @@
 package com.braintreegateway
 
-class CreditCardAddressOptionsRequest(parent: CreditCardAddressRequest) extends BaseRequest {
+class CreditCardAddressOptionsRequest[P <: CreditCardAddressRequest[_]](parent: P) extends BaseRequest {
 
   private var updateExisting: Option[Boolean] = None
 
-  def updateExisting(updateExisting: Boolean): HasParent[CreditCardAddressRequest] = {
+  def updateExisting(updateExisting: Boolean): HasParent[P] = {
     this.updateExisting = Some(updateExisting)
-    new HasParent[CreditCardAddressRequest] {
+    new HasParent[P] {
       def done = parent
     }
   }
@@ -25,8 +25,8 @@ class CreditCardAddressOptionsRequest(parent: CreditCardAddressRequest) extends 
 
   protected def buildRequest(root: String): RequestBuilder = {
     val start = new RequestBuilder(root)
-    updateExisting.map { update =>
-      start.addElement("updateExisting", update)
+    updateExisting.map {
+      update => start.addElement("updateExisting", update)
     } getOrElse {
       start
     }

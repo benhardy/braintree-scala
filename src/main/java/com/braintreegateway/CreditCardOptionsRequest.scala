@@ -1,6 +1,6 @@
 package com.braintreegateway
 
-class CreditCardOptionsRequest(val done: CreditCardRequest) extends BaseRequest with HasParent[CreditCardRequest] {
+class CreditCardOptionsRequest[P <: CreditCardRequest](val done: P) extends BaseRequest with HasParent[P] {
 
   private var verificationMerchantAccountId: String = null
   private var failOnDuplicatePaymentMethod: java.lang.Boolean = null
@@ -9,32 +9,32 @@ class CreditCardOptionsRequest(val done: CreditCardRequest) extends BaseRequest 
   private var updateExistingToken: String = null
   private var venmoSdkSession: String = null
 
-  def verificationMerchantAccountId(verificationMerchantAccountId: String): CreditCardOptionsRequest = {
+  def verificationMerchantAccountId(verificationMerchantAccountId: String): this.type = {
     this.verificationMerchantAccountId = verificationMerchantAccountId
     this
   }
 
-  def failOnDuplicatePaymentMethod(failOnDuplicatePaymentMethod: Boolean): CreditCardOptionsRequest = {
+  def failOnDuplicatePaymentMethod(failOnDuplicatePaymentMethod: Boolean): this.type = {
     this.failOnDuplicatePaymentMethod = failOnDuplicatePaymentMethod
     this
   }
 
-  def verifyCard(verifyCard: Boolean): CreditCardOptionsRequest = {
+  def verifyCard(verifyCard: Boolean): this.type = {
     this.verifyCard = verifyCard
     this
   }
 
-  def makeDefault(makeDefault: Boolean): CreditCardOptionsRequest = {
+  def makeDefault(makeDefault: Boolean): this.type = {
     this.makeDefault = makeDefault
     this
   }
 
-  def updateExistingToken(token: String): CreditCardOptionsRequest = {
+  def updateExistingToken(token: String): this.type = {
     this.updateExistingToken = token
     this
   }
 
-  def venmoSdkSession(venmoSdkSession: String): CreditCardOptionsRequest = {
+  def venmoSdkSession(venmoSdkSession: String): this.type = {
     this.venmoSdkSession = venmoSdkSession
     this
   }
@@ -52,12 +52,12 @@ class CreditCardOptionsRequest(val done: CreditCardRequest) extends BaseRequest 
   }
 
   protected def buildRequest(root: String): RequestBuilder = {
-    new RequestBuilder(root) 
-      .addElement("failOnDuplicatePaymentMethod", failOnDuplicatePaymentMethod) 
-      .addElement("verifyCard", verifyCard) 
-      .addElement("verificationMerchantAccountId", verificationMerchantAccountId) 
-      .addElementIf(makeDefault != null && makeDefault.booleanValue, "makeDefault", makeDefault) 
-      .addElement("updateExistingToken", updateExistingToken) 
+    new RequestBuilder(root)
+      .addElement("failOnDuplicatePaymentMethod", failOnDuplicatePaymentMethod)
+      .addElement("verifyCard", verifyCard)
+      .addElement("verificationMerchantAccountId", verificationMerchantAccountId)
+      .addElementIf(makeDefault != null && makeDefault.booleanValue, "makeDefault", makeDefault)
+      .addElement("updateExistingToken", updateExistingToken)
       .addElement("venmoSdkSession", venmoSdkSession)
   }
 }

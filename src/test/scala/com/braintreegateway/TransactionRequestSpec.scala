@@ -14,9 +14,9 @@ class TransactionRequestSpec extends FunSpec with MustMatchers {
   describe("toQueryString") {
     it("includes nested customer fields") {
       val request = new TransactionRequest().
-        customer().
+        customer.
           firstName("Drew").
-            done()
+          done
 
       request.toQueryString must be === "transaction%5Bcustomer%5D%5Bfirst_name%5D=Drew"
     }
