@@ -2,7 +2,7 @@ package com.braintreegateway.util
 
 import com.braintreegateway.Request
 import java.io.UnsupportedEncodingException
-import java.net.URLEncoder
+import java.net.{URLDecoder, URLEncoder}
 import java.util.{Map => JMap}
 
 object QueryString {
@@ -15,6 +15,17 @@ object QueryString {
   def encode(value: String): String = {
     try {
       URLEncoder.encode(value, DEFAULT_ENCODING)
+    }
+    catch {
+      case e: UnsupportedEncodingException => {
+        throw new IllegalStateException(DEFAULT_ENCODING + " encoding should always be available")
+      }
+    }
+  }
+
+  def decode(value: String): String = {
+    try {
+      URLDecoder.decode(value, DEFAULT_ENCODING)
     }
     catch {
       case e: UnsupportedEncodingException => {

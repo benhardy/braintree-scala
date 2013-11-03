@@ -18,24 +18,14 @@ import java.util.zip.GZIPInputStream
 import com.braintreegateway.util.Http.RequestMethod
 
 object Http {
-  def throwExceptionIfErrorStatusCode(statusCode: Int, message: String) {
-    var decodedMessage: String = null
-    if (message != null) {
-      try {
-        decodedMessage = URLDecoder.decode(message, "UTF-8")
-      }
-      catch {
-        case e: UnsupportedEncodingException => {
-          e.printStackTrace
-        }
-      }
-    }
+  def throwExceptionIfErrorStatusCode(statusCode: Int, message: Option[String] = None) {
+
     if (isErrorCode(statusCode)) {
       statusCode match {
         case 401 =>
           throw new AuthenticationException
         case 403 =>
-          throw new AuthorizationException(decodedMessage)
+          throw new AuthorizationException(message.map {QueryString.decode}.getOrElse(""))
         case 404 =>
           throw new NotFoundException
         case 426 =>
@@ -51,7 +41,7 @@ object Http {
   }
 
   private def isErrorCode(responseCode: Int): Boolean = {
-    return responseCode != 200 && responseCode != 201 && responseCode != 422
+    responseCode != 200 && responseCode != 201 && responseCode != 422
   }
 
   sealed trait RequestMethod
@@ -71,27 +61,27 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
   }
 
   def get(url: String): NodeWrapper = {
-    return httpRequest(RequestMethod.GET, url)
+    httpRequest(RequestMethod.GET, url)
   }
 
   def post(url: String): NodeWrapper = {
-    return httpRequest(RequestMethod.POST, url, null)
+    httpRequest(RequestMethod.POST, url, null)
   }
 
   def post(url: String, request: Request): NodeWrapper = {
-    return httpRequest(RequestMethod.POST, url, request.toXmlString)
+    httpRequest(RequestMethod.POST, url, request.toXmlString)
   }
 
   def put(url: String): NodeWrapper = {
-    return httpRequest(RequestMethod.PUT, url, null)
+    httpRequest(RequestMethod.PUT, url, null)
   }
 
   def put(url: String, request: Request): NodeWrapper = {
-    return httpRequest(RequestMethod.PUT, url, request.toXmlString)
+    httpRequest(RequestMethod.PUT, url, request.toXmlString)
   }
 
   private def httpRequest(requestMethod: Http.RequestMethod, url: String): NodeWrapper = {
-    return httpRequest(requestMethod, url, null)
+    httpRequest(requestMethod, url, null)
   }
 
   private def httpRequest(requestMethod: Http.RequestMethod, url: String, postBody: String): NodeWrapper = {
@@ -104,7 +94,7 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
         connection.getOutputStream.write(postBody.getBytes("UTF-8"))
         connection.getOutputStream.close
       }
-      Http.throwExceptionIfErrorStatusCode(connection.getResponseCode, null)
+      Http.throwExceptionIfErrorStatusCode(connection.getResponseCode)
       if (requestMethod == RequestMethod.DELETE) {
         return null
       }
@@ -112,7 +102,7 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
       if ("gzip".equalsIgnoreCase(connection.getContentEncoding)) {
         responseStream = new GZIPInputStream(responseStream)
       }
-      val xml: String = StringUtils.inputStreamToString(responseStream)
+      val xml = StringUtils.inputStreamToString(responseStream)
       responseStream.close
       NodeWrapperFactory.create(xml)
     }
@@ -139,7 +129,7 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
       tmf.init(keyStore)
       val sslContext = SSLContext.getInstance("TLS")
       sslContext.init(kmf.getKeyManagers.asInstanceOf[Array[KeyManager]], tmf.getTrustManagers, SecureRandom.getInstance("SHA1PRNG"))
-      return sslContext.getSocketFactory
+      sslContext.getSocketFactory
     }
     catch {
       case e: Exception => {
@@ -149,8 +139,8 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
   }
 
   private def buildConnection(requestMethod: Http.RequestMethod, urlString: String): HttpURLConnection = {
-    val url: URL = new URL(baseMerchantURL + urlString)
-    val connection: HttpURLConnection = url.openConnection.asInstanceOf[HttpURLConnection]
+    val url = new URL(baseMerchantURL + urlString)
+    val connection = url.openConnection.asInstanceOf[HttpURLConnection]
     connection.setRequestMethod(requestMethod.toString)
     connection.addRequestProperty("Accept", "application/xml")
     connection.addRequestProperty("User-Agent", "Braintree Java " + version)
@@ -160,6 +150,6 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
     connection.addRequestProperty("Content-Type", "application/xml")
     connection.setDoOutput(true)
     connection.setReadTimeout(60000)
-    return connection
+    connection
   }
 }
