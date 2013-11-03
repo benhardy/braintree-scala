@@ -15,7 +15,9 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers with Inside {
   describe("create") {
     onGatewayIt("requires no id") {
       gateway =>
-        gateway.merchantAccount.create(creationRequest) match {
+        val result = gateway.merchantAccount.create(creationRequest)
+
+        result match {
           case Success(ma) => {
             ma.status must be === MerchantAccount.Status.PENDING
             ma must be('subMerchant)
@@ -36,7 +38,10 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers with Inside {
         val randomNumber = new Random().nextInt % 10000
         val subMerchantAccountId = "sub_merchant_account_id_%d".format(randomNumber)
         val request = creationRequest.id(subMerchantAccountId)
-        gateway.merchantAccount.create(request) match {
+
+        val result = gateway.merchantAccount.create(request)
+
+        result match {
           case Success(ma) => {
             ma.status must be === MerchantAccount.Status.PENDING
             subMerchantAccountId must be === ma.id
@@ -56,6 +61,7 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("handles unsuccessful results") {
       gateway =>
         val result = gateway.merchantAccount.create(new MerchantAccountRequest)
+
         result match {
           case Failure(allErrors, _, _, _, _, _) => {
             val errors = allErrors.forObject("merchant-account").onField("master_merchant_account_id")
@@ -70,11 +76,25 @@ class MerchantAccountSpec extends GatewaySpec with MustMatchers with Inside {
 
   private def creationRequest = {
     new MerchantAccountRequest().
-      applicantDetails.firstName("Joe").lastName("Bloggs").email("joe@bloggs.com").phone("555-555-5555").
-      address.streetAddress("123 Credibility St.").postalCode("60606").locality("Chicago").region("IL").done.
-      dateOfBirth("10/9/1980").ssn("123-456-7890").routingNumber("122100024").accountNumber("98479798798").
-      taxId("123456789").companyName("Calculon's Drama School").done.tosAccepted(true).
+      applicantDetails.
+        firstName("Joe").
+        lastName("Bloggs").
+        email("joe@bloggs.com").
+        phone("555-555-5555").
+        address.
+          streetAddress("123 Credibility St.").
+          postalCode("60606").
+          locality("Chicago").
+          region("IL").
+          done.
+        dateOfBirth("10/9/1980").
+        ssn("123-456-7890").
+        routingNumber("122100024").
+        accountNumber("98479798798").
+        taxId("123456789").
+        companyName("Calculon's Drama School").
+        done.
+      tosAccepted(true).
       masterMerchantAccountId("sandbox_master_merchant_account")
   }
-
 }
