@@ -36,7 +36,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("createsSampleSubscriptionNotification") {
       gateway =>
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUBSCRIPTION_WENT_PAST_DUE, "my_id")
-        val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
+        val notification = gateway.webhookNotification.parse(sampleNotification("signature"), sampleNotification("payload"))
         notification.kind must be === WebhookNotifications.Kind.SUBSCRIPTION_WENT_PAST_DUE
         notification.subscription.get.id must be === "my_id"
         notification.timestamp must beSameDayAs(Calendar.getInstance)
@@ -45,7 +45,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("createsSampleMerchantAccountApprovedNotification") {
       gateway =>
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_APPROVED, "my_id")
-        val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
+        val notification = gateway.webhookNotification.parse(sampleNotification("signature"), sampleNotification("payload"))
         notification.kind must be === WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_APPROVED
         notification.merchantAccount.get.id must be === "my_id"
         notification.merchantAccount.get.status must be === MerchantAccount.Status.ACTIVE
@@ -55,7 +55,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("createsSampleMerchantAccountDeclinedNotification") {
       gateway =>
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED, "my_id")
-        val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
+        val notification = gateway.webhookNotification.parse(sampleNotification("signature"), sampleNotification("payload"))
         notification.kind must be === WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED
         notification.merchantAccount.get.id must be === "my_id"
         notification.merchantAccount.get.status must be === MerchantAccount.Status.SUSPENDED
@@ -65,7 +65,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("createsSampleMerchantAccountDeclinedNotificationWithErrorCodes") {
       gateway =>
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED, "my_id")
-        val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
+        val notification = gateway.webhookNotification.parse(sampleNotification("signature"), sampleNotification("payload"))
         notification.kind must be === WebhookNotifications.Kind.SUB_MERCHANT_ACCOUNT_DECLINED
         notification.merchantAccount.get.id must be === "my_id"
         notification.timestamp must beSameDayAs(Calendar.getInstance)
@@ -77,7 +77,7 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
       gateway =>
         intercept[InvalidSignatureException] {
           val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUBSCRIPTION_WENT_PAST_DUE, "my_id")
-          gateway.webhookNotification.parse(sampleNotification.get("signature") + "bad_stuff", sampleNotification.get("payload"))
+          gateway.webhookNotification.parse(sampleNotification("signature") + "bad_stuff", sampleNotification("payload"))
         }
     }
 
@@ -85,14 +85,14 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
       gateway =>
         intercept[InvalidSignatureException] {
           val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.SUBSCRIPTION_WENT_PAST_DUE, "my_id")
-          gateway.webhookNotification.parse("uknown_public_key|signature", sampleNotification.get("payload"))
+          gateway.webhookNotification.parse("uknown_public_key|signature", sampleNotification("payload"))
         }
     }
 
     onGatewayIt("createsSampleTransactionDisbursedNotification") {
       gateway =>
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.TRANSACTION_DISBURSED, "my_id")
-        val notification = gateway.webhookNotification.parse(sampleNotification.get("signature"), sampleNotification.get("payload"))
+        val notification = gateway.webhookNotification.parse(sampleNotification("signature"), sampleNotification("payload"))
         notification.kind must be === WebhookNotifications.Kind.TRANSACTION_DISBURSED
         notification.transaction.get.getId must be === "my_id"
         val actualDate = notification.transaction.get.getDisbursementDetails.disbursementDate.get

@@ -3,7 +3,6 @@ package com.braintreegateway
 import com.braintreegateway.gw.BraintreeGateway
 import com.braintreegateway.util.EnumUtils
 import com.braintreegateway.util.NodeWrapper
-import scala.collection.JavaConversions._
 
 class Transaction(node: NodeWrapper) {
   val amount = node.findBigDecimal("amount")

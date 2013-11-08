@@ -5,7 +5,6 @@ import com.braintreegateway.util.Http
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.TimeZone
-import scala.collection.JavaConversions._
 import com.braintreegateway._
 import search.IdsSearchRequest
 

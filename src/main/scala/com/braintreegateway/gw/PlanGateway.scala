@@ -6,7 +6,6 @@ import com.braintreegateway.Plan
 class PlanGateway(http: Http) {
   def all: List[Plan] = {
     val node = http.get("/plans")
-    import scala.collection.JavaConversions._  // TODO cleanup
-    node.findAll("plan").toList.map(new Plan(_))
+    node.findAll("plan").map(new Plan(_))
   }
 }

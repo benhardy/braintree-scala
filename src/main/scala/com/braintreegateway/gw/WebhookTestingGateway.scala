@@ -4,7 +4,6 @@ import com.braintreegateway.org.apache.commons.codec.binary.Base64
 import com.braintreegateway.util.Crypto
 import java.text.SimpleDateFormat
 import java.util.Date
-import java.util.HashMap
 import java.util.TimeZone
 import com.braintreegateway.WebhookNotifications
 
@@ -22,12 +21,11 @@ class WebhookTestingGateway(configuration: Configuration) {
     String.format("%s|%s", configuration.publicKey, new Crypto().hmacHash(configuration.privateKey, stringToSign))
   }
 
-  def sampleNotification(kind: WebhookNotifications.Kind, id: String): HashMap[String, String] = {
-    val response: HashMap[String, String] = new HashMap[String, String]
-    val payload: String = buildPayload(kind, id)
-    response.put("payload", payload)
-    response.put("signature", publicKeySignaturePair(payload))
-    response
+  def sampleNotification(kind: WebhookNotifications.Kind, id: String) = {
+    Map(
+      "payload" -> buildPayload(kind, id),
+      "signature" ->  publicKeySignaturePair(buildPayload(kind, id))
+    )
   }
 
   private def subjectXml(kind: WebhookNotifications.Kind, id: String): String = {

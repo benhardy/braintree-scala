@@ -2,7 +2,6 @@ package com.braintreegateway.gw
 
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
-import scala.collection.JavaConversions._
 import com.braintreegateway._
 import search.CustomerSearchRequest
 
@@ -33,7 +32,7 @@ class CustomerGateway(http: Http, configuration: Configuration) {
   private[braintreegateway] def fetchCustomers(query: CustomerSearchRequest, ids: List[String]): List[Customer] = {
     query.ids.in(ids)
     val response = http.post("/customers/advanced_search", query)
-    response.findAll("customer").map{new Customer(_)}.toList
+    response.findAll("customer").map{new Customer(_)}
   }
 
   /**
