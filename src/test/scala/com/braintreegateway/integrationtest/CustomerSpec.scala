@@ -6,12 +6,11 @@ import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
 import gw.{Deleted, Success, Failure}
-import java.util.{Random, Calendar}
+import java.util.Random
 import search.CustomerSearchRequest
 import test.VenmoSdk
 import testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
 import CalendarHelper._
-import com.braintreegateway.CreditCardRequest.ForCustomer
 
 
 @RunWith(classOf[JUnitRunner])
@@ -61,9 +60,10 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val result = gateway.customer.create(request)
       result must be('success)
 
-      val expected: java.util.Map[String, String] = new java.util.HashMap[String, String]
-      expected.put("store_me", "custom value")
-      expected.put("another_stored_field", "custom value2")
+      val expected = Map(
+        "store_me" -> "custom value",
+        "another_stored_field" -> "custom value2"
+      )
 
       result match {
         case Success(customer) => {

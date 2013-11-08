@@ -269,8 +269,8 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
       val node = SimpleNodeWrapper.parse(xml.toString)
       val nodes = node.findAll("foo/bar")
       nodes.size must be === 2
-      nodes.get(0).findString("greeting") must be === "hi"
-      nodes.get(1).findString("greeting") must be === "hello"
+      nodes(0).findString("greeting") must be === "hi"
+      nodes(1).findString("greeting") must be === "hello"
     }
 
     it("uses star for wildcard matching") {
@@ -287,8 +287,8 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
       val node = SimpleNodeWrapper.parse(xml.toString)
       val nodes = node.findAll("foo/*")
       nodes.size must be === 2
-      nodes.get(0).findString("greeting") must be === "hi"
-      nodes.get(1).findString("greeting") must be === "hello"
+      nodes(0).findString("greeting") must be === "hi"
+      nodes(1).findString("greeting") must be === "hello"
     }
 
     it("returns empty list if nothing found") {

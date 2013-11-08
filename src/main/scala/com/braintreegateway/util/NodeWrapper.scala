@@ -3,8 +3,6 @@ package com.braintreegateway.util
 import java.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.{Calendar, TimeZone}
-import java.util.{Map => JMap, HashMap => JHashMap}
-import java.util.{List => JList, ArrayList => JArrayList}
 
 object NodeWrapper {
   final val DATE_FORMAT: String = "yyyy-MM-dd"
@@ -16,16 +14,10 @@ abstract class NodeWrapper {
 
   import NodeWrapper._
 
-  // TODO convert to Scala lists once models using this are converted
-  def findAll(expression: String): JList[NodeWrapper]
+  def findAll(expression: String): List[NodeWrapper]
 
-  def findAllStrings(expression: String): JList[String] = {
-    val strings: JList[String] = new JArrayList[String]
-    import scala.collection.JavaConversions._
-    for (node <- findAll(expression)) {
-      strings.add(node.findString("."))
-    }
-    strings
+  def findAllStrings(expression: String): List[String] = {
+    findAll(expression).map { _.findString(".") }
   }
 
   @deprecated
@@ -120,13 +112,11 @@ abstract class NodeWrapper {
   }
 
   @deprecated
-  def findMap(expression: String): JMap[String, String] = {
-    import scala.collection.JavaConversions._
+  def findMap(expression: String): Map[String, String] = {
     findMapOpt(expression)
   }
 
   def findMapOpt(expression: String): Map[String, String] = {
-    import scala.collection.JavaConversions._
     val items = for {
       mapNode <- findAll(expression).toList
       value <- mapNode.findStringOpt(".")

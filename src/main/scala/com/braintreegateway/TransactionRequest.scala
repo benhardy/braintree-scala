@@ -2,13 +2,12 @@ package com.braintreegateway
 
 import com.braintreegateway.gw.TransparentRedirectGateway
 import java.math.BigDecimal
-import java.util.HashMap
 
 /**
  * Provides a fluent interface to build up requests around {@link Transaction Transactions}.
  */
 class TransactionRequest extends Request {
-  private val customFields = new HashMap[String, String]
+  private val customFields = Map.newBuilder[String, String]
 
   def amount(amount: BigDecimal): TransactionRequest = {
     this.amount = amount
@@ -51,7 +50,7 @@ class TransactionRequest extends Request {
   }
 
   def customField(apiName: String, value: String): TransactionRequest = {
-    customFields.put(apiName, value)
+    customFields += (apiName -> value)
     this
   }
 
@@ -142,6 +141,7 @@ class TransactionRequest extends Request {
   }
 
   protected def buildRequest(root: String): RequestBuilder = {
+    val custom = customFields.result()
     new RequestBuilder(root)
       .addElement("amount", amount)
       .addElement("deviceData", deviceData)
@@ -164,7 +164,7 @@ class TransactionRequest extends Request {
       .addElement("deviceSessionId", deviceSessionId)
       .addElement("venmoSdkPaymentMethodCode", venmoSdkPaymentMethodCode)
       .addElement("serviceFeeAmount", serviceFeeAmount)
-      .addElementIf(!customFields.isEmpty, "customFields", customFields)
+      .addElementIf(!custom.isEmpty, "customFields", custom)
       .addLowerCaseElementIfPresent("type", `type`)
   }
 

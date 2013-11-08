@@ -1,15 +1,13 @@
 package com.braintreegateway
 
 import com.braintreegateway.gw.TransparentRedirectGateway
-import java.util.HashMap
-import java.util.Map
 
 /**
  * Provides a fluent interface to build up requests around {@link Customer Customers}.
  */
 
 class CustomerRequest extends Request {
-  private val customFields = new HashMap[String, String]
+  private val customFields = Map.newBuilder[String, String]
 
   private var deviceData: String = null
   private var company: String = null
@@ -45,7 +43,7 @@ class CustomerRequest extends Request {
   }
 
   def customField(apiName: String, value: String): this.type = {
-    customFields.put(apiName, value)
+    customFields += (apiName -> value)
     this
   }
 
@@ -115,6 +113,7 @@ class CustomerRequest extends Request {
   }
 
   protected def buildRequest(root: String): RequestBuilder = {
+    val custom = customFields.result
     new RequestBuilder(root)
       .addElement("deviceData", deviceData)
       .addElement("company", company)
@@ -126,7 +125,7 @@ class CustomerRequest extends Request {
       .addElement("phone", phone)
       .addElement("website", website)
       .addElement("creditCard", creditCardRequest)
-      .addElementIf(customFields.size > 0, "customFields", customFields)
+      .addElementIf(!custom.isEmpty, "customFields", custom)
   }
 }
 

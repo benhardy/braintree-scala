@@ -3,12 +3,7 @@ package com.braintreegateway.util
 import java.io.InputStream
 import scala.collection.JavaConversions._
 
-import scala.collection.immutable.{Map => SMap}
-import scala.collection.immutable.{List => SList}
-
-import java.util.{Map => JMap, HashMap => JHashMap}
-import java.util.{List => JList, LinkedList => JLinkedList}
-import collection.mutable
+import collection.mutable.Stack
 import collection.mutable.ListBuffer
 import xml.MetaData
 import io.Source
@@ -49,7 +44,7 @@ object SimpleNodeWrapper {
 
     case class NodeBuilder(name: String, metadata: MetaData, content: ListBuffer[NodeType] = new ListBuffer[NodeType])
 
-    val stack = new mutable.Stack[NodeBuilder]
+    val stack = new Stack[NodeBuilder]
 
     def handleElementEnd(name: String): Option[SimpleNodeWrapper] = {
       val top = stack.pop
@@ -101,30 +96,31 @@ object SimpleNodeWrapper {
 
 case class SimpleNodeWrapper(
                               name: String,
-                              attributes: SMap[String, String] = SMap.empty,
-                              content: SList[NodeType] = Nil
+                              attributes: Map[String, String] = Map.empty,
+                              content: List[NodeType] = Nil
                               ) extends NodeWrapper with Element with NodeType {
 
-  def findAll(expression: String): JList[NodeWrapper] = {
-    val paths: Array[String] = expression.split("/")
-    val tokens = new JLinkedList[String](paths.toList)
-    val nodes: JList[NodeWrapper] = new JLinkedList[NodeWrapper]
+  def findAll(expression: String): List[NodeWrapper] = {
+    val paths = expression.split("/")
+    val tokens = new ListBuffer[String]
+    tokens ++= paths
+    val nodes = new ListBuffer[NodeWrapper]
     findAll(tokens, nodes)
-    nodes
+    nodes.toList
   }
 
-  private def findAll(tokens: JLinkedList[String], nodes: JList[NodeWrapper]): Unit = {
+  private def findAll(tokens: ListBuffer[String], nodes: ListBuffer[NodeWrapper]): Unit = {
     if (tokens.isEmpty) nodes.add(this)
     else {
-      val first: String = tokens.getFirst
-      if ("." == first) findAll(restOf(tokens), nodes)
+      val first: String = tokens.head
+      if ("." == first) findAll(tokens.tail, nodes)
       for (node <- childNodes) {
-        if (("*" == first) || (first == node.name)) node.findAll(restOf(tokens), nodes)
+        if (("*" == first) || (first == node.name)) node.findAll(tokens.tail, nodes)
       }
     }
   }
 
-  private def findOpt(tokens: scala.collection.immutable.List[String]): Option[SimpleNodeWrapper] = {
+  private def findOpt(tokens: List[String]): Option[SimpleNodeWrapper] = {
     tokens match {
       case Nil => Some(this)
       case first :: rest => {
@@ -140,21 +136,15 @@ case class SimpleNodeWrapper(
   }
 
   @deprecated // old behavior was null-based
-  private def find(tokens: JLinkedList[String]): SimpleNodeWrapper = {
+  private def find(tokens: List[String]): SimpleNodeWrapper = {
     findOpt(tokens.toList).getOrElse(null)
   }
 
   @deprecated
   private def find(expression: String): SimpleNodeWrapper = {
     val paths: Array[String] = expression.split("/")
-    val tokens = new JLinkedList[String](paths.toList)
+    val tokens = paths.toList
     find(tokens)
-  }
-
-  private def restOf(tokens: JLinkedList[String]): JLinkedList[String] = {
-    val newTokens = new JLinkedList[String](tokens)
-    newTokens.removeFirst
-    newTokens
   }
 
   @deprecated
@@ -193,7 +183,7 @@ case class SimpleNodeWrapper(
 
   def getElementName = name
 
-  private def childNodes: SList[SimpleNodeWrapper] = {
+  private def childNodes: List[SimpleNodeWrapper] = {
     content.flatMap {
       _ match {
         case x: SimpleNodeWrapper => Some(x)

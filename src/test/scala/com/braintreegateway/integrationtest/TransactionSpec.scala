@@ -114,52 +114,7 @@ import CalendarHelper._
 import search.TransactionSearchRequest
 import TestHelper._
 import com.braintreegateway.CreditCards.CardType
-import com.braintreegateway.Transactions._
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
-import scala.Some
+
 import scala.Some
 
 @RunWith(classOf[JUnitRunner])
@@ -208,8 +163,11 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
   describe("cloneTransaction") {
     onGatewayIt("cloneTransaction") { gateway =>
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).orderId("123").creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.customer.firstName("Dan").done.billingAddress.firstName("Carl").done.shippingAddress.firstName("Andrew").done
-      val cloneRequest = new TransactionCloneRequest().amount(new BigDecimal("123.45")).channel("MyShoppingCartProvider").options.submitForSettlement(false).done
+      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).orderId("123").creditCard.
+        number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.customer.firstName("Dan").done.billingAddress.
+        firstName("Carl").done.shippingAddress.firstName("Andrew").done
+      val cloneRequest = new TransactionCloneRequest().amount(new BigDecimal("123.45")).channel("MyShoppingCartProvider").
+        options.submitForSettlement(false).done
       val result = for {
         transaction <- gateway.transaction.sale(request)
         cloneTransaction <- gateway.transaction.cloneTransaction(transaction.getId, cloneRequest)
@@ -816,7 +774,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).customField("store_me", "custom value").customField("another_stored_field", "custom value2").creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
       val result = gateway.transaction.credit(request)
       val transaction = result match { case Success(txn) => txn }
-      val expected: java.util.Map[String, String] = Map(
+      val expected = Map(
         "store_me" -> "custom value",
         "another_stored_field" -> "custom value2"
       )
