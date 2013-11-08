@@ -1,18 +1,16 @@
 package com.braintreegateway
 
-import java.util.ArrayList
-import java.util.List
-import scala.collection.JavaConversions._
+import collection.mutable.ListBuffer
 
 final class ModificationsRequest(parent: SubscriptionRequest, name: String) extends BaseRequest {
 
-  private val adds = new ArrayList[AddModificationRequest]
-  private val updates = new ArrayList[UpdateModificationRequest]
-  private val removeModificationIds = new ArrayList[String]
+  private val adds = new ListBuffer[AddModificationRequest]
+  private val updates = new ListBuffer[UpdateModificationRequest]
+  private val removeModificationIds = new ListBuffer[String]
 
   def add: AddModificationRequest = {
     val addModificationRequest = new AddModificationRequest(this)
-    adds.add(addModificationRequest)
+    adds += addModificationRequest
     addModificationRequest
   }
 
@@ -25,13 +23,13 @@ final class ModificationsRequest(parent: SubscriptionRequest, name: String) exte
   }
 
   def remove(modificationIds: List[String]): ModificationsRequest = {
-    removeModificationIds.addAll(modificationIds)
+    removeModificationIds ++= modificationIds
     this
   }
 
   def update(existingId: String): UpdateModificationRequest = {
     val updateModificationRequest: UpdateModificationRequest = new UpdateModificationRequest(this, existingId)
-    updates.add(updateModificationRequest)
+    updates += updateModificationRequest
     updateModificationRequest
   }
 
@@ -40,6 +38,9 @@ final class ModificationsRequest(parent: SubscriptionRequest, name: String) exte
   }
 
   protected def buildRequest(root: String): RequestBuilder = {
-    new RequestBuilder(root).addElement("add", adds).addElement("remove", removeModificationIds).addElement("update", updates)
+    new RequestBuilder(root).
+      addElement("add", adds.toList).
+      addElement("remove", removeModificationIds.toList).
+      addElement("update", updates.toList)
   }
 }

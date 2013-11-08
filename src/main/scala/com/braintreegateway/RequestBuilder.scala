@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat
 import xml._
 import scala.collection.mutable.{Map => MMap}
 
-import scala.collection.JavaConversions._
 import StringUtils.underscore
 import java.util.{TimeZone, Calendar}
 
@@ -26,16 +25,13 @@ object RequestBuilder {
       case Some(x:Boolean) => buildXmlElementString(name, x.toString)
       case request: Request => request.toXmlString
       case calendar: Calendar => calendarElement(name, calendar).toString
-      case map: java.util.Map[String, AnyRef] => {
-        formatAsXML(name, map)
-      }
       case scalaMutableMap: MMap[String, AnyRef] => {
-        formatAsXML(name, mapAsJavaMap(scalaMutableMap))
+        formatAsXML(name, scalaMutableMap.toMap)
       }
       case scalaMap: Map[String, AnyRef] => {
-        formatAsXML(name, mapAsJavaMap(scalaMap))
+        formatAsXML(name, scalaMap)
       }
-      case list: java.util.List[AnyRef] => {
+      case list: List[AnyRef] => {
         val xml = new StringBuilder
         for (item <- list) {
           xml.append(buildXmlElementString("item", item))
@@ -61,12 +57,11 @@ object RequestBuilder {
     Elem(null, name, attributes, TopScope, true, Text(content))
   }
 
-  def formatAsXML(name: String, map: java.util.Map[String, AnyRef]): String = {
-    if (map == null) ""
-    val xml: StringBuilder = new StringBuilder
+  def formatAsXML(name: String, map: Map[String, AnyRef]): String = {
+    val xml = new StringBuilder
     xml.append(String.format("<%s>", name))
-    for (entry <- map.entrySet) {
-      xml.append(buildXmlElementString(entry.getKey, entry.getValue))
+    for ((key,value) <- map) {
+      xml.append(buildXmlElementString(key, value))
     }
     xml.append(String.format("</%s>", name))
     xml.toString
