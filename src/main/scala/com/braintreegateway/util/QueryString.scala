@@ -3,7 +3,6 @@ package com.braintreegateway.util
 import com.braintreegateway.Request
 import java.io.UnsupportedEncodingException
 import java.net.{URLDecoder, URLEncoder}
-import java.util.{Map => JMap}
 
 object QueryString {
   def encodeParam(key: String, value: String): String = {
@@ -46,11 +45,9 @@ final class QueryString(content: String = "") {
   }
 
   def append(key: String, value: AnyRef): QueryString = {
-    import scala.collection.JavaConversions._
     value match {
       case null => this
       case request: Request => appendRequest(key, request)
-      case jMap: JMap[_,_] => appendMap(key, jMap)
       case sMap: Map[_,_] => appendMap(key, sMap)
       case other => appendString(key, other.toString)
     }
@@ -93,7 +90,7 @@ final class QueryString(content: String = "") {
     this
   }
 
-  private def appendMap(key: String, value: JMap[_, _]): QueryString = {
+  private def appendMap(key: String, value: Map[_, _]): QueryString = {
     import scala.collection.JavaConversions._
     for (keyString <- value.keySet) {
       appendString("%s[%s]".format(key, keyString), value.get(keyString).toString)

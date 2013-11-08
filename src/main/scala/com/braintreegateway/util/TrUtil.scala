@@ -3,7 +3,6 @@ package com.braintreegateway.util
 import com.braintreegateway.gw.Configuration
 import com.braintreegateway.Request
 import java.util.Calendar
-import java.util.Map
 import java.util.TimeZone
 import com.braintreegateway.util.QueryString.encodeParam
 
@@ -28,8 +27,7 @@ class TrUtil(configuration: Configuration) {
   }
 
   protected def encodeMap(sourceMap: Map[String, String]): String = {
-    import scala.collection.JavaConversions._
-    sourceMap.keySet.map { key => encodeParam(key, sourceMap.get(key)) }.mkString("&")
+    sourceMap.map { case (key, value) => encodeParam(key,value) }.mkString("&")
   }
 
   def url: String = {

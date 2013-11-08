@@ -2,7 +2,6 @@ package com.braintreegateway.util
 
 import com.braintreegateway.CreditCardRequest
 import java.math.BigDecimal
-import java.util.{Map =>JMap, HashMap => JHashMap}
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import org.junit.runner.RunWith
@@ -17,7 +16,8 @@ class QueryStringSpec extends FunSpec with MustMatchers {
     }
 
     it("appendEmptyStringOrNulls") {
-      val actual = new QueryString().append("foo", "f").append("", "b").append("bar", "").append("boom", null).append("", "c").toString
+      val nullString: String = null
+      val actual = new QueryString().append("foo", "f").append("", "b").append("bar", "").append("boom", nullString).append("", "c").toString
       actual must be === "foo=f&bar="
     }
 
@@ -31,15 +31,6 @@ class QueryStringSpec extends FunSpec with MustMatchers {
       val actual = new QueryString().append("[credit_card]", request).toString
       actual must include("%5Bcredit_card%5D%5Bcardholder_name%5D=Drew")
       actual must include("%5Bcredit_card%5D%5Bcvv%5D=123")
-    }
-
-    it("appends with Java Map") {
-      val map: JMap[String, String] = new JHashMap[String, String]
-      map.put("name", "john")
-      map.put("age", "15")
-      val actual = new QueryString().append("transaction[custom_fields]", map).toString
-      actual must include("transaction%5Bcustom_fields%5D%5Bage%5D=15")
-      actual must include("transaction%5Bcustom_fields%5D%5Bname%5D=john")
     }
 
     it("appends with Scala Map") {
