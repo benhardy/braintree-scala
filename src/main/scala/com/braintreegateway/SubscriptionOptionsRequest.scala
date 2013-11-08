@@ -3,34 +3,34 @@ package com.braintreegateway
 class SubscriptionOptionsRequest(val done:SubscriptionRequest) extends BaseRequest with HasParent[SubscriptionRequest] {
 
   // TODO use options or straight up defaults
-  private var doNotInheritAddOnsOrDiscounts: java.lang.Boolean = null
-  private var prorateCharges: java.lang.Boolean = null
-  private var replaceAllAddOnsAndDiscounts: java.lang.Boolean = null
-  private var revertSubscriptionOnProrationFailure: java.lang.Boolean = null
-  private var startImmediately: java.lang.Boolean = null
+  private var doNotInheritAddOnsOrDiscounts: Option[Boolean] = None
+  private var prorateCharges: Option[Boolean] = None
+  private var replaceAllAddOnsAndDiscounts: Option[Boolean] = None
+  private var revertSubscriptionOnProrationFailure: Option[Boolean] = None
+  private var startImmediately: Option[Boolean] = None
 
   def doNotInheritAddOnsOrDiscounts(doNotInheritAddOnsOrDiscounts: Boolean): SubscriptionOptionsRequest = {
-    this.doNotInheritAddOnsOrDiscounts = doNotInheritAddOnsOrDiscounts
+    this.doNotInheritAddOnsOrDiscounts = Some(doNotInheritAddOnsOrDiscounts)
     this
   }
 
   def prorateCharges(prorateCharges: Boolean): SubscriptionOptionsRequest = {
-    this.prorateCharges = prorateCharges
+    this.prorateCharges = Some(prorateCharges)
     this
   }
 
   def replaceAllAddOnsAndDiscounts(replaceAllAddonsAndDiscounts: Boolean): SubscriptionOptionsRequest = {
-    this.replaceAllAddOnsAndDiscounts = replaceAllAddonsAndDiscounts
+    this.replaceAllAddOnsAndDiscounts = Some(replaceAllAddonsAndDiscounts)
     this
   }
 
   def revertSubscriptionOnProrationFailure(revertSubscriptionOnProrationFailure: Boolean): SubscriptionOptionsRequest = {
-    this.revertSubscriptionOnProrationFailure = revertSubscriptionOnProrationFailure
+    this.revertSubscriptionOnProrationFailure = Some(revertSubscriptionOnProrationFailure)
     this
   }
 
   def startImmediately(startImmediately: Boolean): SubscriptionOptionsRequest = {
-    this.startImmediately = startImmediately
+    this.startImmediately = Some(startImmediately)
     this
   }
 

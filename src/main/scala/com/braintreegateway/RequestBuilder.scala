@@ -20,7 +20,10 @@ object RequestBuilder {
   @SuppressWarnings(Array("unchecked"))
   def buildXmlElementString(name: String, element: AnyRef): String = {
     element match {
-      case null => ""
+      case null => "" // TODO eventually remove this when nobody is making it
+      case None => ""
+      case Some(x:AnyRef) => buildXmlElementString(name, x)
+      case Some(x:Boolean) => buildXmlElementString(name, x.toString)
       case request: Request => request.toXmlString
       case calendar: Calendar => calendarElement(name, calendar).toString
       case map: java.util.Map[String, AnyRef] => {
@@ -42,7 +45,7 @@ object RequestBuilder {
       case x => {
         val someValue = Option(x).map { item => xmlEscape(item.toString) }.getOrElse("")
         val xmlName = xmlEscape(name)
-        String.format("<%s>%s</%s>", xmlName, someValue, xmlName)
+        "<%s>%s</%s>".format(xmlName, someValue, xmlName)
       }
     }
   }
