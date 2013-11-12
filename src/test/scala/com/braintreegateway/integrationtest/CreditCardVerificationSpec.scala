@@ -1,7 +1,7 @@
 package com.braintreegateway.integrationtest
 
 import org.junit.runner.RunWith
-import org.scalatest.FunSpec
+import _root_.org.scalatest.{Inside, FunSpec}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
@@ -14,7 +14,7 @@ import testhelpers.XmlHelper._
 import com.braintreegateway.CreditCards.CardType
 
 @RunWith(classOf[JUnitRunner])
-class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewaySpec {
+class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewaySpec with Inside {
 
   describe("CreditCardVerification constructor") {
     it("can construct from a response XML") {
@@ -61,44 +61,42 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
     onGatewayIt("can search on all text fields") { gateway =>
       val request = new CustomerRequest().creditCard.number("4000111111111115").expirationDate("11/12").
         cardholderName("Tom Smith").options.verifyCard(true).done.done
-      val result = gateway.customer.create(request)
-      result match {
-        case Failure(_,_,_,Some(verification),_,_) => {
-          val searchRequest = new CreditCardVerificationSearchRequest().
-            id.is(verification.id).creditCardCardholderName.
-            is("Tom Smith").creditCardExpirationDate.
-            is("11/2012").creditCardNumber.is("4000111111111115")
-          val collection = gateway.creditCardVerification.search(searchRequest)
-          collection.getMaximumSize must be === 1
-          collection.getFirst.id must be === verification.id
-        }
-        case x => fail("expected Failure, got " + x)
+      val setup = gateway.customer.create(request)
+      inside(setup) { case Failure(_,_,_,Some(verification),_,_) =>
+        val searchRequest = new CreditCardVerificationSearchRequest().
+          id.is(verification.id).creditCardCardholderName.
+          is("Tom Smith").creditCardExpirationDate.
+          is("11/2012").creditCardNumber.is("4000111111111115")
+
+        val collection = gateway.creditCardVerification.search(searchRequest)
+
+        collection.getMaximumSize must be === 1
+        collection.getFirst.id must be === verification.id
       }
     }
 
     onGatewayIt("can search on multiple value fields") { gateway =>
       val requestOne = new CustomerRequest().creditCard.number("4000111111111115").expirationDate("11/12").
           options.verifyCard(true).done.done
-      val resultOne = gateway.customer.create(requestOne)
-      resultOne must not be ('success)
-
-      val verificationOne = resultOne match { case Failure(_,_,_,Some(verification),_,_) => verification }
       val requestTwo = new CustomerRequest().creditCard.number("5105105105105100").expirationDate("06/12").
           options.verifyCard(true).done.done
-      val resultTwo = gateway.customer.create(requestTwo)
-      resultTwo must not be ('success)
+      val resultOne = gateway.customer.create(requestOne)
 
-      // TODO make this extraction not suck
-      val verificationTwo = resultTwo  match { case Failure(_,_,_,Some(verification),_,_) => verification }
-      val searchRequest = new CreditCardVerificationSearchRequest().
-          ids.in(verificationOne.id, verificationTwo.id).
-          creditCardCardType.in(CardType.VISA, CardType.MASTER_CARD)
+      inside(resultOne) { case Failure(_,_,_,Some(verificationOne),_,_) =>
+        val resultTwo = gateway.customer.create(requestTwo)
 
-      val collection = gateway.creditCardVerification.search(searchRequest)
+        inside(resultTwo) { case Failure(_,_,_,Some(verificationTwo),_,_) =>
+          val searchRequest = new CreditCardVerificationSearchRequest().
+            ids.in(verificationOne.id, verificationTwo.id).
+            creditCardCardType.in(CardType.VISA, CardType.MASTER_CARD)
 
-      collection.getMaximumSize must be === 2
-      val expectedIds = List(verificationOne.id, verificationTwo.id)
-      expectedIds must contain (collection.getFirst.id)
+          val collection = gateway.creditCardVerification.search(searchRequest)
+
+          collection.getMaximumSize must be === 2
+          val expectedIds = List(verificationOne.id, verificationTwo.id)
+          expectedIds must contain (collection.getFirst.id)
+        }
+      }
     }
 
     onGatewayIt("can search on range fields") { gateway =>
@@ -113,29 +111,26 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
 
       val result = gateway.customer.create(request)
 
-      result match {
-        case Failure(_,_,_,Some(verification),_,_) => {
-          val createdAt = verification.createdAt
-          val threeDaysEarlier = createdAt - 3.days
-          val oneDayEarlier = createdAt - 1.days
-          val oneDayLater = createdAt + 1.days
+      inside(result) { case Failure(_,_,_,Some(verification),_,_) =>
+        val createdAt = verification.createdAt
+        val threeDaysEarlier = createdAt - 3.days
+        val oneDayEarlier = createdAt - 1.days
+        val oneDayLater = createdAt + 1.days
 
-          def cardVerificationCreatedAt = {
-            new CreditCardVerificationSearchRequest().id.is(verification.id).createdAt
-          }
-          var searchRequest = cardVerificationCreatedAt.between(oneDayEarlier, oneDayLater)
-          gateway.creditCardVerification.search(searchRequest).getMaximumSize must be === 1
-
-          searchRequest = cardVerificationCreatedAt.greaterThanOrEqualTo(oneDayEarlier)
-          gateway.creditCardVerification.search(searchRequest).getMaximumSize must be === 1
-
-          searchRequest = cardVerificationCreatedAt.lessThanOrEqualTo(oneDayLater)
-          gateway.creditCardVerification.search(searchRequest).getMaximumSize must be === 1
-
-          searchRequest = cardVerificationCreatedAt.between(threeDaysEarlier, oneDayEarlier)
-          gateway.creditCardVerification.search(searchRequest).getMaximumSize must be === 0
+        def cardVerificationCreatedAt = {
+          new CreditCardVerificationSearchRequest().id.is(verification.id).createdAt
         }
-        case x => fail("expected Failure, got " + x)
+        var searchRequest = cardVerificationCreatedAt.between(oneDayEarlier, oneDayLater)
+        gateway.creditCardVerification.search(searchRequest).getMaximumSize must be === 1
+
+        searchRequest = cardVerificationCreatedAt.greaterThanOrEqualTo(oneDayEarlier)
+        gateway.creditCardVerification.search(searchRequest).getMaximumSize must be === 1
+
+        searchRequest = cardVerificationCreatedAt.lessThanOrEqualTo(oneDayLater)
+        gateway.creditCardVerification.search(searchRequest).getMaximumSize must be === 1
+
+        searchRequest = cardVerificationCreatedAt.between(threeDaysEarlier, oneDayEarlier)
+        gateway.creditCardVerification.search(searchRequest).getMaximumSize must be === 0
       }
     }
  }
@@ -151,21 +146,17 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
 
       val result = gateway.customer.create(request)
 
-      result match {
-        case Failure(_,_,_,Some(verification),_,_) => {
-
-          val card = verification.creditCard
-          card.getCommercial must be === CreditCard.KindIndicator.UNKNOWN
-          card.getDebit must be === CreditCard.KindIndicator.UNKNOWN
-          card.getDurbinRegulated must be === CreditCard.KindIndicator.UNKNOWN
-          card.getHealthcare must be === CreditCard.KindIndicator.UNKNOWN
-          card.getPayroll must be === CreditCard.KindIndicator.UNKNOWN
-          card.getPrepaid must be === CreditCard.KindIndicator.UNKNOWN
-          card.getCountryOfIssuance must be === "Unknown"
-          card.getIssuingBank must be === "Unknown"
-        }
-        case x => fail("expected Failure, got " + x)
-      }
+      inside(result) { case Failure(_,_,_,Some(verification),_,_) =>
+        val card = verification.creditCard
+        card.getCommercial must be === CreditCard.KindIndicator.UNKNOWN
+        card.getDebit must be === CreditCard.KindIndicator.UNKNOWN
+        card.getDurbinRegulated must be === CreditCard.KindIndicator.UNKNOWN
+        card.getHealthcare must be === CreditCard.KindIndicator.UNKNOWN
+        card.getPayroll must be === CreditCard.KindIndicator.UNKNOWN
+        card.getPrepaid must be === CreditCard.KindIndicator.UNKNOWN
+        card.getCountryOfIssuance must be === "Unknown"
+        card.getIssuingBank must be === "Unknown"
+     }
     }
   }
 }
