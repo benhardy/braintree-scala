@@ -1,5 +1,6 @@
 package com.braintreegateway.integrationtest
 
+import _root_.org.scalatest.Inside
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
@@ -11,42 +12,46 @@ import search.CustomerSearchRequest
 import test.VenmoSdk
 import testhelpers.{CalendarHelper, TestHelper, GatewaySpec}
 import CalendarHelper._
-
+import TestHelper._
 
 @RunWith(classOf[JUnitRunner])
-class CustomerSpec extends GatewaySpec with MustMatchers {
+class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
 
   describe("create") {
     onGatewayIt("creates a customer") { gateway =>
       val request = new CustomerRequest().firstName("Mark").lastName("Jones").company("Jones Co.").
         email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com")
+
+      val rightNow = now
       val result = gateway.customer.create(request)
-      result must be('success)  // todo probably redundant
-      val customer = result match { case Success(cust) => cust }
-      customer.getFirstName must be === "Mark"
-      customer.getLastName must be === "Jones"
-      customer.getCompany must be === "Jones Co."
-      customer.getEmail must be === "mark.jones@example.com"
-      customer.getFax must be === "419-555-1234"
-      customer.getPhone must be === "614-555-1234"
-      customer.getWebsite must be === "http://example.com"
-      val thisYear = now.year
-      customer.getCreatedAt.year must be === thisYear
-      customer.getUpdatedAt.year must be === thisYear
+      
+      inside(result) { case Success(customer) =>
+        customer.getFirstName must be === "Mark"
+        customer.getLastName must be === "Jones"
+        customer.getCompany must be === "Jones Co."
+        customer.getEmail must be === "mark.jones@example.com"
+        customer.getFax must be === "419-555-1234"
+        customer.getPhone must be === "614-555-1234"
+        customer.getWebsite must be === "http://example.com"
+        customer.getCreatedAt must beSameDayAs(rightNow)
+        customer.getUpdatedAt must beSameDayAs(rightNow)
+      }
     }
 
     onGatewayIt("populates with blanks if given nothing") { gateway =>
       val request = new CustomerRequest
+      
       val result = gateway.customer.create(request)
-      result must be('success)
-      val customer = result match { case Success(cust) => cust }
-      customer.getFirstName must be === null
-      customer.getLastName must be === null
-      customer.getCompany must be === null
-      customer.getEmail must be === null
-      customer.getFax must be === null
-      customer.getPhone must be === null
-      customer.getWebsite must be === null
+
+      inside(result) { case Success(customer) =>
+        customer.getFirstName must be === null
+        customer.getLastName must be === null
+        customer.getCompany must be === null
+        customer.getEmail must be === null
+        customer.getFax must be === null
+        customer.getPhone must be === null
+        customer.getWebsite must be === null
+      }
     }
 
     onGatewayIt("it uses security params") { gateway =>
@@ -57,53 +62,53 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("populates custom fields") { gateway =>
       val request = new CustomerRequest().customField("store_me", "custom value").customField("another_stored_field", "custom value2")
-      val result = gateway.customer.create(request)
-      result must be('success)
 
       val expected = Map(
         "store_me" -> "custom value",
         "another_stored_field" -> "custom value2"
       )
+      val result = gateway.customer.create(request)
 
-      result match {
-        case Success(customer) => {
-          customer.getCustomFields must be === expected
-        }
+      inside(result) { case Success(customer) =>
+        customer.getCustomFields must be === expected
       }
     }
 
     onGatewayIt("createWithCreditCard") { gateway =>
       val request = new CustomerRequest
       request.firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").done.lastName("Jones")
+      
       val result = gateway.customer.create(request)
-      result match {
-        case Success(customer) => {
-          customer.getFirstName must be === "Fred"
-          customer.getLastName must be === "Jones"
-          customer.creditCards.size must be === 1
-          val creditCard = customer.creditCards(0)
-          creditCard.getCardholderName must be === "Fred Jones"
-          creditCard.getBin must be === "510510"
-          creditCard.getLast4 must be === "5100"
-          creditCard.getExpirationDate must be === "05/2012"
-          creditCard.getUniqueNumberIdentifier must fullyMatch regex "\\A\\w{32}\\z"
-        }
+      
+      inside(result) { case Success(customer) =>
+        customer.getFirstName must be === "Fred"
+        customer.getLastName must be === "Jones"
+        customer.creditCards.size must be === 1
+        val creditCard = customer.creditCards(0)
+        creditCard.getCardholderName must be === "Fred Jones"
+        creditCard.getBin must be === "510510"
+        creditCard.getLast4 must be === "5100"
+        creditCard.getExpirationDate must be === "05/2012"
+        creditCard.getUniqueNumberIdentifier must fullyMatch regex "\\A\\w{32}\\z"
       }
-      result must be('success) // todo probably redundant
     }
 
     onGatewayIt("createWithDuplicateCreditCard") { gateway =>
       val customerRequest = new CustomerRequest
-      customerRequest.firstName("Fred").creditCard.cardholderName("John Doe").number("4012000033330026").cvv("200").expirationDate("05/12").options.failOnDuplicatePaymentMethod(true).done.done.lastName("Jones")
+      customerRequest.firstName("Fred").
+        creditCard.cardholderName("John Doe").number("4012000033330026").cvv("200").expirationDate("05/12").
+          options.failOnDuplicatePaymentMethod(true).done.
+        done.lastName("Jones")
+
       gateway.customer.create(customerRequest)
+
       val result = gateway.customer.create(customerRequest)
-      result match {
+      inside(result) {
         case Failure(errors,_,_,_,_,_) => {
           val code = errors.forObject("customer").forObject("creditCard").onField("number")(0).code
           code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
         }
       }
-      result must not be ('success)   // todo probably redundant
     }
 
     onGatewayIt("createWithValidCreditCardAndVerification") { gateway =>
@@ -111,7 +116,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         creditCard.cardholderName("Fred Jones").number("4111111111111111").cvv("123").expirationDate("05/12").
         options.verifyCard(true).done.done
       val result = gateway.customer.create(request)
-      result match {
+      inside(result) {
         case Success(customer) => {
           customer.getFirstName must be === "Fred"
           customer.getLastName must be === "Jones"
@@ -123,16 +128,13 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
           creditCard.getExpirationDate must be === "05/2012"
         }
       }
-      result must be('success)   // probably redundant todo
-
     }
 
     onGatewayIt("createWithInvalidCreditCardAndVerification") { gateway =>
       val request = new CustomerRequest
       request.firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").options.verifyCard(true).done.done.lastName("Jones")
       val result = gateway.customer.create(request)
-      result must not be ('success)
-      result match {
+      inside(result) {
         case Failure(_,_,_,Some(verification),_,_) => {
           verification.status must be === CreditCardVerification.Status.PROCESSOR_DECLINED
         }
@@ -148,8 +150,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         done.lastName("Jones")
 
       val result = gateway.customer.create(request)
-      result must be('success)     // todo possibly redundant
-      result match {
+      inside(result) {
         case Success(customer) => {
           customer.getFirstName must be === "Fred"
           customer.getLastName must be === "Jones"
@@ -184,7 +185,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("createWithCreditCardAndBillingAddressWithErrors") { gateway =>
       val request = new CustomerRequest().firstName("Fred").creditCard.cardholderName("Fred Jones").number("5105105105105100").cvv("123").expirationDate("05/12").billingAddress.countryName("United States of America").countryCodeAlpha2("MX").done.done
       val result = gateway.customer.create(request)
-      result match {
+      inside(result) {
         case Failure(errors,_,_,_,_,_)  => {
           val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").onField("base")(0).code
           code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
@@ -198,7 +199,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val request = new CustomerRequest().firstName("Fred").
         creditCard.venmoSdkPaymentMethodCode(VenmoSdk.generateTestPaymentMethodCode("5105105105105100")).done
       val result = gateway.customer.create(request)
-      result match {
+      inside(result) {
         case Success(customer) => {
           customer.creditCards(0).getBin must be === "510510"
         }
@@ -209,7 +210,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val request = new CustomerRequest().firstName("Fred").creditCard.number("5105105105105100").cvv("123").
         expirationDate("05/12").options.venmoSdkSession(VenmoSdk.Session.Valid.value).done.done
       val result = gateway.customer.create(request)
-      result match {
+      inside(result) {
         case Success(customer) => {
           customer.creditCards(0) must be('venmoSdk)
         }
@@ -225,7 +226,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, trCreateUrl)
       val result = gateway.transparentRedirect.confirmCustomer(queryString)
       result must be('success)     // todo probably redundant
-      result match {
+      inside(result) {
         case Success(customer) => {
           customer.getFirstName must be === "John"
           customer.getLastName must be === "Doe"
@@ -249,7 +250,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, trCreateUrl)
       val result = gateway.transparentRedirect.confirmCustomer(queryString)
       result must be('success)  // todo probably redundant
-      result match {
+      inside(result) {
         case Success(customer) => {
           customer.getFirstName must be === "John"
           customer.getLastName must be === "Doe"
@@ -266,8 +267,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         countryCodeAlpha3("USA").countryCodeNumeric("840").done.done
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
       val result = gateway.transparentRedirect.confirmCustomer(queryString)
-      result must be('success)  // todo probably redundant
-      result match {
+      inside(result) {
         case Success(customer) => {
           customer.getFirstName must be === "John"
           customer.getLastName must be === "Fred"
@@ -288,7 +288,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
       val result = gateway.transparentRedirect.confirmCustomer(queryString)
       result must not be ('success)
-      result match {
+      inside(result) {
         case Failure(errors,_,_,_,_,_) => {
           val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").
             onField("base")(0).code
@@ -318,7 +318,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         jim <- gateway.customer.create(request.firstName("Jim"))
         joe <- gateway.customer.create(request.firstName("Joe"))
       } yield (jim,joe)
-      result match {
+      inside(result) {
         case Success((jim,joe)) => {
           val searchRequest = new CustomerSearchRequest().paymentMethodTokenWithDuplicates.is(jim.creditCards(0).getToken)
           val collection = gateway.customer.search(searchRequest)
@@ -393,8 +393,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         updatedCustomer <- gateway.customer.update(customer.getId, updateRequest)
       } yield updatedCustomer
 
-      updateResult must be('success)
-      updateResult match {
+      inside(updateResult) {
         case Success(updatedCustomer) => {
           updatedCustomer.getFirstName must be === "Drew"
           updatedCustomer.getLastName must be === "Olson"
@@ -426,7 +425,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
 
       } yield updatedCustomer
 
-      updateResult match {
+      inside(updateResult) {
         case Success(updatedCustomer) => {
           val updatedCreditCard = updatedCustomer.creditCards(0)
           val updatedAddress = updatedCreditCard.getBillingAddress
@@ -457,7 +456,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         updatedCustomer <- gateway.customer.update(customer.getId, updateRequest)
       } yield (updatedCustomer, address)
 
-      result match {
+      inside(result) {
         case Success((updatedCustomer, address)) => {
           val updatedAddress = updatedCustomer.creditCards(0).getBillingAddress
           updatedAddress.getId must be === address.getId
@@ -479,7 +478,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       } yield updatedCustomer
 
       result must not be ('success)
-      result match {
+      inside(result) {
         case Failure(errors,_,_,_,_,_) => {
           val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").
             onField("base")(0).code
@@ -505,7 +504,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         updatedCustomer <- gateway.transparentRedirect.confirmCustomer(queryString)
       } yield updatedCustomer
 
-      result match {
+      inside(result) {
         case Success(updatedCustomer) => {
           val updatedCreditCard = updatedCustomer.creditCards(0)
           val updatedAddress = updatedCreditCard.getBillingAddress
@@ -533,7 +532,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         updated <- gateway.transparentRedirect.confirmCustomer(queryString)
       } yield updated
 
-      result match {
+      inside(result) {
         case Success(customer) => {
           customer.getFirstName must be === "Drew"
           customer.getLastName must be === "Olson"
@@ -569,7 +568,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         updatedCustomer <- gateway.transparentRedirect.confirmCustomer(queryString)
       } yield(originalCustomer.getId)
 
-      result match {
+      inside(result) {
         case Success(customerId) => {
           val updatedCustomer = gateway.customer.find(customerId)
           updatedCustomer.getFirstName must be === "Jane"
@@ -600,7 +599,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
       } yield updated
 
       result must not be ('success)
-      result match {
+      inside(result) {
         case Failure(errors,_,_,_,_,_) => {
           val code = errors.forObject("customer").forObject("creditCard").forObject("billingAddress").
             onField("base")(0).code
@@ -624,7 +623,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         updatedCustomer <- gateway.customer.update(customer.getId, updateRequest)
       } yield(updatedCustomer, newId)
 
-      result match {
+      inside(result) {
         case Success((updatedCustomer, newId)) => {
           updatedCustomer.getId must be === newId
         }
@@ -642,7 +641,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         updated <- gateway.customer.update(customer.getId, updateRequest)
       } yield updated
 
-      result match {
+      inside(result) {
         case Success(updatedCustomer) => {
           updatedCustomer.getFirstName must be === "Mark"
           updatedCustomer.getLastName must be === "Olson"
@@ -662,7 +661,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers {
         email("mark.jones@example.com").fax("419-555-1234").phone("614-555-1234").website("http://example.com")
       val customer = gateway.customer.create(request) match { case Success(cust) => cust }
       val result = gateway.customer.delete(customer.getId)
-      result match {
+      inside(result) {
         case Deleted => {
           intercept[NotFoundException] {
             gateway.customer.find(customer.getId)
