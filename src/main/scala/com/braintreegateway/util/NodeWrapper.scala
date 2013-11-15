@@ -1,6 +1,6 @@
 package com.braintreegateway.util
 
-import java.math.BigDecimal
+import scala.math.BigDecimal
 import java.text.SimpleDateFormat
 import java.util.{Calendar, TimeZone}
 
@@ -23,12 +23,12 @@ abstract class NodeWrapper {
   @deprecated
   def findBigDecimal(expression: String): BigDecimal = {
     val value: String = findString(expression)
-    if (value == null) null else new BigDecimal(value)
+    if (value == null) null else BigDecimal(value)
   }
 
   def findBigDecimalOpt(expression: String): Option[BigDecimal] = {
     findStringOpt(expression) map {
-      new BigDecimal(_)
+       BigDecimal(_)
     }
   }
 

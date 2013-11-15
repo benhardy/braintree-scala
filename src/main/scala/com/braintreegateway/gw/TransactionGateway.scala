@@ -4,7 +4,7 @@ import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.NodeWrapper
 import com.braintreegateway.util.TrUtil
-import java.math.BigDecimal
+import scala.math.BigDecimal
 import com.braintreegateway._
 import com.braintreegateway.Transactions.Type
 import search.TransactionSearchRequest

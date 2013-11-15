@@ -1,4 +1,4 @@
-# Braintree Java Client Library
+# Braintree Scala Client Library
 
 The Braintree library provides integration access to the Braintree Gateway.
 
@@ -8,70 +8,73 @@ The Braintree library provides integration access to the Braintree Gateway.
 
 ## Quick Start Example
 
-    import java.math.BigDecimal;
-    import com.braintreegateway.*;
+    import com.braintreegateway._
 
-    public class BraintreeExample {
-        public static void main(String[] args) {
-            BraintreeGateway gateway = new BraintreeGateway(
-                Environment.SANDBOX,
-                "the_merchant_id",
-                "the_public_key",
-                "the_private_key"
-            );
+    object BraintreeExample {
+      def main(args: Array[String]) {
+        val gateway = new BraintreeGateway(
+            Environment.SANDBOX,
+            "the_merchant_id",
+            "the_public_key",
+            "the_private_key"
+        )
 
-            TransactionRequest request = new TransactionRequest().
-                amount(new BigDecimal("1000.00")).
-                creditCard().
-                    number("4111111111111111").
-                    expirationDate("05/2009").
-                    done();
+        val request = new TransactionRequest().
+          amount(BigDecimal("1000.00")).
+          creditCard.
+            number("4111111111111111").
+            expirationDate("05/2009").
+            done
 
-            Result<Transaction> result = gateway.transaction().sale(request);
+        val result = gateway.transaction.sale(request)
 
-            if (result.isSuccess()) {
-                Transaction transaction = result.getTarget();
-                System.out.println("Success!: " + transaction.getId());
-            } else if (result.getTransaction() != null) {
-                Transaction transaction = result.getTransaction();
-                System.out.println("Error processing transaction:");
-                System.out.println("  Status: " + transaction.getStatus());
-                System.out.println("  Code: " + transaction.getProcessorResponseCode());
-                System.out.println("  Text: " + transaction.getProcessorResponseText());
-            } else {
-                for (ValidationError error : result.getErrors().getAllDeepValidationErrors()) {
-                   System.out.println("Attribute: " + error.getAttribute());
-                   System.out.println("  Code: " + error.getCode());
-                   System.out.println("  Message: " + error.getMessage());
-                }
-            }
+        result match {
+          case Success(transaction) => {
+            println("Success!: created transaction with id ${transaction.id}")
+          }
+          case Failure(errors, parameters, message, verification, transaction, subscription) => {
+            val errorMessage = transaction.map(errorMessageFromTransaction).
+                                getOrElse(errorMessageFromValidation(errors))
+            println(errorMessage) 
+          }
         }
+      }
+
+      def errorMessageFromValidation(errors: ValidationErrors): String = {
+        errors.getAllDeepValidationErrors.map { error =>
+           "Attribute: ${error.attribute}\n  Code: ${error.code}\n  Message: ${error.message}"
+        }.mkString("\n")
+      }
+
+      def errorMessageFromTransaction(transaction:Transaction): String = {
+        "Error processing transaction:\n" +
+        "  Status: ${t.status}\n" +
+        "  Code: ${t.processorResponseCode}" +
+        "  Text: ${t.processorResponseText}"
+      }
     }
 
 
 ## Documentation
 
- * [Official documentation](http://www.braintreepayments.com/docs/java)
+ * TODO
 
-## Maven
+## SBT
 
-  With Maven installed, this package can be built simply by running this command:
+  With SBT installed, this package can be built simply by running this command:
 
      mvn package
 
-  The resulting jar file will be produced in the directory named "target".
+  The resulting jar file will be produced in the directory named "target" under a subset of the scala version in use.
+
+     e.g.   target/scala-2.10/braintree-scala_2.10-0.1.0-SNAPSHOT.jar
 
 ### In repositories:
 
-     Maven Central, which should be enabled by default. No additional repositories are required.
+     not yet, see github
 
 ### In dependencies
 
-    <dependency>
-      <groupId>com.braintreepayments.gateway</groupId>
-      <artifactId>braintree-java</artifactId>
-      <version>PUT VERSION NUMBER HERE</version>
-    </dependency>
 
 ## License
 

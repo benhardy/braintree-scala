@@ -1,6 +1,6 @@
 package com.braintreegateway
 
-import java.math.BigDecimal
+import scala.math.BigDecimal
 
 abstract class ModificationRequest(parent: ModificationsRequest) extends BaseRequest {
 

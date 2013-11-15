@@ -47,7 +47,7 @@ class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers with Insi
     }
 
     onGatewayIt("returns Data For The Given Settlement Date") { gateway =>
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
+      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).
         creditCard.number(CreditCardNumber.VISA.number).cvv("321").expirationDate("05/2009").done.
         options.submitForSettlement(true).done
       val transaction = gateway.transaction.sale(request) match { case Success(t) => t }
@@ -69,7 +69,7 @@ class SettlementBatchSummarySpec extends GatewaySpec with MustMatchers with Insi
     }
 
     onGatewayIt("returns Data Grouped By The Given Custom Field") { gateway =>
-      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
+      val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).
         creditCard.number(CreditCardNumber.VISA.number).cvv("321").expirationDate("05/2009").done.
         customField("store_me", "1").options.submitForSettlement(true).done
 

@@ -1,6 +1,6 @@
 package com.braintreegateway
 
-import java.math.BigDecimal
+import scala.math.BigDecimal
 
 // TODO make this idiomatic scala
 // TODO figure out why this isn't in src/main

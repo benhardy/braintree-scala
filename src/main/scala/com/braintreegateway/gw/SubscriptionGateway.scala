@@ -2,7 +2,7 @@ package com.braintreegateway.gw
 
 import com.braintreegateway.exceptions.NotFoundException
 import com.braintreegateway.util.Http
-import java.math.BigDecimal
+import scala.math.BigDecimal
 import com.braintreegateway._
 import search.SubscriptionSearchRequest
 

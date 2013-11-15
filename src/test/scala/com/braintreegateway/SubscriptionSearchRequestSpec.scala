@@ -4,9 +4,8 @@ import _root_.org.junit.runner.RunWith
 import _root_.org.scalatest.FunSpec
 import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
-import scala.collection.JavaConversions._
 
-import java.math.BigDecimal
+import scala.math.BigDecimal
 import com.braintreegateway.Subscriptions.Status
 import search.SubscriptionSearchRequest
 
@@ -156,37 +155,37 @@ class SubscriptionSearchRequestSpec extends FunSpec with MustMatchers {
 
     it("priceXmlBetweenOperator") {
       val expected = <search><price><min>5</min><max>15</max></price></search>
-      val actual = new SubscriptionSearchRequest().price.between(new BigDecimal(5), new BigDecimal(15)).toXmlString
+      val actual = new SubscriptionSearchRequest().price.between(BigDecimal(5), BigDecimal(15)).toXmlString
       actual must be === (expected.toString)
     }
 
     it("priceXmlDeprecatedGreaterThanOrEqualOperator") {
       val expected = <search><price><min>5</min></price></search>
-      val actual = new SubscriptionSearchRequest().price.greaterThanOrEqualTo(new BigDecimal(5)).toXmlString
+      val actual = new SubscriptionSearchRequest().price.greaterThanOrEqualTo(BigDecimal(5)).toXmlString
       actual must be === (expected.toString)
     }
 
     it("priceXmlGreaterThanOrEqualToOperator") {
       val expected = <search><price><min>5</min></price></search>
-      val actual = new SubscriptionSearchRequest().price.greaterThanOrEqualTo(new BigDecimal(5)).toXmlString
+      val actual = new SubscriptionSearchRequest().price.greaterThanOrEqualTo(BigDecimal(5)).toXmlString
       actual must be === (expected.toString)
     }
 
     it("priceXmlDeprecatedLessThanOrEqualOperator") {
       val expected = <search><price><max>5</max></price></search>
-      val actual = new SubscriptionSearchRequest().price.lessThanOrEqualTo(new BigDecimal(5)).toXmlString
+      val actual = new SubscriptionSearchRequest().price.lessThanOrEqualTo(BigDecimal(5)).toXmlString
       actual must be === (expected.toString)
     }
 
     it("priceXmlLessThanOrEqualToOperator") {
       val expected = <search><price><max>5</max></price></search>
-      val actual = new SubscriptionSearchRequest().price.lessThanOrEqualTo(new BigDecimal(5)).toXmlString
+      val actual = new SubscriptionSearchRequest().price.lessThanOrEqualTo(BigDecimal(5)).toXmlString
       actual must be === (expected.toString)
     }
 
     it("priceXmlIsOperator") {
       val expected = <search><price><is>5</is></price></search>
-      val actual = new SubscriptionSearchRequest().price.is(new BigDecimal(5)).toXmlString
+      val actual = new SubscriptionSearchRequest().price.is(BigDecimal(5)).toXmlString
       actual must be === (expected.toString)
     }
 

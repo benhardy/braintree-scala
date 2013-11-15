@@ -1,7 +1,7 @@
 package com.braintreegateway.util
 
 import com.braintreegateway.CreditCardRequest
-import java.math.BigDecimal
+import scala.math.BigDecimal
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import org.junit.runner.RunWith
@@ -22,7 +22,7 @@ class QueryStringSpec extends FunSpec with MustMatchers {
     }
 
     it("appendOtherObjectsWithCanBeConvertedToStrings") {
-      val actual = new QueryString().append("foo", 10).append("bar", new BigDecimal("20.00")).toString
+      val actual = new QueryString().append("foo", 10).append("bar", BigDecimal("20.00")).toString
       actual must be === "foo=10&bar=20.00"
     }
 

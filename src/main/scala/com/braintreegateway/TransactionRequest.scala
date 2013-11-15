@@ -1,7 +1,7 @@
 package com.braintreegateway
 
 import com.braintreegateway.gw.TransparentRedirectGateway
-import java.math.BigDecimal
+import scala.math.BigDecimal
 
 /**
  * Provides a fluent interface to build up requests around {@link Transaction Transactions}.

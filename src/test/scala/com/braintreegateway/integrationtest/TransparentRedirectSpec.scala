@@ -16,7 +16,7 @@ import com.braintreegateway.gw.Failure
 import com.braintreegateway.gw.Success
 import gw.Failure
 import gw.Success
-import java.math.BigDecimal
+import scala.math.BigDecimal
 
 import MerchantAccountTestConstants._
 import com.braintreegateway.Transactions.Type
@@ -27,14 +27,14 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
   describe("creating transaction") {
     onGatewayIt("basically works") {
       gateway =>
-        val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.options.storeInVault(true).done
+        val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.options.storeInVault(true).done
         val trParams = new TransactionRequest().`type`(Transactions.Type.SALE)
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
           case Success(transaction) => {
             transaction.creditCard.bin must be === CreditCardNumber.VISA.number.substring(0, 6)
-            transaction.amount must be === TransactionAmount.AUTHORIZE.amount
+            transaction.amount must be === TransactionAmount.AUTHORIZE
           }
           case _ => fail("expected success")
         }
@@ -42,7 +42,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("can specify merchant id") {
       gateway =>
-        val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
+        val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
         val trParams = new TransactionRequest().`type`(Transactions.Type.SALE).merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID)
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
@@ -56,7 +56,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("can specify descriptor") {
       gateway =>
-        val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
+        val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).
           creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
         val trParams = new TransactionRequest().`type`(Transactions.Type.SALE).
           descriptor.name("123*123456789012345678").phone("3334445555").done
@@ -72,15 +72,15 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("can specify level 2 attribtues") {
       gateway =>
-        val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).
+        val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).
           creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
         val trParams = new TransactionRequest().`type`(Transactions.Type.SALE).
-          taxAmount(new BigDecimal("10.00")).taxExempt(true).purchaseOrderNumber("12345")
+          taxAmount(BigDecimal("10.00")).taxExempt(true).purchaseOrderNumber("12345")
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
           case Success(transaction) => {
-            transaction.taxAmount must be === new BigDecimal("10.00")
+            transaction.taxAmount must be === BigDecimal("10.00")
             transaction.isTaxExempt must be === true
             transaction.purchaseOrderNumber must be === "12345"
           }

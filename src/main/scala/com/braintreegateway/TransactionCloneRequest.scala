@@ -1,6 +1,6 @@
 package com.braintreegateway
 
-import java.math.BigDecimal
+import scala.math.BigDecimal
 
 class TransactionCloneRequest extends BaseRequest {
   def amount(amount: BigDecimal) = {

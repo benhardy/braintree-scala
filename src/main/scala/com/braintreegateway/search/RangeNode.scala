@@ -1,6 +1,6 @@
 package com.braintreegateway.search
 
-import java.math.BigDecimal
+import scala.math.BigDecimal
 
 class RangeNode[T <: SearchRequest[T]](nodeName: String, parent: T) extends SearchNode[T](nodeName, parent) {
 

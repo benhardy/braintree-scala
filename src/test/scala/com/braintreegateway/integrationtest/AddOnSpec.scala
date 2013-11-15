@@ -2,11 +2,10 @@ package com.braintreegateway.integrationtest
 
 import com.braintreegateway.{FakeModificationRequest, Environment}
 import com.braintreegateway.util.Http
-import java.math.BigDecimal
+import scala.math.BigDecimal
 import java.util.Random
 import org.scalatest.FunSpec
 import org.scalatest.matchers.MustMatchers
-import scala.collection.JavaConversions._
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 import com.braintreegateway.gw.BraintreeGateway
@@ -31,7 +30,7 @@ class AddOnSpec extends FunSpec with MustMatchers {
       val fix = fixtures
       val addOnId = "an_add_on_id" + String.valueOf(new Random().nextInt)
       val addOnRequest = new FakeModificationRequest().
-          amount(new BigDecimal("100.00")).
+          amount(BigDecimal("100.00")).
           description("java test add-on description").
           id(addOnId).
           kind("add_on").
@@ -45,7 +44,7 @@ class AddOnSpec extends FunSpec with MustMatchers {
 
       val actualAddOn = addOns.filter(_.id == addOnId).head
 
-      actualAddOn.amount must be === new BigDecimal("100.00")
+      actualAddOn.amount must be === BigDecimal("100.00")
       actualAddOn.description must be === "java test add-on description"
       actualAddOn.kind must be === "add_on"
       actualAddOn.name must be === "java test add-on name"

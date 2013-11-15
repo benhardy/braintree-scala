@@ -127,7 +127,6 @@ object ValidationErrors {
   }
 
   private def populateErrors(node: NodeWrapper): (List[ValidationError], Map[String, ValidationErrors]) = {
-    import scala.collection.JavaConversions._
     val workNode = if (node.getElementName == "api-error-response") {
       node.findFirst("errors")
     } else {

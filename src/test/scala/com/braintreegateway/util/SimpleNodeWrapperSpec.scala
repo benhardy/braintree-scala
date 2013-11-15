@@ -1,6 +1,6 @@
 package com.braintreegateway.util
 
-import java.math.BigDecimal
+import scala.math.BigDecimal
 import java.util.Calendar
 import java.util.TimeZone
 import org.scalatest.junit.JUnitRunner
@@ -224,7 +224,7 @@ class SimpleNodeWrapperSpec extends FunSpec with MustMatchers {
         <amount>12.59</amount>
       </toplevel>
       val response = SimpleNodeWrapper.parse(xml.toString)
-      response.findBigDecimal("amount") must be === new BigDecimal("12.59")
+      response.findBigDecimal("amount") must be === BigDecimal("12.59")
     }
 
     it("findBigDecimalWithNoMatchingElement") {

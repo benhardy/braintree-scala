@@ -2,9 +2,8 @@ package com.braintreegateway.integrationtest
 
 import com.braintreegateway.{FakeModificationRequest, Environment}
 import com.braintreegateway.util.Http
-import java.math.BigDecimal
+import scala.math.BigDecimal
 import java.util.Random
-import scala.collection.JavaConversions._
 import org.scalatest.matchers.MustMatchers
 import org.scalatest.FunSpec
 import org.junit.runner.RunWith
@@ -19,7 +18,7 @@ class DiscountSpec extends FunSpec with MustMatchers with GatewaySpec {
     onGatewayIt("saves all discount details retrievably") { gateway =>
       val discountId = "a_discount_id" + new Random().nextInt.toString
       val discountRequest = new FakeModificationRequest().
-          amount(new BigDecimal("100.00")).
+          amount(BigDecimal("100.00")).
           description("scala test discount description").
           id(discountId).
           kind("discount").
@@ -33,7 +32,7 @@ class DiscountSpec extends FunSpec with MustMatchers with GatewaySpec {
 
       val actualDiscount = discounts.find(_.id == discountId).get
 
-      actualDiscount.amount must be === new BigDecimal("100.00")
+      actualDiscount.amount must be === BigDecimal("100.00")
       actualDiscount.description must be === "scala test discount description"
       actualDiscount.kind must be === "discount"
       actualDiscount.name must be === "scala test discount name"

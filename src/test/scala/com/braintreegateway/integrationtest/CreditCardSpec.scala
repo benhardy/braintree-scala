@@ -6,18 +6,16 @@ import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
 import exceptions.{NotFoundException, ForgedQueryStringException}
-import com.braintreegateway.gw.{Deleted, Failure, BraintreeGateway, Success}
+import com.braintreegateway.gw.{Deleted, BraintreeGateway}
 import gw.Failure
 import gw.Success
 import test.{CreditCardDefaults, CreditCardNumbers, VenmoSdk}
 import com.braintreegateway.testhelpers.{GatewaySpec, MerchantAccountTestConstants, TestHelper}
 import java.util.Random
-import java.math.BigDecimal
-import scala.collection.JavaConversions._
+import scala.math.BigDecimal
 import MerchantAccountTestConstants._
 import TestHelper._
 import com.braintreegateway.testhelpers.CalendarHelper._
-import com.braintreegateway.Transactions.GatewayRejectionReason
 
 @RunWith(classOf[JUnitRunner])
 class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Inside {
@@ -322,7 +320,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
 
         inside(result) {
           case Failure(errors,_,_,_,_,_) => {
-            val code = errors.forObject("creditCard").forObject("billingAddress").onField("base").get(0).code
+            val code = errors.forObject("creditCard").forObject("billingAddress").onField("base").head.code
             code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
           }
         }
@@ -370,7 +368,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
 
         inside(result) {
           case r: Failure => {
-            val errorCode = r.errors.forObject("creditCard").onField("venmoSdkPaymentMethodCode").get(0).code
+            val errorCode = r.errors.forObject("creditCard").onField("venmoSdkPaymentMethodCode").head.code
             errorCode must be === ValidationErrorCode.CREDIT_CARD_INVALID_VENMO_SDK_PAYMENT_METHOD_CODE
             r.message must be === "Invalid VenmoSDK payment method code"
           }
@@ -545,7 +543,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
 
         inside(result) {
           case r: Failure => {
-            val code = r.errors.forObject("creditCard").forObject("billingAddress").onField("countryCodeAlpha2").get(0).code
+            val code = r.errors.forObject("creditCard").forObject("billingAddress").onField("countryCodeAlpha2").head.code
             code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
           }
         }
@@ -713,7 +711,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
           id = "subscription-id-" + new Random().nextInt
           subscriptionRequest = new SubscriptionRequest().id(id).planId("integration_trialless_plan").
             paymentMethodToken(card.token).
-            price(new BigDecimal("1.00"))
+            price(BigDecimal("1.00"))
 
           subscription <- gateway.subscription.create(subscriptionRequest)
         } yield (card, subscription)
@@ -723,7 +721,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
             val foundCard = gateway.creditCard.find(card.token)
             inside(foundCard.subscriptions.headOption) { case Some(foundSub) =>
               foundSub.id must be === subscription.id
-              foundSub.price must be === new BigDecimal("1.00")
+              foundSub.price must be === BigDecimal("1.00")
               foundSub.planId must be === "integration_trialless_plan"
             }
           }
@@ -783,7 +781,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
 
         inside(result) {
           case r: Failure => {
-            val code = r.errors.forObject("creditCard").onField("number").get(0).code
+            val code = r.errors.forObject("creditCard").onField("number").head.code
             code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
           }
         }
@@ -877,9 +875,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
   describe("expired") {
     onGatewayIt("finds all expired cards") {
       gateway =>
-        val expiredCards = gateway.creditCard.expired
+        val expiredCards: ResourceCollection[CreditCard] = gateway.creditCard.expired
         (expiredCards.getMaximumSize) must be > 0
-
+        import scala.collection.JavaConversions.iterableAsScalaIterable
         expiredCards.count(!_.isExpired) must be === 0
         val uniqueTokens = expiredCards.map { _.token }.toSet
         uniqueTokens.size must be === expiredCards.getMaximumSize
@@ -894,6 +892,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val end = now
         end.set(2010, 11, 30)
         val expiredCards = gateway.creditCard.expiringBetween(start, end)
+        import scala.collection.JavaConversions.iterableAsScalaIterable
         expiredCards.getMaximumSize must be > 0
 
         for (card <- expiredCards) {

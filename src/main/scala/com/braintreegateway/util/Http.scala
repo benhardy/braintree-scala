@@ -6,10 +6,8 @@ import com.braintreegateway.exceptions._
 import javax.net.ssl._
 import java.io.IOException
 import java.io.InputStream
-import java.io.UnsupportedEncodingException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.net.URLDecoder
 import java.security.KeyStore
 import java.security.SecureRandom
 import java.security.cert.Certificate

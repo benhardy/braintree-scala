@@ -20,7 +20,7 @@ import com.braintreegateway._
  * Quick Start Example:
  *
  * <pre>
- * import java.math.BigDecimal
+ * import scala.math.BigDecimal
  * import com.braintreegateway.*
  *
  * object BraintreeExample {
@@ -28,7 +28,7 @@ import com.braintreegateway._
  *   def main(String[] args) {
  *     val gateway = new BraintreeGateway(Environment.SANDBOX, &quot;the_merchant_id&quot;, &quot;the_public_key&quot;, &quot;the_private_key&quot;)
  *
- *     val request = new TransactionRequest().amount(new BigDecimal(&quot;100.00&quot;)).creditCard().number(&quot;4111111111111111&quot;).expirationDate(&quot;05/2012&quot;).done()
+ *     val request = new TransactionRequest().amount(BigDecimal(&quot;100.00&quot;)).creditCard().number(&quot;4111111111111111&quot;).expirationDate(&quot;05/2012&quot;).done()
  *
  *     val transaction = gateway.transaction().sale(request).getTarget()
  *     println(&quot;Transaction ID: &quot; + transaction.getId())
