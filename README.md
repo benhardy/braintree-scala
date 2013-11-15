@@ -9,6 +9,8 @@ The Braintree library provides integration access to the Braintree Gateway.
 ## Quick Start Example
 
     import com.braintreegateway._
+    import com.braintreegateway.gw._
+    import scala.math.BigDecimal
 
     object BraintreeExample {
       def main(args: Array[String]) {
@@ -35,7 +37,7 @@ The Braintree library provides integration access to the Braintree Gateway.
           case Failure(errors, parameters, message, verification, transaction, subscription) => {
             val errorMessage = transaction.map(errorMessageFromTransaction).
                                 getOrElse(errorMessageFromValidation(errors))
-            println(errorMessage) 
+            println(errorMessage)
           }
         }
       }
