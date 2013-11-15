@@ -27,22 +27,22 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         createResult match {
           case Success(address) => {
-            address.getFirstName must be === "Joe"
-            address.getLastName must be === "Smith"
-            address.getCompany must be === "Smith Co."
-            address.getStreetAddress must be === "1 E Main St"
-            address.getExtendedAddress must be === "Unit 2"
-            address.getLocality must be === "Chicago"
-            address.getRegion must be === "Illinois"
-            address.getPostalCode must be === "60607"
-            address.getCountryName must be === "United States of America"
-            address.getCountryCodeAlpha2 must be === "US"
-            address.getCountryCodeAlpha3 must be === "USA"
-            address.getCountryCodeNumeric must be === "840"
+            address.firstName must be === "Joe"
+            address.lastName must be === "Smith"
+            address.company must be === "Smith Co."
+            address.streetAddress must be === "1 E Main St"
+            address.extendedAddress must be === "Unit 2"
+            address.locality must be === "Chicago"
+            address.region must be === "Illinois"
+            address.postalCode must be === "60607"
+            address.countryName must be === "United States of America"
+            address.countryCodeAlpha2 must be === "US"
+            address.countryCodeAlpha3 must be === "USA"
+            address.countryCodeNumeric must be === "840"
 
             val thisYear = now.year
-            address.getCreatedAt.year must be === thisYear
-            address.getUpdatedAt.year must be === thisYear
+            address.createdAt.year must be === thisYear
+            address.updatedAt.year must be === thisYear
           }
         }
     }
@@ -60,20 +60,20 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
           address <- gateway.address.create(customer.getId, request)
-          updated <- gateway.address.update(address.getCustomerId, address.getId, updateRequest)
+          updated <- gateway.address.update(address.customerId, address.id, updateRequest)
         } yield updated
 
         result match {
           case Success(updatedAddress) => {
-            updatedAddress.getStreetAddress must be === "2 E Main St"
-            updatedAddress.getExtendedAddress must be === "Unit 3"
-            updatedAddress.getLocality must be === "Bartlett"
-            updatedAddress.getRegion must be === "Mass"
-            updatedAddress.getPostalCode must be === "12345"
-            updatedAddress.getCountryName must be === "Mexico"
-            updatedAddress.getCountryCodeAlpha2 must be === "MX"
-            updatedAddress.getCountryCodeAlpha3 must be === "MEX"
-            updatedAddress.getCountryCodeNumeric must be === "484"
+            updatedAddress.streetAddress must be === "2 E Main St"
+            updatedAddress.extendedAddress must be === "Unit 3"
+            updatedAddress.locality must be === "Bartlett"
+            updatedAddress.region must be === "Mass"
+            updatedAddress.postalCode must be === "12345"
+            updatedAddress.countryName must be === "Mexico"
+            updatedAddress.countryCodeAlpha2 must be === "MX"
+            updatedAddress.countryCodeAlpha3 must be === "MEX"
+            updatedAddress.countryCodeNumeric must be === "484"
           }
         }
     }
@@ -90,8 +90,8 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         setup match {
           case Success(address) => {
-            val foundAddress = gateway.address.find(address.getCustomerId, address.getId)
-            foundAddress.getStreetAddress must be === "1 E Main St"
+            val foundAddress = gateway.address.find(address.customerId, address.id)
+            foundAddress.streetAddress must be === "1 E Main St"
           }
           case _ => fail("expected success")
         }
@@ -121,13 +121,13 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         setup match {
           case Success(address) => {
-            val deleteResult = gateway.address.delete(address.getCustomerId, address.getId)
+            val deleteResult = gateway.address.delete(address.customerId, address.id)
 
             deleteResult must be('success)
             deleteResult must be === (Result.deleted)
 
             intercept[NotFoundException] {
-              gateway.address.find(address.getCustomerId, address.getId)
+              gateway.address.find(address.customerId, address.id)
             }
           }
           case _ => fail("test setup failure")

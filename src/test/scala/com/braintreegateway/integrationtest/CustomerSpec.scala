@@ -161,23 +161,23 @@ class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
           creditCard.getLast4 must be === "5100"
           creditCard.getExpirationDate must be === "05/2012"
           val billingAddress = creditCard.getBillingAddress
-          billingAddress.getStreetAddress must be === "1 E Main St"
-          billingAddress.getExtendedAddress must be === "Unit 2"
-          billingAddress.getLocality must be === "Chicago"
-          billingAddress.getRegion must be === "Illinois"
-          billingAddress.getPostalCode must be === "60607"
-          billingAddress.getCountryName must be === "United States of America"
-          billingAddress.getCountryCodeAlpha2 must be === "US"
-          billingAddress.getCountryCodeAlpha3 must be === "USA"
-          billingAddress.getCountryCodeNumeric must be === "840"
+          billingAddress.streetAddress must be === "1 E Main St"
+          billingAddress.extendedAddress must be === "Unit 2"
+          billingAddress.locality must be === "Chicago"
+          billingAddress.region must be === "Illinois"
+          billingAddress.postalCode must be === "60607"
+          billingAddress.countryName must be === "United States of America"
+          billingAddress.countryCodeAlpha2 must be === "US"
+          billingAddress.countryCodeAlpha3 must be === "USA"
+          billingAddress.countryCodeNumeric must be === "840"
           customer.getAddresses.size must be === 1
           val address = customer.getAddresses(0)
-          address.getStreetAddress must be === "1 E Main St"
-          address.getExtendedAddress must be === "Unit 2"
-          address.getLocality must be === "Chicago"
-          address.getRegion must be === "Illinois"
-          address.getPostalCode must be === "60607"
-          address.getCountryName must be === "United States of America"
+          address.streetAddress must be === "1 E Main St"
+          address.extendedAddress must be === "Unit 2"
+          address.locality must be === "Chicago"
+          address.region must be === "Illinois"
+          address.postalCode must be === "60607"
+          address.countryName must be === "United States of America"
         }
       }
     }
@@ -272,10 +272,10 @@ class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
           customer.getFirstName must be === "John"
           customer.getLastName must be === "Fred"
           val address = customer.creditCards(0).getBillingAddress
-          address.getCountryName must be === "United States of America"
-          address.getCountryCodeAlpha2 must be === "US"
-          address.getCountryCodeAlpha3 must be === "USA"
-          address.getCountryCodeNumeric must be === "840"
+          address.countryName must be === "United States of America"
+          address.countryCodeAlpha2 must be === "US"
+          address.countryCodeAlpha3 must be === "USA"
+          address.countryCodeNumeric must be === "840"
         }
       }
     }
@@ -432,11 +432,11 @@ class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
           updatedCustomer.getFirstName must be === "Jane"
           updatedCustomer.getLastName must be === "Doe"
           updatedCreditCard.getExpirationDate must be === "10/2010"
-          updatedAddress.getPostalCode must be === "11111"
-          updatedAddress.getCountryName must be === "Kiribati"
-          updatedAddress.getCountryCodeAlpha2 must be === "KI"
-          updatedAddress.getCountryCodeAlpha3 must be === "KIR"
-          updatedAddress.getCountryCodeNumeric must be === "296"
+          updatedAddress.postalCode must be === "11111"
+          updatedAddress.countryName must be === "Kiribati"
+          updatedAddress.countryCodeAlpha2 must be === "KI"
+          updatedAddress.countryCodeAlpha3 must be === "KIR"
+          updatedAddress.countryCodeNumeric must be === "296"
         }
       }
 
@@ -451,7 +451,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
         address <- gateway.address.create(customer.getId, addressRequest)
 
         updateRequest = new CustomerRequest().creditCard.number("4111111111111111").expirationDate("12/12").
-           billingAddressId(address.getId).done
+           billingAddressId(address.id).done
 
         updatedCustomer <- gateway.customer.update(customer.getId, updateRequest)
       } yield (updatedCustomer, address)
@@ -459,8 +459,8 @@ class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
       inside(result) {
         case Success((updatedCustomer, address)) => {
           val updatedAddress = updatedCustomer.creditCards(0).getBillingAddress
-          updatedAddress.getId must be === address.getId
-          updatedAddress.getFirstName must be === "John"
+          updatedAddress.id must be === address.id
+          updatedAddress.firstName must be === "John"
         }
       }
     }
@@ -511,7 +511,7 @@ class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
           updatedCustomer.getFirstName must be === "Jane"
           updatedCustomer.getLastName must be === "Doe"
           updatedCreditCard.getExpirationDate must be === "10/2010"
-          updatedAddress.getPostalCode must be === "11111"
+          updatedAddress.postalCode must be === "11111"
         }
       }
     }
@@ -574,10 +574,10 @@ class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
           updatedCustomer.getFirstName must be === "Jane"
           updatedCustomer.getLastName must be === "Dough"
           val address = updatedCustomer.creditCards(0).getBillingAddress
-          address.getCountryName must be === "Mexico"
-          address.getCountryCodeAlpha2 must be === "MX"
-          address.getCountryCodeAlpha3 must be === "MEX"
-          address.getCountryCodeNumeric must be === "484"
+          address.countryName must be === "Mexico"
+          address.countryCodeAlpha2 must be === "MX"
+          address.countryCodeAlpha3 must be === "MEX"
+          address.countryCodeNumeric must be === "484"
         }
       }
     }

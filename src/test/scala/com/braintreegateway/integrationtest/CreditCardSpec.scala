@@ -156,15 +156,15 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
             case Success((customer, card)) => {
               card.getCustomerId must be === customer.getId
               val billingAddress = card.getBillingAddress
-              billingAddress.getStreetAddress must be === "1 E Main St"
-              billingAddress.getExtendedAddress must be === "Unit 2"
-              billingAddress.getLocality must be === "Chicago"
-              billingAddress.getRegion must be === "Illinois"
-              billingAddress.getPostalCode must be === "60607"
-              billingAddress.getCountryName must be === "United States of America"
-              billingAddress.getCountryCodeAlpha2 must be === "US"
-              billingAddress.getCountryCodeAlpha3 must be === "USA"
-              billingAddress.getCountryCodeNumeric must be === "840"
+              billingAddress.streetAddress must be === "1 E Main St"
+              billingAddress.extendedAddress must be === "Unit 2"
+              billingAddress.locality must be === "Chicago"
+              billingAddress.region must be === "Illinois"
+              billingAddress.postalCode must be === "60607"
+              billingAddress.countryName must be === "United States of America"
+              billingAddress.countryCodeAlpha2 must be === "US"
+              billingAddress.countryCodeAlpha3 must be === "USA"
+              billingAddress.countryCodeNumeric must be === "840"
             }
           }
       }
@@ -178,14 +178,14 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
               cardholderName("John Doe").cvv("123").number("5105105105105100").expirationDate("05/12")
 
             address <- gateway.address.create(customer.getId, new AddressRequest().postalCode("11111"))
-            card <- gateway.creditCard.create(request.billingAddressId(address.getId))
+            card <- gateway.creditCard.create(request.billingAddressId(address.id))
           } yield (address, card)
 
           result match {
             case Success((address, card)) => {
               val billingAddress = card.getBillingAddress
-              billingAddress.getId must be === address.getId
-              billingAddress.getPostalCode must be === "11111"
+              billingAddress.id must be === address.id
+              billingAddress.postalCode must be === "11111"
             }
           }
       }
@@ -260,10 +260,10 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
             card.getBin must be === "411111"
             card.getLast4 must be === "1111"
             card.getExpirationDate must be === "10/2010"
-            card.getBillingAddress.getCountryName must be === "Aruba"
-            card.getBillingAddress.getCountryCodeAlpha2 must be === "AW"
-            card.getBillingAddress.getCountryCodeAlpha3 must be === "ABW"
-            card.getBillingAddress.getCountryCodeNumeric must be === "533"
+            card.getBillingAddress.countryName must be === "Aruba"
+            card.getBillingAddress.countryCodeAlpha2 must be === "AW"
+            card.getBillingAddress.countryCodeAlpha3 must be === "ABW"
+            card.getBillingAddress.countryCodeNumeric must be === "533"
           }
         }
     }
@@ -439,10 +439,10 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
             updatedCard.getExpirationDate must be === "12/2005"
             updatedCard.getLast4 must be === "1111"
             updatedCard.getToken must not be theSameInstanceAs(original.getToken)
-            updatedCard.getBillingAddress.getCountryName must be === "Italy"
-            updatedCard.getBillingAddress.getCountryCodeAlpha2 must be === "IT"
-            updatedCard.getBillingAddress.getCountryCodeAlpha3 must be === "ITA"
-            updatedCard.getBillingAddress.getCountryCodeNumeric must be === "380"
+            updatedCard.getBillingAddress.countryName must be === "Italy"
+            updatedCard.getBillingAddress.countryCodeAlpha2 must be === "IT"
+            updatedCard.getBillingAddress.countryCodeAlpha3 must be === "ITA"
+            updatedCard.getBillingAddress.countryCodeNumeric must be === "380"
           }
         }
     }
@@ -519,10 +519,10 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
             updatedCreditCard.getBin must be === "411111"
             updatedCreditCard.getLast4 must be === "1111"
             updatedCreditCard.getExpirationDate must be === "10/2010"
-            updatedCreditCard.getBillingAddress.getCountryName must be === "Jersey"
-            updatedCreditCard.getBillingAddress.getCountryCodeAlpha2 must be === "JE"
-            updatedCreditCard.getBillingAddress.getCountryCodeAlpha3 must be === "JEY"
-            updatedCreditCard.getBillingAddress.getCountryCodeNumeric must be === "832"
+            updatedCreditCard.getBillingAddress.countryName must be === "Jersey"
+            updatedCreditCard.getBillingAddress.countryCodeAlpha2 must be === "JE"
+            updatedCreditCard.getBillingAddress.countryCodeAlpha3 must be === "JEY"
+            updatedCreditCard.getBillingAddress.countryCodeNumeric must be === "832"
           }
         }
         result must be('success)
@@ -616,9 +616,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success((original, updatedCreditCard)) => {
-            updatedCreditCard.getBillingAddress.getFirstName must be === null
-            updatedCreditCard.getBillingAddress.getLastName must be === "Jones"
-            updatedCreditCard.getBillingAddress.getId must not be ===(original.getBillingAddress.getId)
+            updatedCreditCard.getBillingAddress.firstName must be === null
+            updatedCreditCard.getBillingAddress.lastName must be === "Jones"
+            updatedCreditCard.getBillingAddress.id must not be ===(original.getBillingAddress.id)
           }
         }
     }
@@ -639,9 +639,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success((original, updatedCreditCard)) => {
-            updatedCreditCard.getBillingAddress.getFirstName must be === "John"
-            updatedCreditCard.getBillingAddress.getLastName must be === "Jones"
-            updatedCreditCard.getBillingAddress.getId must be === original.getBillingAddress.getId
+            updatedCreditCard.getBillingAddress.firstName must be === "John"
+            updatedCreditCard.getBillingAddress.lastName must be === "Jones"
+            updatedCreditCard.getBillingAddress.id must be === original.getBillingAddress.id
           }
         }
     }
@@ -666,9 +666,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         result match {
           case Success((original, updatedCard)) => {
-            updatedCard.getBillingAddress.getFirstName must be === "John"
-            updatedCard.getBillingAddress.getLastName must be === "Jones"
-            updatedCard.getBillingAddress.getId must be === original.getBillingAddress.getId
+            updatedCard.getBillingAddress.firstName must be === "John"
+            updatedCard.getBillingAddress.lastName must be === "Jones"
+            updatedCard.getBillingAddress.id must be === original.getBillingAddress.id
           }
         }
     }

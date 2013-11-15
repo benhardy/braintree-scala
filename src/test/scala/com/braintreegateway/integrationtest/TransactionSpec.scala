@@ -180,8 +180,8 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
           cloneTransaction.getOrderId must be === "123"
           cloneTransaction.getCreditCard.getMaskedNumber must be === "411111******1111"
           cloneTransaction.getCustomer.getFirstName must be === "Dan"
-          cloneTransaction.getBillingAddress.getFirstName must be === "Carl"
-          cloneTransaction.getShippingAddress.getFirstName must be === "Andrew"
+          cloneTransaction.getBillingAddress.firstName must be === "Carl"
+          cloneTransaction.getShippingAddress.firstName must be === "Andrew"
         }
       }
     }
@@ -282,32 +282,32 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       customer.getWebsite must be === "http://braintreepayments.com"
       transaction.getVaultBillingAddress must be === None
       val billing = transaction.getBillingAddress
-      billing.getFirstName must be === "Carl"
-      billing.getLastName must be === "Jones"
-      billing.getCompany must be === "Braintree"
-      billing.getStreetAddress must be === "123 E Main St"
-      billing.getExtendedAddress must be === "Suite 403"
-      billing.getLocality must be === "Chicago"
-      billing.getRegion must be === "IL"
-      billing.getPostalCode must be === "60622"
-      billing.getCountryName must be === "United States of America"
-      billing.getCountryCodeAlpha2 must be === "US"
-      billing.getCountryCodeAlpha3 must be === "USA"
-      billing.getCountryCodeNumeric must be === "840"
+      billing.firstName must be === "Carl"
+      billing.lastName must be === "Jones"
+      billing.company must be === "Braintree"
+      billing.streetAddress must be === "123 E Main St"
+      billing.extendedAddress must be === "Suite 403"
+      billing.locality must be === "Chicago"
+      billing.region must be === "IL"
+      billing.postalCode must be === "60622"
+      billing.countryName must be === "United States of America"
+      billing.countryCodeAlpha2 must be === "US"
+      billing.countryCodeAlpha3 must be === "USA"
+      billing.countryCodeNumeric must be === "840"
       transaction.getVaultShippingAddress must be === None
       val shipping = transaction.getShippingAddress
-      shipping.getFirstName must be === "Andrew"
-      shipping.getLastName must be === "Mason"
-      shipping.getCompany must be === "Braintree Shipping"
-      shipping.getStreetAddress must be === "456 W Main St"
-      shipping.getExtendedAddress must be === "Apt 2F"
-      shipping.getLocality must be === "Bartlett"
-      shipping.getRegion must be === "MA"
-      shipping.getPostalCode must be === "60103"
-      shipping.getCountryName must be === "Mexico"
-      shipping.getCountryCodeAlpha2 must be === "MX"
-      shipping.getCountryCodeAlpha3 must be === "MEX"
-      shipping.getCountryCodeNumeric must be === "484"
+      shipping.firstName must be === "Andrew"
+      shipping.lastName must be === "Mason"
+      shipping.company must be === "Braintree Shipping"
+      shipping.streetAddress must be === "456 W Main St"
+      shipping.extendedAddress must be === "Apt 2F"
+      shipping.locality must be === "Bartlett"
+      shipping.region must be === "MA"
+      shipping.postalCode must be === "60103"
+      shipping.countryName must be === "Mexico"
+      shipping.countryCodeAlpha2 must be === "MX"
+      shipping.countryCodeAlpha3 must be === "MEX"
+      shipping.countryCodeNumeric must be === "484"
     }
 
     onGatewayIt("saleWithSpecifyingMerchantAccountId") { gateway =>
@@ -407,17 +407,17 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       result match {
         case Success(transaction) => {
           val creditCard = transaction.getVaultCreditCard
-          creditCard.map{_.getBillingAddress.getFirstName} must be === Some("Carl")
-          transaction.getVaultBillingAddress.map {_.getFirstName} must be === Some("Carl")
-          transaction.getVaultShippingAddress.map{_.getFirstName} must be === Some("Andrew")
+          creditCard.map{_.getBillingAddress.firstName} must be === Some("Carl")
+          transaction.getVaultBillingAddress.map {_.firstName} must be === Some("Carl")
+          transaction.getVaultShippingAddress.map{_.firstName} must be === Some("Andrew")
           val customer = transaction.getVaultCustomer.get
           customer.getAddresses.size must be === 2
-          val addresses = customer.getAddresses.sortWith((a,b) => a.getFirstName < b.getFirstName)
+          val addresses = customer.getAddresses.sortWith((a,b) => a.firstName < b.firstName)
 
-          addresses(0).getFirstName must be === "Andrew"
-          addresses(1).getFirstName must be === "Carl"
-          transaction.getBillingAddress.getId must not be === (null)
-          transaction.getShippingAddress.getId must not be === (null)
+          addresses(0).firstName must be === "Andrew"
+          addresses(1).firstName must be === "Carl"
+          transaction.getBillingAddress.id must not be === (null)
+          transaction.getShippingAddress.id must not be === (null)
         }
       }
     }
@@ -600,14 +600,14 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
         shippingAddress <- gateway.address.create(customer.getId, new AddressRequest().firstName("Carl"))
         
-        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).customerId(customer.getId).shippingAddressId(shippingAddress.getId)
+        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).customerId(customer.getId).shippingAddressId(shippingAddress.id)
         sale <- gateway.transaction.sale(request)
       } yield (sale, shippingAddress)
 
       result match {
         case Success((transaction, shippingAddress)) => {
-          transaction.getShippingAddress.getId must be === shippingAddress.getId
-          transaction.getShippingAddress.getFirstName must be === "Carl"
+          transaction.getShippingAddress.id must be === shippingAddress.id
+          transaction.getShippingAddress.firstName must be === "Carl"
         }
       }
     }
@@ -716,10 +716,10 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
       val result = gateway.transparentRedirect.confirmTransaction(queryString)
       val transaction = result match { case Success(txn) => txn }
-      transaction.getBillingAddress.getCountryName must be === "United States of America"
-      transaction.getBillingAddress.getCountryCodeAlpha2 must be === "US"
-      transaction.getBillingAddress.getCountryCodeAlpha3 must be === "USA"
-      transaction.getBillingAddress.getCountryCodeNumeric must be === "840"
+      transaction.getBillingAddress.countryName must be === "United States of America"
+      transaction.getBillingAddress.countryCodeAlpha2 must be === "US"
+      transaction.getBillingAddress.countryCodeAlpha3 must be === "USA"
+      transaction.getBillingAddress.countryCodeNumeric must be === "840"
     }
 
     onGatewayIt("rejects invalid billing addresses") { gateway =>

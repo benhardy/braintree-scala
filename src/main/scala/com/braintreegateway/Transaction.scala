@@ -137,7 +137,7 @@ class Transaction(node: NodeWrapper) {
 
   def getVaultBillingAddress(implicit gateway: BraintreeGateway): Option[Address] = {
     for {
-      billingAddressId <- Option(billingAddress.getId)
+      billingAddressId <- Option(billingAddress.id)
       address <- Option(gateway.address.find(customer.getId, billingAddressId))
     } yield address
   }
@@ -158,7 +158,7 @@ class Transaction(node: NodeWrapper) {
 
   def getVaultShippingAddress(implicit gateway: BraintreeGateway): Option[Address] = {
     for {
-      addressId <- Option(shippingAddress.getId)
+      addressId <- Option(shippingAddress.id)
       address <- Option(gateway.address.find(customer.getId, addressId))
     } yield address
   }
