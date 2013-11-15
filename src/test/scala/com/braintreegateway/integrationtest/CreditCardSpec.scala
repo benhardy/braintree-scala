@@ -1,7 +1,7 @@
 package com.braintreegateway.integrationtest
 
 import org.junit.runner.RunWith
-import org.scalatest.FunSpec
+import _root_.org.scalatest.{Inside, FunSpec}
 import org.scalatest.junit.JUnitRunner
 import org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
@@ -20,7 +20,7 @@ import com.braintreegateway.testhelpers.CalendarHelper._
 import com.braintreegateway.Transactions.GatewayRejectionReason
 
 @RunWith(classOf[JUnitRunner])
-class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
+class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Inside {
 
   def createProcessingRulesGateway = {
     new BraintreeGateway(Environment.DEVELOPMENT, "processing_rules_merchant_id", "processing_rules_public_key", "processing_rules_private_key")
@@ -47,25 +47,25 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         } yield (customer, card)
 
-        result match {
+        inside(result) {
           case Success((customer, card)) => {
-            card.getCardholderName must be === "John Doe"
-            card.getCardType must be === CreditCards.CardType.MASTER_CARD
-            card.getCustomerId must be === customer.getId
-            card.getCustomerLocation must be === "US"
-            card.getBin must be === "510510"
-            card.getExpirationMonth must be === "05"
-            card.getExpirationYear must be === "2012"
-            card.getExpirationDate must be === "05/2012"
-            card.getLast4 must be === "5100"
-            card.getMaskedNumber must be === "510510******5100"
-            card.getToken must not be null
+            card.cardholderName must be === "John Doe"
+            card.cardType must be === CreditCards.CardType.MASTER_CARD
+            card.customerId must be === customer.getId
+            card.customerLocation must be === "US"
+            card.bin must be === "510510"
+            card.expirationMonth must be === "05"
+            card.expirationYear must be === "2012"
+            card.expirationDate must be === "05/2012"
+            card.last4 must be === "5100"
+            card.maskedNumber must be === "510510******5100"
+            card.token must not be null
             val thisYear = now.year
-            card.getCreatedAt.year must be === thisYear
-            card.getUpdatedAt.year must be === thisYear
-            card.getUniqueNumberIdentifier.matches("\\A\\w{32}\\z") must be === true
+            card.createdAt.year must be === thisYear
+            card.updatedAt.year must be === thisYear
+            card.uniqueNumberIdentifier.matches("\\A\\w{32}\\z") must be === true
             card must not be ('venmoSdk)
-            card.getImageUrl.matches(".*png.*") must be === true
+            card.imageUrl.matches(".*png.*") must be === true
           }
         }
     }
@@ -80,15 +80,15 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield (customer, card)
 
-        result match {
+        inside(result) {
           case Success((customer, card)) => {
-            card.getCustomerId must be === customer.getId
-            card.getExpirationMonth must be === "06"
-            card.getExpirationYear must be === "2013"
-            card.getExpirationDate must be === "06/2013"
+            card.customerId must be === customer.getId
+            card.expirationMonth must be === "06"
+            card.expirationYear must be === "2013"
+            card.expirationDate must be === "06/2013"
             val thisYear = now.year
-            card.getCreatedAt.year must be === thisYear
-            card.getUpdatedAt.year must be === thisYear
+            card.createdAt.year must be === thisYear
+            card.updatedAt.year must be === thisYear
           }
         }
     }
@@ -104,9 +104,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getCardholderName must be === "Special Chars <>&\"'"
+            card.cardholderName must be === "Special Chars <>&\"'"
           }
         }
     }
@@ -122,7 +122,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) =>
         }
     }
@@ -152,19 +152,20 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
             card <- gateway.creditCard.create(request)
           } yield (customer, card)
 
-          result match {
+          inside(result) {
             case Success((customer, card)) => {
-              card.getCustomerId must be === customer.getId
-              val billingAddress = card.getBillingAddress
-              billingAddress.streetAddress must be === "1 E Main St"
-              billingAddress.extendedAddress must be === "Unit 2"
-              billingAddress.locality must be === "Chicago"
-              billingAddress.region must be === "Illinois"
-              billingAddress.postalCode must be === "60607"
-              billingAddress.countryName must be === "United States of America"
-              billingAddress.countryCodeAlpha2 must be === "US"
-              billingAddress.countryCodeAlpha3 must be === "USA"
-              billingAddress.countryCodeNumeric must be === "840"
+              card.customerId must be === customer.getId
+              inside(card.billingAddress) { case Some(billingAddress) =>
+                billingAddress.streetAddress must be === "1 E Main St"
+                billingAddress.extendedAddress must be === "Unit 2"
+                billingAddress.locality must be === "Chicago"
+                billingAddress.region must be === "Illinois"
+                billingAddress.postalCode must be === "60607"
+                billingAddress.countryName must be === "United States of America"
+                billingAddress.countryCodeAlpha2 must be === "US"
+                billingAddress.countryCodeAlpha3 must be === "USA"
+                billingAddress.countryCodeNumeric must be === "840"
+              }
             }
           }
       }
@@ -181,9 +182,8 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
             card <- gateway.creditCard.create(request.billingAddressId(address.id))
           } yield (address, card)
 
-          result match {
-            case Success((address, card)) => {
-              val billingAddress = card.getBillingAddress
+          inside(result) { case Success((address, card)) =>
+            inside(card.billingAddress) { case Some(billingAddress) =>
               billingAddress.id must be === address.id
               billingAddress.postalCode must be === "11111"
             }
@@ -208,10 +208,10 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card2 <- gateway.creditCard.create(request2)
         } yield (card1, card2)
 
-        result match {
+        inside(result) {
           case Success((card1, card2)) => {
-            gateway.creditCard.find(card1.getToken) must not be ('default)
-            gateway.creditCard.find(card2.getToken) must be('default)
+            gateway.creditCard.find(card1.token) must not be ('default)
+            gateway.creditCard.find(card2.token) must be('default)
           }
         }
     }
@@ -231,15 +231,15 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getCardholderName must be === "John Doe"
-            card.getBin must be === "510510"
-            card.getExpirationMonth must be === "05"
-            card.getExpirationYear must be === "2012"
-            card.getExpirationDate must be === "05/2012"
-            card.getLast4 must be === "5100"
-            card.getToken must not be null
+            card.cardholderName must be === "John Doe"
+            card.bin must be === "510510"
+            card.expirationMonth must be === "05"
+            card.expirationYear must be === "2012"
+            card.expirationDate must be === "05/2012"
+            card.last4 must be === "5100"
+            card.token must not be null
           }
         }
     }
@@ -255,15 +255,15 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield card
 
-        result match {
-          case Success(card) => {
-            card.getBin must be === "411111"
-            card.getLast4 must be === "1111"
-            card.getExpirationDate must be === "10/2010"
-            card.getBillingAddress.countryName must be === "Aruba"
-            card.getBillingAddress.countryCodeAlpha2 must be === "AW"
-            card.getBillingAddress.countryCodeAlpha3 must be === "ABW"
-            card.getBillingAddress.countryCodeNumeric must be === "533"
+        inside(result) { case Success(card) =>
+          card.bin must be === "411111"
+          card.last4 must be === "1111"
+          card.expirationDate must be === "10/2010"
+          inside(card.billingAddress) { case Some(address) =>
+            address.countryName must be === "Aruba"
+            address.countryCodeAlpha2 must be === "AW"
+            address.countryCodeAlpha3 must be === "ABW"
+            address.countryCodeNumeric must be === "533"
           }
         }
     }
@@ -281,7 +281,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card2 <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield card2
 
-        result match {
+        inside(result) {
           case Success(card2) => {
             card2 must be('default)
           }
@@ -302,7 +302,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card2 <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield card2
 
-        result match {
+        inside(result) {
           case Success(card2) => {
             card2.isDefault must be === true
           }
@@ -320,7 +320,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield card
 
-        result match {
+        inside(result) {
           case Failure(errors,_,_,_,_,_) => {
             val code = errors.forObject("creditCard").forObject("billingAddress").onField("base").get(0).code
             code must be === ValidationErrorCode.ADDRESS_INCONSISTENT_COUNTRY
@@ -351,9 +351,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getBin must be === "411111"
+            card.bin must be === "411111"
             card must be('venmoSdk)
           }
         }
@@ -368,7 +368,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case r: Failure => {
             val errorCode = r.errors.forObject("creditCard").onField("venmoSdkPaymentMethodCode").get(0).code
             errorCode must be === ValidationErrorCode.CREDIT_CARD_INVALID_VENMO_SDK_PAYMENT_METHOD_CODE
@@ -389,9 +389,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getBin must be === "510510"
+            card.bin must be === "510510"
             card must be('venmoSdk)
           }
         }
@@ -407,9 +407,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getBin must be === "510510"
+            card.bin must be === "510510"
             card must not be ('venmoSdk)
           }
         }
@@ -427,22 +427,23 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           updateRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("Jane Jones").
             cvv("321").number("4111111111111111").expirationDate("12/05").
             billingAddress.countryName("Italy").countryCodeAlpha2("IT").countryCodeAlpha3("ITA").countryCodeNumeric("380").done
-          updated <- gateway.creditCard.update(original.getToken, updateRequest)
+          updated <- gateway.creditCard.update(original.token, updateRequest)
         } yield (original, updated)
 
-        updateResult match {
-          case Success((original, updatedCard)) => {
-            updatedCard.getCardholderName must be === "Jane Jones"
-            updatedCard.getBin must be === "411111"
-            updatedCard.getExpirationMonth must be === "12"
-            updatedCard.getExpirationYear must be === "2005"
-            updatedCard.getExpirationDate must be === "12/2005"
-            updatedCard.getLast4 must be === "1111"
-            updatedCard.getToken must not be theSameInstanceAs(original.getToken)
-            updatedCard.getBillingAddress.countryName must be === "Italy"
-            updatedCard.getBillingAddress.countryCodeAlpha2 must be === "IT"
-            updatedCard.getBillingAddress.countryCodeAlpha3 must be === "ITA"
-            updatedCard.getBillingAddress.countryCodeNumeric must be === "380"
+        inside(updateResult) { case Success((original, updatedCard)) => 
+          updatedCard.cardholderName must be === "Jane Jones"
+          updatedCard.bin must be === "411111"
+          updatedCard.expirationMonth must be === "12"
+          updatedCard.expirationYear must be === "2005"
+          updatedCard.expirationDate must be === "12/2005"
+          updatedCard.last4 must be === "1111"
+          updatedCard.token must not be theSameInstanceAs(original.token)
+          
+          inside(updatedCard.billingAddress) { case Some(address) =>
+            address.countryName must be === "Italy"
+            address.countryCodeAlpha2 must be === "IT"
+            address.countryCodeAlpha3 must be === "ITA"
+            address.countryCodeNumeric must be === "380"
           }
         }
     }
@@ -456,18 +457,18 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card2 <- gateway.creditCard.create(request)
         } yield (card1, card2)
 
-        result match {
+        inside(result) {
           case Success((card1, card2)) => {
             (card1 must be('default))
             (card2 must not be ('default))
 
-            gateway.creditCard.update(card2.getToken, new CreditCardRequest().options.makeDefault(true).done)
-            gateway.creditCard.find(card1.getToken) must not be ('default)
-            gateway.creditCard.find(card2.getToken) must be('default)
+            gateway.creditCard.update(card2.token, new CreditCardRequest().options.makeDefault(true).done)
+            gateway.creditCard.find(card1.token) must not be ('default)
+            gateway.creditCard.find(card2.token) must be('default)
 
-            gateway.creditCard.update(card1.getToken, new CreditCardRequest().options.makeDefault(true).done)
-            gateway.creditCard.find(card1.getToken) must be('default)
-            gateway.creditCard.find(card2.getToken) must not be ('default)
+            gateway.creditCard.update(card1.token, new CreditCardRequest().options.makeDefault(true).done)
+            gateway.creditCard.find(card1.token) must be('default)
+            gateway.creditCard.find(card2.token) must not be ('default)
           }
         }
     }
@@ -481,7 +482,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           createRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
             cvv("123").number("5105105105105100").expirationDate("05/12")
           card <- gateway.creditCard.create(createRequest)
-          trParams = new CreditCardRequest().paymentMethodToken(card.getToken)
+          trParams = new CreditCardRequest().paymentMethodToken(card.token)
           request = new CreditCardRequest().cardholderName("joe cool")
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request,
             gateway.transparentRedirect.url)
@@ -489,9 +490,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           updated <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield (card, updated)
 
-        result match {
+        inside(result) {
           case Success((card, updated)) => {
-            updated.getCardholderName must be === "joe cool"
+            updated.cardholderName must be === "joe cool"
           }
         }
     }
@@ -505,7 +506,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
             number("5105105105105100").expirationDate("05/12")
           original <- gateway.creditCard.create(request)
           updateRequest = new CreditCardRequest
-          trParams = new CreditCardRequest().paymentMethodToken(original.getToken).number("4111111111111111").
+          trParams = new CreditCardRequest().paymentMethodToken(original.token).number("4111111111111111").
             expirationDate("10/10").billingAddress.countryName("Jersey").countryCodeAlpha2("JE").
             countryCodeAlpha3("JEY").countryCodeNumeric("832").done
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, updateRequest, gateway.transparentRedirect.url)
@@ -513,16 +514,17 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           updated <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield (original)
 
-        result match {
-          case Success(original) => {
-            val updatedCreditCard = gateway.creditCard.find(original.getToken)
-            updatedCreditCard.getBin must be === "411111"
-            updatedCreditCard.getLast4 must be === "1111"
-            updatedCreditCard.getExpirationDate must be === "10/2010"
-            updatedCreditCard.getBillingAddress.countryName must be === "Jersey"
-            updatedCreditCard.getBillingAddress.countryCodeAlpha2 must be === "JE"
-            updatedCreditCard.getBillingAddress.countryCodeAlpha3 must be === "JEY"
-            updatedCreditCard.getBillingAddress.countryCodeNumeric must be === "832"
+        inside(result) { case Success(original) => 
+          val updatedCreditCard = gateway.creditCard.find(original.token)
+          updatedCreditCard.bin must be === "411111"
+          updatedCreditCard.last4 must be === "1111"
+          updatedCreditCard.expirationDate must be === "10/2010"
+          
+          inside(updatedCreditCard.billingAddress) { case Some(address) =>
+            address.countryName must be === "Jersey"
+            address.countryCodeAlpha2 must be === "JE"
+            address.countryCodeAlpha3 must be === "JEY"
+            address.countryCodeNumeric must be === "832"
           }
         }
         result must be('success)
@@ -535,13 +537,13 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
           card <- gateway.creditCard.create(request)
           updateRequest = new CreditCardRequest
-          trParams = new CreditCardRequest().paymentMethodToken(card.getToken).number("4111111111111111").
+          trParams = new CreditCardRequest().paymentMethodToken(card.token).number("4111111111111111").
             expirationDate("10/10").billingAddress.countryCodeAlpha2("zz").done
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, updateRequest, gateway.transparentRedirect.url)
           confirmedCard <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield confirmedCard
 
-        result match {
+        inside(result) {
           case r: Failure => {
             val code = r.errors.forObject("creditCard").forObject("billingAddress").onField("countryCodeAlpha2").get(0).code
             code must be === ValidationErrorCode.ADDRESS_COUNTRY_CODE_ALPHA2_IS_NOT_ACCEPTED
@@ -558,14 +560,12 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
           newToken = String.valueOf(new Random().nextInt)
           updateRequest = new CreditCardRequest().customerId(customer.getId).token(newToken)
-          updatedCard <- gateway.creditCard.update(card.getToken, updateRequest)
+          updatedCard <- gateway.creditCard.update(card.token, updateRequest)
 
         } yield (updatedCard, newToken)
 
-        result match {
-          case Success((updatedCard, newToken)) => {
-            updatedCard.getToken must be === newToken
-          }
+        inside(result) { case Success((updatedCard, newToken)) => 
+          updatedCard.token must be === newToken       
         }
 
     }
@@ -582,17 +582,17 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
           updateRequest = new CreditCardRequest().cardholderName("Jane Jones")
 
-          updateResult <- gateway.creditCard.update(card.getToken, updateRequest)
+          updateResult <- gateway.creditCard.update(card.token, updateRequest)
         } yield (updateResult)
 
-        result match {
+        inside(result) {
           case Success(updatedCard) => {
-            updatedCard.getCardholderName must be === "Jane Jones"
-            updatedCard.getBin must be === "510510"
-            updatedCard.getExpirationMonth must be === "05"
-            updatedCard.getExpirationYear must be === "2012"
-            updatedCard.getExpirationDate must be === "05/2012"
-            updatedCard.getLast4 must be === "5100"
+            updatedCard.cardholderName must be === "Jane Jones"
+            updatedCard.bin must be === "510510"
+            updatedCard.expirationMonth must be === "05"
+            updatedCard.expirationYear must be === "2012"
+            updatedCard.expirationDate must be === "05/2012"
+            updatedCard.last4 must be === "5100"
           }
         }
     }
@@ -611,14 +611,14 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
           updateRequest = new CreditCardRequest().billingAddress.lastName("Jones").done
 
-          updated <- gateway.creditCard.update(original.getToken, updateRequest)
+          updated <- gateway.creditCard.update(original.token, updateRequest)
         } yield (original, updated)
 
-        result match {
-          case Success((original, updatedCreditCard)) => {
-            updatedCreditCard.getBillingAddress.firstName must be === null
-            updatedCreditCard.getBillingAddress.lastName must be === "Jones"
-            updatedCreditCard.getBillingAddress.id must not be ===(original.getBillingAddress.id)
+        inside(result) { case Success((original, updatedCreditCard)) => 
+          inside(updatedCreditCard.billingAddress) { case Some(address) =>
+            address.firstName must be === null
+            address.lastName must be === "Jones"
+            address.id must not be === (original.billingAddress.get.id)
           }
         }
     }
@@ -634,28 +634,29 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           updateRequest = new CreditCardRequest().billingAddress.lastName("Jones").
             options.updateExisting(true).done.done
 
-          updatedCreditCard <- gateway.creditCard.update(original.getToken, updateRequest)
+          updatedCreditCard <- gateway.creditCard.update(original.token, updateRequest)
         } yield (original, updatedCreditCard)
 
-        result match {
-          case Success((original, updatedCreditCard)) => {
-            updatedCreditCard.getBillingAddress.firstName must be === "John"
-            updatedCreditCard.getBillingAddress.lastName must be === "Jones"
-            updatedCreditCard.getBillingAddress.id must be === original.getBillingAddress.id
+        inside(result) { case Success((original, updatedCreditCard)) =>
+          inside(updatedCreditCard.billingAddress) { case Some(address) =>
+            address.firstName must be === "John"
+            address.lastName must be === "Jones"
+            address.id must be === original.billingAddress.get.id
           }
         }
     }
 
     onGatewayIt("updates existing address if updateExisting option is used with Transparent Redirect too") {
       gateway =>
+        val request = new CreditCardRequest().number("5105105105105100").
+          expirationDate("05/12").
+          billingAddress.firstName("John").done
+
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").
-            expirationDate("05/12").
-            billingAddress.firstName("John").done
-          original <- gateway.creditCard.create(request)
-          trParams = new CreditCardRequest().paymentMethodToken(original.getToken).
+          original <- gateway.creditCard.create(request.customerId(customer.getId))
+          trParams = new CreditCardRequest().paymentMethodToken(original.token).
             billingAddress.options.updateExisting(true).done.done
           updateRequest = new CreditCardRequest().billingAddress.lastName("Jones").done
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, updateRequest,
@@ -664,11 +665,11 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           updatedCard <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield ((original, updatedCard))
 
-        result match {
-          case Success((original, updatedCard)) => {
-            updatedCard.getBillingAddress.firstName must be === "John"
-            updatedCard.getBillingAddress.lastName must be === "Jones"
-            updatedCard.getBillingAddress.id must be === original.getBillingAddress.id
+        inside(result) { case Success((original, updatedCreditCard)) =>
+          inside(updatedCreditCard.billingAddress) { case Some(address) =>
+            address.firstName must be === "John"
+            address.lastName must be === "Jones"
+            address.id must be === original.billingAddress.get.id
           }
         }
     }
@@ -685,16 +686,16 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            val found = gateway.creditCard.find(card.getToken)
+            val found = gateway.creditCard.find(card.token)
 
-            found.getCardholderName must be === "John Doe"
-            found.getBin must be === "510510"
-            found.getExpirationMonth must be === "05"
-            found.getExpirationYear must be === "2012"
-            found.getExpirationDate must be === "05/2012"
-            found.getLast4 must be === "5100"
+            found.cardholderName must be === "John Doe"
+            found.bin must be === "510510"
+            found.expirationMonth must be === "05"
+            found.expirationYear must be === "2012"
+            found.expirationDate must be === "05/2012"
+            found.last4 must be === "5100"
           }
         }
     }
@@ -711,19 +712,20 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
           id = "subscription-id-" + new Random().nextInt
           subscriptionRequest = new SubscriptionRequest().id(id).planId("integration_trialless_plan").
-            paymentMethodToken(card.getToken).
+            paymentMethodToken(card.token).
             price(new BigDecimal("1.00"))
 
           subscription <- gateway.subscription.create(subscriptionRequest)
         } yield (card, subscription)
 
-        result match {
+        inside(result) {
           case Success((card, subscription)) => {
-            val foundCard = gateway.creditCard.find(card.getToken)
-
-            foundCard.getSubscriptions.get(0).id must be === subscription.id
-            foundCard.getSubscriptions.get(0).price must be === new BigDecimal("1.00")
-            foundCard.getSubscriptions.get(0).planId must be === "integration_trialless_plan"
+            val foundCard = gateway.creditCard.find(card.token)
+            inside(foundCard.subscriptions.headOption) { case Some(foundSub) =>
+              foundSub.id must be === subscription.id
+              foundSub.price must be === new BigDecimal("1.00")
+              foundSub.planId must be === "integration_trialless_plan"
+            }
           }
         }
     }
@@ -753,11 +755,11 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            gateway.creditCard.delete(card.getToken) must be === Deleted
+            gateway.creditCard.delete(card.token) must be === Deleted
             intercept[NotFoundException] {
-              gateway.creditCard.find(card.getToken)
+              gateway.creditCard.find(card.token)
             }
           }
         }
@@ -779,7 +781,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card2 <- gateway.creditCard.create(request)
         } yield (card1, card2)
 
-        result match {
+        inside(result) {
           case r: Failure => {
             val code = r.errors.forObject("creditCard").onField("number").get(0).code
             code must be === ValidationErrorCode.CREDIT_CARD_DUPLICATE_CARD_EXISTS
@@ -822,7 +824,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case r: Failure => {
             r.creditCardVerification.get.merchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
           }
@@ -841,7 +843,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- gateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case r: Failure => {
             val verification = r.creditCardVerification.get
             verification.gatewayRejectionReason must be === Transactions.GatewayRejectionReason.UNDEFINED
@@ -863,7 +865,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         card <- processingRulesGateway.creditCard.create(request)
       } yield card
 
-      result match {
+      inside(result) {
         case r: Failure => {
           val verification = r.creditCardVerification.get
           verification.gatewayRejectionReason must be === Transactions.GatewayRejectionReason.CVV
@@ -879,9 +881,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         (expiredCards.getMaximumSize) must be > 0
 
         expiredCards.count(!_.isExpired) must be === 0
-        val uniqueTokens = expiredCards.map {
-          _.getToken
-        }.toSet
+        val uniqueTokens = expiredCards.map { _.token }.toSet
         uniqueTokens.size must be === expiredCards.getMaximumSize
     }
   }
@@ -897,11 +897,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
         expiredCards.getMaximumSize must be > 0
 
         for (card <- expiredCards) {
-          card.getExpirationYear must be === "2010"
+          card.expirationYear must be === "2010"
         }
-        val uniqueTokens = expiredCards.map {
-          _.getToken
-        }.toSet
+        val uniqueTokens = expiredCards.map { _.token }.toSet
         uniqueTokens.size must be === expiredCards.getMaximumSize
     }
   }
@@ -919,9 +917,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getCommercial must be === CreditCard.KindIndicator.YES
+            card.commercial must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -940,9 +938,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getDurbinRegulated must be === CreditCard.KindIndicator.YES
+            card.durbinRegulated must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -961,9 +959,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getDebit must be === CreditCard.KindIndicator.YES
+            card.debit must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -982,9 +980,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getHealthcare must be === CreditCard.KindIndicator.YES
+            card.healthcare must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -1002,9 +1000,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getPayroll must be === CreditCard.KindIndicator.YES
+            card.payroll must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -1022,9 +1020,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getPrepaid must be === CreditCard.KindIndicator.YES
+            card.prepaid must be === CreditCard.KindIndicator.YES
           }
         }
       }
@@ -1043,9 +1041,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getIssuingBank must be === CreditCardDefaults.IssuingBank.getValue
+            card.issuingBank must be === CreditCardDefaults.IssuingBank.getValue
           }
         }
       }
@@ -1064,9 +1062,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getCountryOfIssuance must be === CreditCardDefaults.CountryOfIssuance.getValue
+            card.countryOfIssuance must be === CreditCardDefaults.CountryOfIssuance.getValue
           }
         }
       }
@@ -1084,14 +1082,14 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
           card <- processingRulesGateway.creditCard.create(request)
         } yield card
 
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getCommercial must be === CreditCard.KindIndicator.NO
-            card.getDebit must be === CreditCard.KindIndicator.NO
-            card.getDurbinRegulated must be === CreditCard.KindIndicator.NO
-            card.getHealthcare must be === CreditCard.KindIndicator.NO
-            card.getPayroll must be === CreditCard.KindIndicator.NO
-            card.getPrepaid must be === CreditCard.KindIndicator.NO
+            card.commercial must be === CreditCard.KindIndicator.NO
+            card.debit must be === CreditCard.KindIndicator.NO
+            card.durbinRegulated must be === CreditCard.KindIndicator.NO
+            card.healthcare must be === CreditCard.KindIndicator.NO
+            card.payroll must be === CreditCard.KindIndicator.NO
+            card.prepaid must be === CreditCard.KindIndicator.NO
           }
         }
       }
@@ -1108,16 +1106,16 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         } yield card
         import CreditCard.KindIndicator.UNKNOWN
-        result match {
+        inside(result) {
           case Success(card) => {
-            card.getCommercial must be === UNKNOWN
-            card.getDebit must be === UNKNOWN
-            card.getDurbinRegulated must be === UNKNOWN
-            card.getHealthcare must be === UNKNOWN
-            card.getPayroll must be === UNKNOWN
-            card.getPrepaid must be === UNKNOWN
-            card.getCountryOfIssuance must be === "Unknown"
-            card.getIssuingBank must be === "Unknown"
+            card.commercial must be === UNKNOWN
+            card.debit must be === UNKNOWN
+            card.durbinRegulated must be === UNKNOWN
+            card.healthcare must be === UNKNOWN
+            card.payroll must be === UNKNOWN
+            card.prepaid must be === UNKNOWN
+            card.countryOfIssuance must be === "Unknown"
+            card.issuingBank must be === "Unknown"
           }
         }
       }

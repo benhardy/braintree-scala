@@ -54,7 +54,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
         val request = new SubscriptionRequest().
-          paymentMethodToken(creditCard.getToken).planId(plan.getId)
+          paymentMethodToken(creditCard.token).planId(plan.getId)
 
         val createResult = gateway.subscription.create(request)
 
@@ -66,7 +66,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
           val expectedBillingPeriodStartDate = rightAboutNow
           val expectedFirstDate = rightAboutNow
 
-          subscription.paymentMethodToken must be === creditCard.getToken
+          subscription.paymentMethodToken must be === creditCard.token
           subscription.planId must be === plan.getId
           subscription.price must be === plan.getPrice
           subscription.balance must be === new BigDecimal("0.00")
@@ -89,7 +89,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createReturnsTransactionWithSubscriptionBillingPeriod") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
 
         val createResult = gateway.subscription.create(request)
 
@@ -103,7 +103,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createSimpleSubscriptionWithTrial") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
 
         val createResult = gateway.subscription.create(request)
 
@@ -112,7 +112,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
           subscription.planId must be === plan.getId
           subscription.price must be === plan.getPrice
-          subscription.paymentMethodToken must be === creditCard.getToken
+          subscription.paymentMethodToken must be === creditCard.token
           subscription.id must fullyMatch regex "^\\w{6}$"
           subscription.status must be === Subscriptions.Status.ACTIVE
           subscription.billingPeriodStartDate must be === null
@@ -130,7 +130,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("overridePlanAddTrial") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
             trialPeriod(true).trialDuration(2).trialDurationUnit(Subscriptions.DurationUnit.MONTH)
 
         val createResult = gateway.subscription.create(request)
@@ -146,7 +146,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("overridePlanRemoveTrial") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).trialPeriod(false)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).trialPeriod(false)
         val createResult = gateway.subscription.create(request)
 
         inside(createResult) { case Success(subscription) =>
@@ -157,7 +157,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("overridePlanPrice") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
           price(new BigDecimal("482.48"))
         val createResult = gateway.subscription.create(request)
 
@@ -169,13 +169,13 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("overridePlanNumberOfBillingCycles") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
         val createResult = gateway.subscription.create(request)
 
         inside(createResult) { case Success(subscription) =>
           subscription.numberOfBillingCycles must be === plan.getNumberOfBillingCycles
         }
-        val overrideRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val overrideRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
           numberOfBillingCycles(10)
 
         val overrideResult = gateway.subscription.create(overrideRequest)
@@ -189,7 +189,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("setNeverExpires") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).neverExpires(true)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).neverExpires(true)
         val createResult = gateway.subscription.create(request)
 
         inside(createResult) { case Success(subscription) =>
@@ -201,7 +201,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("setNumberOfBillingCyclesAndUpdateToNeverExpire") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).numberOfBillingCycles(10)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).numberOfBillingCycles(10)
 
         val result = for {
          subscription <- gateway.subscription.create(request)
@@ -218,7 +218,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("setNumberOfBillingCyclesAndUpdate") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).numberOfBillingCycles(10)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).numberOfBillingCycles(10)
         val result = for {
           subscription <- gateway.subscription.create(request)
           updateRequest = new SubscriptionRequest().numberOfBillingCycles(14)
@@ -232,7 +232,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
     onGatewayIt("inheritBillingDayOfMonth") {
       gateway => (creditCard: CreditCard) =>
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).
           planId(PlanFixture.BILLING_DAY_OF_MONTH_PLAN.getId)
 
         val createResult = gateway.subscription.create(request)
@@ -244,7 +244,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
     onGatewayIt("overrideBillingDayOfMonth") {
       gateway => (creditCard: CreditCard) =>
-        val request = new SubscriptionRequest().billingDayOfMonth(19).paymentMethodToken(creditCard.getToken).
+        val request = new SubscriptionRequest().billingDayOfMonth(19).paymentMethodToken(creditCard.token).
           planId(PlanFixture.BILLING_DAY_OF_MONTH_PLAN.getId)
 
         val createResult = gateway.subscription.create(request)
@@ -256,7 +256,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
     onGatewayIt("overrideBillingDayOfMonthWithStartImmediately") {
       gateway => (creditCard: CreditCard) =>
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).
           planId(PlanFixture.BILLING_DAY_OF_MONTH_PLAN.getId).options.startImmediately(true).done
 
         val createResult = gateway.subscription.create(request)
@@ -271,7 +271,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         val UTC = TimeZone.getTimeZone("UTC")
         val firstBillingDate = (now in UTC) + 3.days
 
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).
           planId(PlanFixture.BILLING_DAY_OF_MONTH_PLAN.getId).firstBillingDate(firstBillingDate)
 
         val createResult = gateway.subscription.create(request)
@@ -286,7 +286,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
         val firstBillingDate = Calendar.getInstance
         firstBillingDate.add(Calendar.DAY_OF_MONTH, -3)
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.BILLING_DAY_OF_MONTH_PLAN.getId).firstBillingDate(firstBillingDate)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.BILLING_DAY_OF_MONTH_PLAN.getId).firstBillingDate(firstBillingDate)
 
         val createResult = gateway.subscription.create(request)
 
@@ -300,7 +300,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
         val newId = "new-id-" + new Random().nextInt
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
           price(new BigDecimal("482.48")).id(newId)
 
         val createResult = gateway.subscription.create(request)
@@ -313,7 +313,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("setMerchantAccountId") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
           price(new BigDecimal("482.48")).merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID)
 
         val createResult = gateway.subscription.create(request)
@@ -326,7 +326,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("hasTransactionOnCreateWithNoTrial") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).price(new BigDecimal("482.48"))
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).price(new BigDecimal("482.48"))
 
         val createResult = gateway.subscription.create(request)
 
@@ -343,7 +343,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("hasTransactionOnCreateWhenTransactionFails") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).price(SandboxValues.TransactionAmount.DECLINE.amount)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).price(SandboxValues.TransactionAmount.DECLINE.amount)
 
         val result = gateway.subscription.create(request)
 
@@ -355,7 +355,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("hasNoTransactionOnCreateWithATrial") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
 
         val createResult = gateway.subscription.create(request)
 
@@ -367,7 +367,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createInheritsNoAddOnsAndDiscountsWhenOptionIsPassed") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).options.doNotInheritAddOnsOrDiscounts(true).done
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).options.doNotInheritAddOnsOrDiscounts(true).done
 
         val createResult = gateway.subscription.create(request)
 
@@ -380,7 +380,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createInheritsAddOnsAndDiscountsFromPlan") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
 
         val result = gateway.subscription.create(request)
 
@@ -415,7 +415,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createOverridesInheritedAddOnsAndDiscounts") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).addOns.update("increase_10").amount(new BigDecimal("30.00")).numberOfBillingCycles(3).quantity(9).done.update("increase_20").amount(new BigDecimal("40.00")).done.done.discounts.update("discount_7").amount(new BigDecimal("15.00")).neverExpires(true).done.update("discount_11").amount(new BigDecimal("23.00")).done.done
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).addOns.update("increase_10").amount(new BigDecimal("30.00")).numberOfBillingCycles(3).quantity(9).done.update("increase_20").amount(new BigDecimal("40.00")).done.done.discounts.update("discount_7").amount(new BigDecimal("15.00")).neverExpires(true).done.update("discount_11").amount(new BigDecimal("23.00")).done.done
         val result = gateway.subscription.create(request)
         result must be('success)
         inside(result) { case Success(subscription) =>
@@ -445,7 +445,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createRemovesInheritedAddOnsAndDiscounts") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
           addOns.remove("increase_10", "increase_20").done.
           discounts.remove("discount_7", "discount_11").done
 
@@ -460,7 +460,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createRemovesInheritedAddOnsAndDiscountsWithListsOrChaining") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
           addOns.remove(List("increase_10", "increase_20")).done.
           discounts.remove("discount_7").remove("discount_11").done
 
@@ -475,7 +475,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createAddsNewAddOnsAndDiscounts") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
           addOns.remove("increase_10", "increase_20").
           add.inheritedFromId("increase_30").amount(new BigDecimal("40.00")).neverExpires(false).numberOfBillingCycles(6).quantity(3).done.
           done.discounts.remove("discount_7", "discount_11").
@@ -500,7 +500,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createWithBadQuantityCorrectlyParsesValidationErrors") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).addOns.
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).addOns.
           update("addon_7").amount(new BigDecimal("-15")).done.update("discount_7").quantity(-10).done.done
 
         val result = gateway.subscription.create(request)
@@ -516,7 +516,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
     onGatewayIt("createWithBadPlanId") {
       gateway => (creditCard: CreditCard) => {
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId("noSuchPlanId")
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId("noSuchPlanId")
 
         val result = gateway.subscription.create(createRequest)
 
@@ -541,7 +541,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).descriptor.name("123*123456789012345678").phone("3334445555").done
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).descriptor.name("123*123456789012345678").phone("3334445555").done
         val createResult = gateway.subscription.create(request)
         inside(createResult) { case Success(subscription) =>
           subscription.descriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
@@ -564,7 +564,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).id("invalid id")
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).id("invalid id")
         val createResult = gateway.subscription.create(request)
         inside(createResult) { case Failure(errors,_,_,_,_,_) =>
           errors.forObject("subscription").onField("id").get(0).code must be === ValidationErrorCode.SUBSCRIPTION_TOKEN_FORMAT_IS_INVALID
@@ -577,12 +577,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("finds") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
         val createResult = gateway.subscription.create(createRequest)
         inside(createResult) { case Success(subscription) =>
           val foundSubscription = gateway.subscription.find(subscription.id)
           foundSubscription.id must be === subscription.id
-          creditCard.getToken must be === subscription.paymentMethodToken
+          creditCard.token must be === subscription.paymentMethodToken
           plan.getId must be === subscription.planId
         }
     }
@@ -596,7 +596,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
     onGatewayIt("pastDueSubscriptionReportsCorrectStatus") {
       gateway => (creditCard: CreditCard) =>
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId)
         val createResult = gateway.subscription.create(createRequest)
         inside(createResult) { case Success(subscription) =>
           makePastDue(gateway, subscription, 1)
@@ -612,7 +612,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         val oldId = "old-id-" + new Random().nextInt
         val newId = "new-id-" + new Random().nextInt
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).id(oldId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).id(oldId)
 
         val result = for {
           created <- gateway.subscription.create(createRequest)
@@ -629,7 +629,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("updateMerchantAccountId") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
 
         val result = for {
           created <- gateway.subscription.create(createRequest)
@@ -647,7 +647,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
         val newPlan = PlanFixture.PLAN_WITH_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(originalPlan.getId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId)
 
         val result = for {
           created <- gateway.subscription.create(createRequest)
@@ -667,18 +667,18 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         val customer = fixture.customer
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(originalPlan.getId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId)
         val cardRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").number("5105105105105100").expirationDate("05/12")
 
         val result = for {
           created <- gateway.subscription.create(createRequest)
           newCreditCard <- gateway.creditCard.create(cardRequest)
-          updateRequest = new SubscriptionRequest().paymentMethodToken(newCreditCard.getToken)
+          updateRequest = new SubscriptionRequest().paymentMethodToken(newCreditCard.token)
           updated <- gateway.subscription.update(created.id, updateRequest)
         } yield (newCreditCard,updated)
 
         inside(result) { case Success((newCreditCard, subscription)) =>
-          subscription.paymentMethodToken must be === newCreditCard.getToken
+          subscription.paymentMethodToken must be === newCreditCard.token
         }
     }
 
@@ -686,7 +686,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(originalPlan.getId).price(new BigDecimal("1.23"))
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId).price(new BigDecimal("1.23"))
 
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
@@ -704,7 +704,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(originalPlan.getId).price(new BigDecimal("1.23"))
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId).price(new BigDecimal("1.23"))
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().price(new BigDecimal("4.56")).options.prorateCharges(true).done
@@ -721,7 +721,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(originalPlan.getId).price(new BigDecimal("1.23"))
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId).price(new BigDecimal("1.23"))
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
           updateRequest = new SubscriptionRequest().price(new BigDecimal("4.56")).options.prorateCharges(false).done
@@ -738,7 +738,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(originalPlan.getId).price(new BigDecimal("1.23"))
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId).price(new BigDecimal("1.23"))
         val updateRequest = new SubscriptionRequest().price(new BigDecimal("2100")).options.prorateCharges(true).
             revertSubscriptionOnProrationFailure(true).done
 
@@ -759,7 +759,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(originalPlan.getId).price(new BigDecimal("1.23"))
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId).price(new BigDecimal("1.23"))
 
         val result = for {
           createdSubscription <- gateway.subscription.create(createRequest)
@@ -779,7 +779,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(originalPlan.getId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId)
 
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
@@ -797,7 +797,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
           request = new SubscriptionRequest().addOns.update("increase_10").amount(new BigDecimal("30.00")).quantity(9).done.remove("increase_20").add.inheritedFromId("increase_30").amount(new BigDecimal("31.00")).quantity(7).done.done.discounts.update("discount_7").amount(new BigDecimal("15.00")).done.remove("discount_11").add.inheritedFromId("discount_15").amount(new BigDecimal("23.00")).done.done
@@ -826,7 +826,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
         val result = for {
           subscription <- gateway.subscription.create(createRequest)
 
@@ -846,7 +846,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val plan = PlanFixture.PLAN_WITH_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).
           numberOfBillingCycles(10).descriptor.name("123*123456789012345678").phone("1234567890").done
 
         val result = for {
@@ -866,7 +866,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
         inside(gateway.subscription.create(request)) { case Success(createdSubscription) =>
           val updateRequest = new SubscriptionRequest().id("invalid id")
 
@@ -884,7 +884,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     gateway => (creditCard: CreditCard) =>
 
       val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-      val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId).id("invalid id")
+      val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId).id("invalid id")
 
       val createResult = gateway.subscription.create(request)
 
@@ -899,7 +899,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(plan.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.getId)
         val result = for {
           subscription <- gateway.subscription.create(request)
           cancellation <- gateway.subscription.cancel(subscription.id)
@@ -917,8 +917,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("searchOnBillingCyclesRemaining") {
       gateway => (creditCard: CreditCard) =>
 
-        val request12 = new SubscriptionRequest().numberOfBillingCycles(12).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(5))
-        val request11 = new SubscriptionRequest().numberOfBillingCycles(11).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(5))
+        val request12 = new SubscriptionRequest().numberOfBillingCycles(12).paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(5))
+        val request11 = new SubscriptionRequest().numberOfBillingCycles(11).paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(5))
         val setup = for {
           subscription12 <- gateway.subscription.create(request12)
           subscription11 <- gateway.subscription.create(request11)
@@ -935,7 +935,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("searchOnDaysPastDue") {
       gateway => (creditCard: CreditCard) =>
 
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId)
         val setup = gateway.subscription.create(request)
         inside(setup) { case Success(subscription) =>
           makePastDue(gateway, subscription, 3)
@@ -952,8 +952,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
         val rand = new Random
 
-        val request1 = new SubscriptionRequest().id("find_me" + rand.nextInt).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(2))
-        val request2 = new SubscriptionRequest().id("do_not_find_me" + rand.nextInt).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(2))
+        val request1 = new SubscriptionRequest().id("find_me" + rand.nextInt).paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(2))
+        val request2 = new SubscriptionRequest().id("do_not_find_me" + rand.nextInt).paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(2))
         val setup = for {
           subscription1 <- gateway.subscription.create(request1)
           subscription2 <- gateway.subscription.create(request2)
@@ -971,8 +971,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         gateway => (creditCard: CreditCard) =>
 
         val rand = new Random
-        val request1 = new SubscriptionRequest().id("find_me" + rand.nextInt).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(2))
-        val request2 = new SubscriptionRequest().id("do_not_find_me" + rand.nextInt).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId).price(new BigDecimal(2))
+        val request1 = new SubscriptionRequest().id("find_me" + rand.nextInt).paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(2))
+        val request2 = new SubscriptionRequest().id("do_not_find_me" + rand.nextInt).paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId).price(new BigDecimal(2))
         val setup = for {
           subscriptionWithTrial  <-gateway.subscription.create(request1)
           subscriptionWithoutTrial <- gateway.subscription.create(request2)
@@ -995,8 +995,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("searchOnMerchantAccountIdIs") {
       gateway => (creditCard: CreditCard) =>
 
-        val request1 = new SubscriptionRequest().merchantAccountId(DEFAULT_MERCHANT_ACCOUNT_ID).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(3))
-        val request2 = new SubscriptionRequest().merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID).paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(3))
+        val request1 = new SubscriptionRequest().merchantAccountId(DEFAULT_MERCHANT_ACCOUNT_ID).paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(3))
+        val request2 = new SubscriptionRequest().merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID).paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(3))
 
         val setup = for {
           subscriptionDefaultMerchantAccount <- gateway.subscription.create(request1)
@@ -1017,7 +1017,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val request1 = new SubscriptionRequest().merchantAccountId(DEFAULT_MERCHANT_ACCOUNT_ID).
-          paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(5))
+          paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(5))
 
         val setup = gateway.subscription.create(request1)
         inside(setup) { case Success(subscription) =>
@@ -1040,8 +1040,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("searchOnNextBillingDate") {
       gateway => (creditCard: CreditCard) =>
 
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId)
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId)
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId)
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId)
         val setup = for {
           trialSub <- gateway.subscription.create(request1)
           noTrialSub <- gateway.subscription.create(request2)
@@ -1063,8 +1063,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         val trialPlan = PlanFixture.PLAN_WITH_TRIAL
         val triallessPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(7))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(triallessPlan.getId).price(new BigDecimal(7))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(7))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(triallessPlan.getId).price(new BigDecimal(7))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1083,8 +1083,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         val trialPlan = PlanFixture.PLAN_WITH_TRIAL
         val triallessPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(8))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(triallessPlan.getId).price(new BigDecimal(8))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(8))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(triallessPlan.getId).price(new BigDecimal(8))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1103,8 +1103,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         val trialPlan = PlanFixture.PLAN_WITH_TRIAL
         val triallessPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(9))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(triallessPlan.getId).price(new BigDecimal(9))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(9))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(triallessPlan.getId).price(new BigDecimal(9))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1123,8 +1123,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         val trialPlan = PlanFixture.PLAN_WITH_TRIAL
         val triallessPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(10))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(triallessPlan.getId).price(new BigDecimal(10))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(10))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(triallessPlan.getId).price(new BigDecimal(10))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1143,8 +1143,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         val trialPlan = PlanFixture.PLAN_WITH_TRIAL
         val triallessPlan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(11))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(triallessPlan.getId).price(new BigDecimal(11))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(11))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(triallessPlan.getId).price(new BigDecimal(11))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1161,9 +1161,9 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("searchOnPlanIdIn") {
       gateway => (creditCard: CreditCard) =>
 
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(6))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId).price(new BigDecimal(6))
-        val request3 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.ADD_ON_DISCOUNT_PLAN.getId).price(new BigDecimal(6))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITH_TRIAL.getId).price(new BigDecimal(6))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId).price(new BigDecimal(6))
+        val request3 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.ADD_ON_DISCOUNT_PLAN.getId).price(new BigDecimal(6))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1183,8 +1183,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val trialPlan = PlanFixture.PLAN_WITH_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(12))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(12))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(12))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(12))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1213,8 +1213,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val trialPlan = PlanFixture.PLAN_WITH_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(13))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(13))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(13))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(13))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1233,8 +1233,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("searchOnStatusInWithMultipleStatuses") {
       gateway => (creditCard: CreditCard) =>
         val trialPlan = PlanFixture.PLAN_WITH_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(14))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(trialPlan.getId).price(new BigDecimal(14))
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(14))
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(trialPlan.getId).price(new BigDecimal(14))
         val setup = for {
           sub1 <- gateway.subscription.create(request1)
           sub2 <- gateway.subscription.create(request2)
@@ -1253,9 +1253,9 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
       gateway => (creditCard: CreditCard) =>
 
         val plan = PlanFixture.PLAN_WITHOUT_TRIAL
-        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).
+        val request1 = new SubscriptionRequest().paymentMethodToken(creditCard.token).
           planId(plan.getId).price(new BigDecimal(14))
-        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).
+        val request2 = new SubscriptionRequest().paymentMethodToken(creditCard.token).
           planId(plan.getId).price(new BigDecimal(14))
 
         val setup = for {
@@ -1297,7 +1297,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("retryChargeWithAmount") {
       gateway => (creditCard: CreditCard) =>
 
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId)
         val result = for {
           subscription <- gateway.subscription.create(request)
           updated = makePastDue(gateway, subscription, 1)
@@ -1317,7 +1317,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("retryChargeWithoutAmount") {
       gateway => (creditCard: CreditCard) =>
 
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId)
+        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId)
         val result = for {
           subscription <- gateway.subscription.create(request)
           updated = makePastDue(gateway, subscription, 1)

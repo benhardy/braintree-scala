@@ -46,9 +46,9 @@ class CreditCard(node: NodeWrapper) {
   val expirationMonth = node.findString("expiration-month")
   val expirationYear = node.findString("expiration-year")
   val imageUrl = node.findString("image-url")
-  val isDefault = node.findBoolean("default")
-  val isVenmoSdk = node.findBoolean("venmo-sdk")
-  val isExpired = node.findBoolean("expired")
+  val isDefault = node.findBooleanOpt("default").getOrElse(false)
+  val isVenmoSdk = node.findBooleanOpt("venmo-sdk").getOrElse(false)
+  val isExpired = node.findBooleanOpt("expired").getOrElse(false)
   val last4 = node.findString("last-4")
   val commercial = KindIndicator(node.findString("commercial"))
   val debit = KindIndicator(node.findString("debit"))
@@ -56,83 +56,18 @@ class CreditCard(node: NodeWrapper) {
   val healthcare = KindIndicator(node.findString("healthcare"))
   val payroll = KindIndicator(node.findString("payroll"))
   val prepaid = KindIndicator(node.findString("prepaid"))
-  val countryOfIssuance = node.findString("country-of-issuance")
-  val issuingBank = node.findString("issuing-bank")
+
+  val countryOfIssuance = node.findStringOpt("country-of-issuance").filter{!_.isEmpty}.getOrElse("Unknown")
+  val issuingBank = node.findStringOpt("issuing-bank").filter{!_.isEmpty}.getOrElse("Unknown")
+
   val uniqueNumberIdentifier = node.findString("unique-number-identifier")
-  val billingAddressResponse: NodeWrapper = node.findFirst("billing-address")
-  val billingAddress = if (billingAddressResponse != null) {
-    new Address(billingAddressResponse)
-  } else null
+  val billingAddressResponse: Option[NodeWrapper] = node.findFirstOpt("billing-address")
 
-  val subscriptions = {
-    import scala.collection.JavaConversions._
-    node.findAll("subscriptions/subscription").map{ new Subscription(_) }.toList
-  }
+  val billingAddress = billingAddressResponse.map { new Address(_) }
 
-  def getBillingAddress = billingAddress
+  val subscriptions = node.findAll("subscriptions/subscription").map{ new Subscription(_) }
 
-  def getBin = bin
+  def expirationDate = expirationMonth + "/" + expirationYear
 
-  def getCardholderName = cardholderName
-
-  def getCardType = cardType
-
-  def getCreatedAt = createdAt
-
-  def getCustomerId = customerId
-
-  def getCustomerLocation = customerLocation
-
-  def getExpirationDate = expirationMonth + "/" + expirationYear
-
-  def getExpirationMonth = expirationMonth
-
-  def getExpirationYear = expirationYear
-
-  def getImageUrl = imageUrl
-
-  def getLast4 = last4
-
-  def getMaskedNumber = getBin + "******" + getLast4
-
-  def getCommercial = commercial
-
-  def getDebit = debit
-
-  def getDurbinRegulated = durbinRegulated
-
-  def getHealthcare = healthcare
-
-  def getPayroll = payroll
-
-  def getPrepaid = prepaid
-
-  def getCountryOfIssuance: String = {
-    if (countryOfIssuance == "") {
-      "Unknown"
-    }
-    else {
-      countryOfIssuance
-    }
-  }
-
-  def getIssuingBank: String = {
-    if (issuingBank == "") {
-      "Unknown"
-    }
-    else {
-      issuingBank
-    }
-  }
-
-  def getUniqueNumberIdentifier = uniqueNumberIdentifier
-
-  def getSubscriptions: List[Subscription] = {
-    subscriptions
-  }
-
-  def getToken = token
-
-  def getUpdatedAt = updatedAt
-
+  def maskedNumber = bin + "******" + last4
 }

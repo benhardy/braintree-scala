@@ -144,7 +144,7 @@ class Transaction(node: NodeWrapper) {
 
   def getVaultCreditCard(implicit gateway: BraintreeGateway): Option[CreditCard] = {
     for {
-      cardToken <- Option(creditCard.getToken)
+      cardToken <- Option(creditCard.token)
       card <- Option(gateway.creditCard.find(cardToken))
     } yield card
   }

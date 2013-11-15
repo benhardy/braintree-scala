@@ -33,7 +33,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
           case Success(transaction) => {
-            transaction.getCreditCard.getBin must be === CreditCardNumber.VISA.number.substring(0, 6)
+            transaction.getCreditCard.bin must be === CreditCardNumber.VISA.number.substring(0, 6)
             transaction.getAmount must be === TransactionAmount.AUTHORIZE.amount
           }
           case _ => fail("expected success")
@@ -141,9 +141,9 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
 
         result match {
           case Success(confirm) => {
-            confirm.getBin must be === "411111"
-            confirm.getLast4 must be === "1111"
-            confirm.getExpirationDate must be === "10/2010"
+            confirm.bin must be === "411111"
+            confirm.last4 must be === "1111"
+            confirm.expirationDate must be === "10/2010"
           }
           case _ => fail("expected success")
         }
@@ -156,17 +156,17 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
           request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
           card <- gateway.creditCard.create(request)
           updateRequest = new CreditCardRequest
-          trParams = new CreditCardRequest().paymentMethodToken(card.getToken).number("4111111111111111").expirationDate("10/10")
+          trParams = new CreditCardRequest().paymentMethodToken(card.token).number("4111111111111111").expirationDate("10/10")
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, updateRequest, gateway.transparentRedirect.url)
           confirm <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield (card, confirm)
 
         result match {
           case Success((card, confirm)) => {
-            val updatedCreditCard = gateway.creditCard.find(card.getToken)
-            updatedCreditCard.getBin must be === "411111"
-            updatedCreditCard.getLast4 must be === "1111"
-            updatedCreditCard.getExpirationDate must be === "10/2010"
+            val updatedCreditCard = gateway.creditCard.find(card.token)
+            updatedCreditCard.bin must be === "411111"
+            updatedCreditCard.last4 must be === "1111"
+            updatedCreditCard.expirationDate must be === "10/2010"
           }
           case _ => fail("expected success")
         }

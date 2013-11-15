@@ -53,7 +53,7 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
       verification.avsStreetAddressResponseCode must be === "I"
       verification.processorResponseText must be === "Do Not Honor"
       verification.cvvResponseCode must be === "M"
-      verification.creditCard.getPrepaid must be === CreditCard.KindIndicator.UNKNOWN
+      verification.creditCard.prepaid must be === CreditCard.KindIndicator.UNKNOWN
     }
   }
 
@@ -148,14 +148,14 @@ class CreditCardVerificationSpec extends FunSpec with MustMatchers with GatewayS
 
       inside(result) { case Failure(_,_,_,Some(verification),_,_) =>
         val card = verification.creditCard
-        card.getCommercial must be === CreditCard.KindIndicator.UNKNOWN
-        card.getDebit must be === CreditCard.KindIndicator.UNKNOWN
-        card.getDurbinRegulated must be === CreditCard.KindIndicator.UNKNOWN
-        card.getHealthcare must be === CreditCard.KindIndicator.UNKNOWN
-        card.getPayroll must be === CreditCard.KindIndicator.UNKNOWN
-        card.getPrepaid must be === CreditCard.KindIndicator.UNKNOWN
-        card.getCountryOfIssuance must be === "Unknown"
-        card.getIssuingBank must be === "Unknown"
+        card.commercial must be === CreditCard.KindIndicator.UNKNOWN
+        card.debit must be === CreditCard.KindIndicator.UNKNOWN
+        card.durbinRegulated must be === CreditCard.KindIndicator.UNKNOWN
+        card.healthcare must be === CreditCard.KindIndicator.UNKNOWN
+        card.payroll must be === CreditCard.KindIndicator.UNKNOWN
+        card.prepaid must be === CreditCard.KindIndicator.UNKNOWN
+        card.countryOfIssuance must be === "Unknown"
+        card.issuingBank must be === "Unknown"
      }
     }
   }

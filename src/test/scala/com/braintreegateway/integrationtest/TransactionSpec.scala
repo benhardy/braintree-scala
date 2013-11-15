@@ -178,7 +178,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
           cloneTransaction.getAmount must be === new BigDecimal("123.45")
           cloneTransaction.getChannel must be === "MyShoppingCartProvider"
           cloneTransaction.getOrderId must be === "123"
-          cloneTransaction.getCreditCard.getMaskedNumber must be === "411111******1111"
+          cloneTransaction.getCreditCard.maskedNumber must be === "411111******1111"
           cloneTransaction.getCustomer.getFirstName must be === "Dan"
           cloneTransaction.getBillingAddress.firstName must be === "Carl"
           cloneTransaction.getShippingAddress.firstName must be === "Andrew"
@@ -228,25 +228,25 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       transaction.getCreatedAt.year must be === thisYear
       transaction.getUpdatedAt.year must be === thisYear
       val creditCard = transaction.getCreditCard
-      creditCard.getBin must be === "411111"
-      creditCard.getLast4 must be === "1111"
-      creditCard.getExpirationMonth must be === "05"
-      creditCard.getExpirationYear must be === "2009"
-      creditCard.getExpirationDate must be === "05/2009"
+      creditCard.bin must be === "411111"
+      creditCard.last4 must be === "1111"
+      creditCard.expirationMonth must be === "05"
+      creditCard.expirationYear must be === "2009"
+      creditCard.expirationDate must be === "05/2009"
     }
 
     onGatewayIt("saleWithCardTypeIndicators") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).creditCard.number(CreditCardNumbers.CardTypeIndicators.Prepaid.getValue).expirationDate("05/2012").done
       val transaction = gateway.transaction.sale(request) match { case Success(txn) => txn }
       val card = transaction.getCreditCard
-      card.getPrepaid must be === CreditCard.KindIndicator.YES
-      card.getHealthcare must be === CreditCard.KindIndicator.UNKNOWN
-      card.getPayroll must be === CreditCard.KindIndicator.UNKNOWN
-      card.getDebit must be === CreditCard.KindIndicator.UNKNOWN
-      card.getDurbinRegulated must be === CreditCard.KindIndicator.UNKNOWN
-      card.getCommercial must be === CreditCard.KindIndicator.UNKNOWN
-      card.getCountryOfIssuance must be === "Unknown"
-      card.getIssuingBank must be === "Unknown"
+      card.prepaid must be === CreditCard.KindIndicator.YES
+      card.healthcare must be === CreditCard.KindIndicator.UNKNOWN
+      card.payroll must be === CreditCard.KindIndicator.UNKNOWN
+      card.debit must be === CreditCard.KindIndicator.UNKNOWN
+      card.durbinRegulated must be === CreditCard.KindIndicator.UNKNOWN
+      card.commercial must be === CreditCard.KindIndicator.UNKNOWN
+      card.countryOfIssuance must be === "Unknown"
+      card.issuingBank must be === "Unknown"
     }
 
     onGatewayIt("saleWithAllAttributes") { implicit gateway =>
@@ -265,12 +265,12 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       transaction.isTaxExempt must be === java.lang.Boolean.FALSE
       transaction.getVaultCreditCard must be === None
       val creditCard = transaction.getCreditCard
-      creditCard.getBin must be === "411111"
-      creditCard.getLast4 must be === "1111"
-      creditCard.getExpirationMonth must be === "05"
-      creditCard.getExpirationYear must be === "2009"
-      creditCard.getExpirationDate must be === "05/2009"
-      creditCard.getCardholderName must be === "The Cardholder"
+      creditCard.bin must be === "411111"
+      creditCard.last4 must be === "1111"
+      creditCard.expirationMonth must be === "05"
+      creditCard.expirationYear must be === "2009"
+      creditCard.expirationDate must be === "05/2009"
+      creditCard.cardholderName must be === "The Cardholder"
       transaction.getVaultCustomer must be === None
       val customer = transaction.getCustomer
       customer.getFirstName must be === "Dan"
@@ -339,8 +339,8 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
         case Success(transaction) => {
           transaction.getMerchantAccountId must be === DEFAULT_MERCHANT_ACCOUNT_ID
           val creditCard = transaction.getCreditCard
-          creditCard.getToken must be === paymentToken
-          transaction.getVaultCreditCard.map {_.getExpirationDate} must be === Some("05/2009")
+          creditCard.token must be === paymentToken
+          transaction.getVaultCreditCard.map {_.expirationDate} must be === Some("05/2009")
           val customer = transaction.getCustomer
           customer.getId must be === customerId
           transaction.getVaultCustomer.map {_.getFirstName} must be === Some("Jane")
@@ -354,8 +354,8 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       result match {
         case Success(transaction) => {
           val creditCard = transaction.getCreditCard
-          creditCard.getToken must not be === (null)
-          transaction.getVaultCreditCard.get.getExpirationDate must be === "05/2009"
+          creditCard.token must not be === (null)
+          transaction.getVaultCreditCard.get.expirationDate must be === "05/2009"
           val customer = transaction.getCustomer
           customer.getId must not be === (null)
           transaction.getVaultCustomer.get.getFirstName must be === "Jane"
@@ -371,9 +371,9 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       result match {
         case Success(transaction) => {
           val creditCard = transaction.getCreditCard
-          creditCard.getToken must not be === (null)
+          creditCard.token must not be === (null)
           transaction.getVaultCreditCard must be ('defined)
-          transaction.getVaultCreditCard.get.getExpirationDate must be === ("05/2009")
+          transaction.getVaultCreditCard.get.expirationDate must be === ("05/2009")
 
           val customer = transaction.getCustomer
           customer.getId must not be === (null)
@@ -389,7 +389,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       result match {
         case Failure(_,_,_,_,Some(transaction),_) => {
           val creditCard = transaction.getCreditCard
-          creditCard.getToken must be === (null)
+          creditCard.token must be === (null)
           transaction.getVaultCreditCard must be === None
           val customer = transaction.getCustomer
           customer.getId must be === (null)
@@ -407,7 +407,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       result match {
         case Success(transaction) => {
           val creditCard = transaction.getVaultCreditCard
-          creditCard.map{_.getBillingAddress.firstName} must be === Some("Carl")
+          creditCard.flatMap{_.billingAddress}.map{_.firstName} must be === Some("Carl")
           transaction.getVaultBillingAddress.map {_.firstName} must be === Some("Carl")
           transaction.getVaultShippingAddress.map{_.firstName} must be === Some("Andrew")
           val customer = transaction.getVaultCustomer.get
@@ -435,7 +435,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
       result match {
         case Success(transaction) => {
-          transaction.getCreditCard.getCardholderName must be === "Bob the Builder"
+          transaction.getCreditCard.cardholderName must be === "Bob the Builder"
           transaction.getVaultCreditCard must be === None
         }
       }
@@ -454,8 +454,8 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
       result match {
         case Success(transaction) => {
-          transaction.getCreditCard.getCardholderName must be === "Bob the Builder"
-          transaction.getVaultCreditCard.get.getCardholderName must be === "Bob the Builder"
+          transaction.getCreditCard.cardholderName must be === "Bob the Builder"
+          transaction.getVaultCreditCard.get.cardholderName must be === "Bob the Builder"
         }
       }
     }
@@ -470,11 +470,11 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
           transaction.getProcessorResponseCode must be === "2000"
           transaction.getProcessorResponseText must not be === (null)
           val creditCard = transaction.getCreditCard
-          creditCard.getBin must be === "411111"
-          creditCard.getLast4 must be === "1111"
-          creditCard.getExpirationMonth must be === "05"
-          creditCard.getExpirationYear must be === "2009"
-          creditCard.getExpirationDate must be === "05/2009"
+          creditCard.bin must be === "411111"
+          creditCard.last4 must be === "1111"
+          creditCard.expirationMonth must be === "05"
+          creditCard.expirationYear must be === "2009"
+          creditCard.expirationDate must be === "05/2009"
         }
       }
     }
@@ -557,15 +557,15 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
         creditCardRequest = new CreditCardRequest().customerId(customer.getId).cvv("123").number("5105105105105100").expirationDate("05/12")
         creditCard <- gateway.creditCard.create(creditCardRequest)
 
-        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken(creditCard.getToken)
+        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken(creditCard.token)
         sale <- gateway.transaction.sale(request)
       } yield (sale, creditCard)
 
       result match {
         case Success((transaction, creditCard)) => {
-          transaction.getCreditCard.getToken must be === creditCard.getToken
-          transaction.getCreditCard.getBin must be === "510510"
-          transaction.getCreditCard.getExpirationDate must be === "05/2012"
+          transaction.getCreditCard.token must be === creditCard.token
+          transaction.getCreditCard.bin must be === "510510"
+          transaction.getCreditCard.expirationDate must be === "05/2012"
         }
       }
     }
@@ -577,15 +577,15 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
         creditCardRequest = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
         creditCard <- gateway.creditCard.create(creditCardRequest)
 
-        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken(creditCard.getToken).creditCard.cvv("301").done
+        request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE.amount).paymentMethodToken(creditCard.token).creditCard.cvv("301").done
         sale <- gateway.transaction.sale(request)
       } yield (sale, creditCard)
 
       result match {
         case Success((transaction, creditCard)) => {
-          transaction.getCreditCard.getToken must be === creditCard.getToken
-          transaction.getCreditCard.getBin must be === "510510"
-          transaction.getCreditCard.getExpirationDate must be === "05/2012"
+          transaction.getCreditCard.token must be === creditCard.token
+          transaction.getCreditCard.bin must be === "510510"
+          transaction.getCreditCard.expirationDate must be === "05/2012"
           transaction.getCvvResponseCode must be === "S"
         }
       }
@@ -691,7 +691,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = gateway.transaction.sale(request)
       result match {
         case Success(transaction)  => {
-          transaction.getCreditCard.getBin must be === "411111"
+          transaction.getCreditCard.bin must be === "411111"
         }
       }
     }
@@ -749,11 +749,11 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       transaction.getType must be === Transactions.Type.CREDIT
       transaction.getStatus must be === Transactions.Status.SUBMITTED_FOR_SETTLEMENT
       val creditCard = transaction.getCreditCard
-      creditCard.getBin must be === "411111"
-      creditCard.getLast4 must be === "1111"
-      creditCard.getExpirationMonth must be === "05"
-      creditCard.getExpirationYear must be === "2009"
-      creditCard.getExpirationDate must be === "05/2009"
+      creditCard.bin must be === "411111"
+      creditCard.last4 must be === "1111"
+      creditCard.expirationMonth must be === "05"
+      creditCard.expirationYear must be === "2009"
+      creditCard.expirationDate must be === "05/2009"
     }
 
     onGatewayIt("creditWithSpecifyingMerchantAccountId") { gateway =>
@@ -806,7 +806,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
       foundTransaction.getId must be === transaction.getId
       foundTransaction.getStatus must be === Transactions.Status.AUTHORIZED
-      foundTransaction.getCreditCard.getExpirationDate must be === "05/2008"
+      foundTransaction.getCreditCard.expirationDate must be === "05/2008"
     }
 
     onGatewayIt("throws exception with bad id") { gateway =>
@@ -1461,7 +1461,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
       val result = for {
         customer <- gateway.customer.create(customerRequest)
         creditCard = customer.getCreditCards.get(0)
-        request = new SubscriptionRequest().paymentMethodToken(creditCard.getToken).
+        request = new SubscriptionRequest().paymentMethodToken(creditCard.token).
           planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId).addOns.add.
           amount(new BigDecimal("11.00")).inheritedFromId("increase_10").numberOfBillingCycles(5).quantity(2).done.
           add.amount(new BigDecimal("21.00")).inheritedFromId("increase_20").numberOfBillingCycles(6).quantity(3).done.
