@@ -22,7 +22,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
 
         val createResult = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
         } yield address
 
         createResult match {
@@ -59,7 +59,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
           countryCodeAlpha3("MEX").countryCodeNumeric("484")
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
           updated <- gateway.address.update(address.customerId, address.id, updateRequest)
         } yield updated
 
@@ -85,7 +85,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
         val setup = for {
           customer <- gateway.customer.create(new CustomerRequest)
           request = new AddressRequest().streetAddress("1 E Main St")
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
         } yield address
 
         setup match {
@@ -116,7 +116,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
           request = new AddressRequest().streetAddress("1 E Main St").extendedAddress("Unit 2").
             locality("Chicago").region("Illinois").postalCode("60607").countryName("United States of America")
 
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
         } yield address
 
         setup match {
@@ -141,7 +141,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
         val setup = for {
           customer <- gateway.customer.create(new CustomerRequest)
           request = new AddressRequest().countryName("Tunisia").countryCodeAlpha2("US")
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
         } yield address
         setup match {
           case Failure(errors, _, _, _, _, _) => {
@@ -158,7 +158,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
         val createResult = for {
           customer <- gateway.customer.create(new CustomerRequest)
           request = new AddressRequest().countryCodeAlpha2("ZZ")
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
         } yield address
 
         createResult match {
@@ -176,7 +176,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
           customer <- gateway.customer.create(new CustomerRequest)
           request = new AddressRequest().countryCodeAlpha3("ZZZ")
 
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
         } yield address
 
         result match {
@@ -194,7 +194,7 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
           customer <- gateway.customer.create(new CustomerRequest)
           request = new AddressRequest().countryCodeNumeric("000")
 
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
         } yield address
 
         result match {
@@ -216,13 +216,13 @@ class AddressSpec extends FunSpec with MustMatchers with GatewaySpec {
         }
         val request = new AddressRequest().countryName("United States of Hammer")
         val result = for {
-          address <- gateway.address.create(customer.getId, request)
+          address <- gateway.address.create(customer.id, request)
         } yield address
 
         result match {
           case Failure(_, parameters, _, _, _, _) => {
             parameters("merchant_id") must be === "integration_merchant_id"
-            parameters("customer_id") must be === customer.getId
+            parameters("customer_id") must be === customer.id
             parameters("address[country_name]") must be === "United States of Hammer"
           }
           case _ => fail("expected failure")

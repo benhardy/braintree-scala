@@ -40,7 +40,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("5105105105105100").expirationDate("05/12");
 
           card <- gateway.creditCard.create(request)
@@ -51,7 +51,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
           case Success((customer, card)) => {
             card.cardholderName must be === "John Doe"
             card.cardType must be === CreditCards.CardType.MASTER_CARD
-            card.customerId must be === customer.getId
+            card.customerId must be === customer.id
             card.customerLocation must be === "US"
             card.bin must be === "510510"
             card.expirationMonth must be === "05"
@@ -75,14 +75,14 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").
             cvv("123").number("5105105105105100").expirationMonth("06").expirationYear("13")
           card <- gateway.creditCard.create(request)
         } yield (customer, card)
 
         inside(result) {
           case Success((customer, card)) => {
-            card.customerId must be === customer.getId
+            card.customerId must be === customer.id
             card.expirationMonth must be === "06"
             card.expirationYear must be === "2013"
             card.expirationDate must be === "06/2013"
@@ -98,7 +98,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("Special Chars <>&\"'").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("Special Chars <>&\"'").
             number("5105105105105100").expirationDate("05/12")
 
           card <- gateway.creditCard.create(request)
@@ -116,7 +116,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("Special Chars").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("Special Chars").
             number("5105105105105100").expirationDate("05/12").deviceSessionId("abc123")
 
           card <- gateway.creditCard.create(request)
@@ -133,7 +133,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
           val result = for {
             customer <- gateway.customer.create(new CustomerRequest)
             request = new CreditCardRequest().
-              customerId(customer.getId).
+              customerId(customer.id).
               billingAddress.
               streetAddress("1 E Main St").
               extendedAddress("Unit 2").
@@ -154,7 +154,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
 
           inside(result) {
             case Success((customer, card)) => {
-              card.customerId must be === customer.getId
+              card.customerId must be === customer.id
               inside(card.billingAddress) { case Some(billingAddress) =>
                 billingAddress.streetAddress must be === "1 E Main St"
                 billingAddress.extendedAddress must be === "Unit 2"
@@ -175,10 +175,10 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
           val result = for {
             customer <- gateway.customer.create(new CustomerRequest)
 
-            request = new CreditCardRequest().customerId(customer.getId).
+            request = new CreditCardRequest().customerId(customer.id).
               cardholderName("John Doe").cvv("123").number("5105105105105100").expirationDate("05/12")
 
-            address <- gateway.address.create(customer.getId, new AddressRequest().postalCode("11111"))
+            address <- gateway.address.create(customer.id, new AddressRequest().postalCode("11111"))
             card <- gateway.creditCard.create(request.billingAddressId(address.id))
           } yield (address, card)
 
@@ -198,9 +198,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request1 = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
+          request1 = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").
             number("5105105105105100").expirationDate("05/12")
-          request2 = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
+          request2 = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").
             number("5105105105105100").expirationDate("05/12").
             options.makeDefault(true).done
 
@@ -223,7 +223,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          trParams = new CreditCardRequest().customerId(customer.getId)
+          trParams = new CreditCardRequest().customerId(customer.id)
           request = new CreditCardRequest().cardholderName("John Doe").number("5105105105105100").expirationDate("05/12")
           trCreateUrl = gateway.transparentRedirect.url
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, trCreateUrl)
@@ -250,7 +250,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
           customer <- gateway.customer.create(new CustomerRequest)
 
           request = new CreditCardRequest
-          trParams = new CreditCardRequest().customerId(customer.getId).number("4111111111111111").expirationDate("10/10").billingAddress.countryName("Aruba").countryCodeAlpha2("AW").countryCodeAlpha3("ABW").countryCodeNumeric("533").done
+          trParams = new CreditCardRequest().customerId(customer.id).number("4111111111111111").expirationDate("10/10").billingAddress.countryName("Aruba").countryCodeAlpha2("AW").countryCodeAlpha3("ABW").countryCodeNumeric("533").done
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
           card <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield card
@@ -273,9 +273,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request1 = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
+          request1 = new CreditCardRequest().customerId(customer.id).number("5105105105105100").expirationDate("05/12")
           card1 <- gateway.creditCard.create(request1)
-          trParams = new CreditCardRequest().customerId(customer.getId).options.makeDefault(true).done
+          trParams = new CreditCardRequest().customerId(customer.id).options.makeDefault(true).done
           request2 = new CreditCardRequest().number("5105105105105100").expirationDate("05/12")
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request2, gateway.transparentRedirect.url)
           card2 <- gateway.transparentRedirect.confirmCreditCard(queryString)
@@ -293,9 +293,9 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request1 = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
+          request1 = new CreditCardRequest().customerId(customer.id).number("5105105105105100").expirationDate("05/12")
           card1 <- gateway.creditCard.create(request1)
-          trParams = new CreditCardRequest().customerId(customer.getId)
+          trParams = new CreditCardRequest().customerId(customer.id)
           request2 = new CreditCardRequest().number("5105105105105100").expirationDate("05/12").options.makeDefault(true).done
           trCreateUrl = gateway.transparentRedirect.url
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request2, trCreateUrl)
@@ -315,7 +315,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
           customer <- gateway.customer.create(new CustomerRequest)
 
           request = new CreditCardRequest
-          trParams = new CreditCardRequest().customerId(customer.getId).number("4111111111111111").expirationDate("10/10").billingAddress.countryName("Aruba").countryCodeAlpha2("US").done
+          trParams = new CreditCardRequest().customerId(customer.id).number("4111111111111111").expirationDate("10/10").billingAddress.countryName("Aruba").countryCodeAlpha2("US").done
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
           card <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield card
@@ -333,7 +333,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         intercept[ForgedQueryStringException] {
           for {
             customer <- gateway.customer.create(new CustomerRequest)
-            trParams = new CreditCardRequest().customerId(customer.getId)
+            trParams = new CreditCardRequest().customerId(customer.id)
             queryString = TestHelper.simulateFormPostForTR(gateway, trParams, new CreditCardRequest, gateway.transparentRedirect.url)
             card <- gateway.transparentRedirect.confirmCreditCard(queryString + "this makes it invalid")
           } yield card
@@ -347,7 +347,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Visa.code)
+          request = new CreditCardRequest().customerId(customer.id).venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Visa.code)
           card <- gateway.creditCard.create(request)
         } yield card
 
@@ -364,7 +364,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Invalid.code)
+          request = new CreditCardRequest().customerId(customer.id).venmoSdkPaymentMethodCode(VenmoSdk.PaymentMethodCode.Invalid.code)
           card <- gateway.creditCard.create(request)
         } yield card
 
@@ -383,7 +383,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
       gateway =>
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").
             number("5105105105105100").expirationDate("05/12").
             options.venmoSdkSession(VenmoSdk.Session.Valid.value).done
           card <- gateway.creditCard.create(request)
@@ -401,7 +401,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
       gateway =>
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").
             number("5105105105105100").expirationDate("05/12").
             options.venmoSdkSession(VenmoSdk.Session.Invalid.value).done
           card <- gateway.creditCard.create(request)
@@ -421,10 +421,10 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
       gateway =>
         val updateResult = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("5105105105105100").expirationDate("05/12")
           original <- gateway.creditCard.create(request)
-          updateRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("Jane Jones").
+          updateRequest = new CreditCardRequest().customerId(customer.id).cardholderName("Jane Jones").
             cvv("321").number("4111111111111111").expirationDate("12/05").
             billingAddress.countryName("Italy").countryCodeAlpha2("IT").countryCodeAlpha3("ITA").countryCodeNumeric("380").done
           updated <- gateway.creditCard.update(original.token, updateRequest)
@@ -452,7 +452,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
       gateway =>
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
+          request = new CreditCardRequest().customerId(customer.id).number("5105105105105100").expirationDate("05/12")
           card1 <- gateway.creditCard.create(request)
           card2 <- gateway.creditCard.create(request)
         } yield (card1, card2)
@@ -479,7 +479,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
       gateway =>
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          createRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
+          createRequest = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").
             cvv("123").number("5105105105105100").expirationDate("05/12")
           card <- gateway.creditCard.create(createRequest)
           trParams = new CreditCardRequest().paymentMethodToken(card.token)
@@ -502,7 +502,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number("5105105105105100").expirationDate("05/12")
           original <- gateway.creditCard.create(request)
           updateRequest = new CreditCardRequest
@@ -534,7 +534,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
       gateway =>
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
+          request = new CreditCardRequest().customerId(customer.id).number("5105105105105100").expirationDate("05/12")
           card <- gateway.creditCard.create(request)
           updateRequest = new CreditCardRequest
           trParams = new CreditCardRequest().paymentMethodToken(card.token).number("4111111111111111").
@@ -555,11 +555,11 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
       gateway =>
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("5105105105105100").expirationDate("05/12")
           card <- gateway.creditCard.create(request)
           newToken = String.valueOf(new Random().nextInt)
-          updateRequest = new CreditCardRequest().customerId(customer.getId).token(newToken)
+          updateRequest = new CreditCardRequest().customerId(customer.id).token(newToken)
           updatedCard <- gateway.creditCard.update(card.token, updateRequest)
 
         } yield (updatedCard, newToken)
@@ -575,7 +575,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("5105105105105100").expirationDate("05/12")
 
           card <- gateway.creditCard.create(request)
@@ -604,7 +604,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").
+          request = new CreditCardRequest().customerId(customer.id).number("5105105105105100").
             expirationDate("05/12").billingAddress.firstName("John").done
 
           original <- gateway.creditCard.create(request)
@@ -628,7 +628,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").
+          request = new CreditCardRequest().customerId(customer.id).number("5105105105105100").
             expirationDate("05/12").billingAddress.firstName("John").done
           original <- gateway.creditCard.create(request)
           updateRequest = new CreditCardRequest().billingAddress.lastName("Jones").
@@ -655,7 +655,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          original <- gateway.creditCard.create(request.customerId(customer.getId))
+          original <- gateway.creditCard.create(request.customerId(customer.id))
           trParams = new CreditCardRequest().paymentMethodToken(original.token).
             billingAddress.options.updateExisting(true).done.done
           updateRequest = new CreditCardRequest().billingAddress.lastName("Jones").done
@@ -681,7 +681,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("5105105105105100").expirationDate("05/12")
           card <- gateway.creditCard.create(request)
         } yield card
@@ -705,7 +705,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          cardRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          cardRequest = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("5105105105105100").expirationDate("05/12")
 
           card <- gateway.creditCard.create(cardRequest)
@@ -749,7 +749,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe")
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe")
             .cvv("123").number("5105105105105100").expirationDate("05/12")
 
           card <- gateway.creditCard.create(request)
@@ -773,7 +773,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
           customer <- gateway.customer.create(new CustomerRequest)
 
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").
             cvv("123").number("4012000033330026").expirationDate("05/12").
             options.failOnDuplicatePaymentMethod(true).done
 
@@ -796,7 +796,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("4111111111111111").expirationDate("05/12").
             options.
             verifyCard(true).
@@ -814,7 +814,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
           customer <- gateway.customer.create(new CustomerRequest)
 
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("5105105105105100").expirationDate("05/12").
             options.
             verifyCard(true).
@@ -836,7 +836,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").
+          request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").
             number("5105105105105100").expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -858,7 +858,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
       val result = for {
         customer <- processingRulesGateway.customer.create(new CustomerRequest)
 
-        request = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("200").
+        request = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("200").
           number("4111111111111111").expirationDate("05/12").
           options.verifyCard(true).done
 
@@ -910,7 +910,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val processingRulesGateway = createProcessingRulesGateway
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.Commercial.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -931,7 +931,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.DurbinRegulated.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -952,7 +952,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.Debit.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -973,7 +973,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.Healthcare.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -993,7 +993,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val processingRulesGateway = createProcessingRulesGateway
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.Payroll.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -1013,7 +1013,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val processingRulesGateway = createProcessingRulesGateway
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.Prepaid.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -1034,7 +1034,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.IssuingBank.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -1055,7 +1055,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.CountryOfIssuance.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -1075,7 +1075,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val processingRulesGateway = createProcessingRulesGateway
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).
+          request = new CreditCardRequest().customerId(customer.id).
             number(CreditCardNumbers.CardTypeIndicators.No.getValue).expirationDate("05/12").
             options.verifyCard(true).done
 
@@ -1099,7 +1099,7 @@ class CreditCardSpec extends FunSpec with MustMatchers with GatewaySpec with Ins
         val result = for {
           customer <- processingRulesGateway.customer.create(new CustomerRequest)
 
-          request = new CreditCardRequest().customerId(customer.getId).number("5555555555554444").
+          request = new CreditCardRequest().customerId(customer.id).number("5555555555554444").
             expirationDate("05/12").options.verifyCard(true).done
 
           card <- processingRulesGateway.creditCard.create(request)

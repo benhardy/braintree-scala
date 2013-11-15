@@ -98,8 +98,8 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val result = gateway.transparentRedirect.confirmCustomer(queryString)
         result match {
           case Success(customer) => {
-            customer.getFirstName must be === "John"
-            customer.getLastName must be === "Doe"
+            customer.firstName must be === "John"
+            customer.lastName must be === "Doe"
           }
           case _ => fail("expected success")
         }
@@ -112,16 +112,16 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
 
         val result = for {
           customer <- gateway.customer.create(request)
-          trParams = new CustomerRequest().customerId(customer.getId).lastName("Dough")
+          trParams = new CustomerRequest().customerId(customer.id).lastName("Dough")
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, updateRequest, gateway.transparentRedirect.url)
           confirm <- gateway.transparentRedirect.confirmCustomer(queryString)
         } yield (customer, confirm)
 
         result match {
           case Success((customer, confirm)) => {
-            val updatedCustomer = gateway.customer.find(customer.getId)
-            updatedCustomer.getFirstName must be === "Jane"
-            updatedCustomer.getLastName must be === "Dough"
+            val updatedCustomer = gateway.customer.find(customer.id)
+            updatedCustomer.firstName must be === "Jane"
+            updatedCustomer.lastName must be === "Dough"
           }
           case _ => fail("expected success")
         }
@@ -134,7 +134,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
           request = new CreditCardRequest
-          trParams = new CreditCardRequest().customerId(customer.getId).number("4111111111111111").expirationDate("10/10")
+          trParams = new CreditCardRequest().customerId(customer.id).number("4111111111111111").expirationDate("10/10")
           queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
           confirm <- gateway.transparentRedirect.confirmCreditCard(queryString)
         } yield confirm
@@ -153,7 +153,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
       gateway =>
         val result = for {
           customer <- gateway.customer.create(new CustomerRequest)
-          request = new CreditCardRequest().customerId(customer.getId).number("5105105105105100").expirationDate("05/12")
+          request = new CreditCardRequest().customerId(customer.id).number("5105105105105100").expirationDate("05/12")
           card <- gateway.creditCard.create(request)
           updateRequest = new CreditCardRequest
           trParams = new CreditCardRequest().paymentMethodToken(card.token).number("4111111111111111").expirationDate("10/10")

@@ -35,7 +35,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
           case _ => fail("setup")
         }
       }
-      lazy val creditCard = customer.getCreditCards.get(0)
+      lazy val creditCard = customer.creditCards.get(0)
     }
   }
 
@@ -668,7 +668,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         val customer = fixture.customer
         val originalPlan = PlanFixture.PLAN_WITHOUT_TRIAL
         val createRequest = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(originalPlan.getId)
-        val cardRequest = new CreditCardRequest().customerId(customer.getId).cardholderName("John Doe").cvv("123").number("5105105105105100").expirationDate("05/12")
+        val cardRequest = new CreditCardRequest().customerId(customer.id).cardholderName("John Doe").cvv("123").number("5105105105105100").expirationDate("05/12")
 
         val result = for {
           created <- gateway.subscription.create(createRequest)
