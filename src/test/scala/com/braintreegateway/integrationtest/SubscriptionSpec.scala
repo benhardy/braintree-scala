@@ -95,8 +95,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         inside(createResult) { case Success(subscription) =>
           val transaction = subscription.transactions.get(0)
-          transaction.getSubscription.billingPeriodStartDate must be === subscription.billingPeriodStartDate
-          transaction.getSubscription.billingPeriodEndDate must be === subscription.billingPeriodEndDate
+          transaction.subscription.billingPeriodStartDate must be === subscription.billingPeriodStartDate
+          transaction.subscription.billingPeriodEndDate must be === subscription.billingPeriodEndDate
         }
     }
 
@@ -334,9 +334,9 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
           subscription.merchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
           subscription.transactions.size must be === 1
           val transaction = subscription.transactions.get(0)
-          transaction.getAmount must be === new BigDecimal("482.48")
-          transaction.getType must be === Transactions.Type.SALE
-          transaction.getSubscriptionId must be === subscription.id
+          transaction.amount must be === new BigDecimal("482.48")
+          transaction.transactionType must be === Transactions.Type.SALE
+          transaction.subscriptionId must be === subscription.id
         }
     }
 
@@ -348,7 +348,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         val result = gateway.subscription.create(request)
 
         inside(result) { case Failure(_,_,_,_,Some(transaction),_) =>
-          transaction.getStatus must be === Transactions.Status.PROCESSOR_DECLINED
+          transaction.status must be === Transactions.Status.PROCESSOR_DECLINED
         }
     }
 
@@ -546,7 +546,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         inside(createResult) { case Success(subscription) =>
           subscription.descriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
           val transaction = subscription.transactions.get(0)
-          transaction.getDescriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
+          transaction.descriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
         }
     }
 
@@ -749,7 +749,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         inside(result) { case Success((original,updated)) =>
           updated.transactions.size must be === (original.transactions.size + 1)
-          updated.transactions.get(0).getStatus must be === Transactions.Status.PROCESSOR_DECLINED
+          updated.transactions.get(0).status must be === Transactions.Status.PROCESSOR_DECLINED
           updated.balance must be === new BigDecimal("0.00")
           updated.price must be === new BigDecimal("1.23")
         }
@@ -769,8 +769,8 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
 
         inside(result) { case Success((original, updatedSubscription)) =>
           updatedSubscription.transactions.size must be === (original.transactions.size + 1)
-          updatedSubscription.transactions.get(0).getStatus must be === Transactions.Status.PROCESSOR_DECLINED
-          updatedSubscription.balance must be === original.transactions.get(0).getAmount
+          updatedSubscription.transactions.get(0).status must be === Transactions.Status.PROCESSOR_DECLINED
+          updatedSubscription.balance must be === original.transactions.get(0).amount
           updatedSubscription.price must be === new BigDecimal("2100.00")
         }
     }
@@ -1264,7 +1264,7 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         } yield (subscription1, subscription2)
 
         inside(setup) { case Success((sub1, sub2)) =>
-          val search = new SubscriptionSearchRequest().transactionId.is(sub1.transactions.get(0).getId)
+          val search = new SubscriptionSearchRequest().transactionId.is(sub1.transactions.get(0).id)
           val results = gateway.subscription.search(search)
           results must includeSubscription(sub1)
           results must not (includeSubscription(sub2))
@@ -1305,12 +1305,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         } yield retry
 
         inside(result) { case Success(transaction) =>
-          transaction.getAmount must be === TransactionAmount.AUTHORIZE.amount
-          transaction.getProcessorAuthorizationCode must not be (null)
-          transaction.getType must be === Transactions.Type.SALE
-          transaction.getStatus must be === Transactions.Status.AUTHORIZED
-          transaction.getCreatedAt.year must be === Calendar.getInstance.year
-          transaction.getUpdatedAt.year must be === Calendar.getInstance.year
+          transaction.amount must be === TransactionAmount.AUTHORIZE.amount
+          transaction.processorAuthorizationCode must not be (null)
+          transaction.transactionType must be === Transactions.Type.SALE
+          transaction.status must be === Transactions.Status.AUTHORIZED
+          transaction.createdAt.year must be === Calendar.getInstance.year
+          transaction.updatedAt.year must be === Calendar.getInstance.year
         }
     }
 
@@ -1325,12 +1325,12 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
         } yield (subscription, retriedCharge)
 
         inside(result) { case Success((subscription, transaction)) =>
-          transaction.getAmount must be === subscription.price
-          transaction.getProcessorAuthorizationCode must not be (null)
-          transaction.getType must be === Transactions.Type.SALE
-          transaction.getStatus must be === Transactions.Status.AUTHORIZED
-          transaction.getCreatedAt.year must be === Calendar.getInstance.year
-          transaction.getUpdatedAt.year must be === Calendar.getInstance.year
+          transaction.amount must be === subscription.price
+          transaction.processorAuthorizationCode must not be (null)
+          transaction.transactionType must be === Transactions.Type.SALE
+          transaction.status must be === Transactions.Status.AUTHORIZED
+          transaction.createdAt.year must be === Calendar.getInstance.year
+          transaction.updatedAt.year must be === Calendar.getInstance.year
         }
     }
   }

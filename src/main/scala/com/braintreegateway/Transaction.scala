@@ -40,11 +40,11 @@ class Transaction(node: NodeWrapper) {
   val subscriptionId = node.findString("subscription-id")
   val taxAmount = node.findBigDecimal("tax-amount")
   val taxExempt = node.findBoolean("tax-exempt")
-  val `type` = EnumUtils.findByName(classOf[Transactions.Type], node.findString("type"))
+  val transactionType = EnumUtils.findByName(classOf[Transactions.Type], node.findString("type"))
   val updatedAt = node.findDateTime("updated-at")
   val refundIds = node.findAll("refund-ids/item").map {
     _.findString(".")
-  }.toList
+  }
 
   val statusHistory = node.findAll("status-history/status-event").map {
     new StatusEvent(_)
@@ -57,83 +57,6 @@ class Transaction(node: NodeWrapper) {
   val discounts = node.findAll("discounts/discount").map {
     new Discount(_)
   }.toList
-
-  // TODO lose the getters
-  def getAddOns = addOns
-
-  def getAmount = amount
-
-  def getAvsErrorResponseCode = avsErrorResponseCode
-
-  def getAvsPostalCodeResponseCode = avsPostalCodeResponseCode
-
-  def getAvsStreetAddressResponseCode = avsStreetAddressResponseCode
-
-  def getBillingAddress = billingAddress
-
-  def getChannel = channel
-
-  def getCreatedAt = createdAt
-
-  def getCreditCard = creditCard
-
-  def getCurrencyIsoCode = currencyIsoCode
-
-  def getCustomer = customer
-
-  def getCustomFields = customFields
-
-  def getCvvResponseCode = cvvResponseCode
-
-  def getDisbursementDetails = disbursementDetails
-
-  def getDescriptor = descriptor
-
-  def getDiscounts = discounts
-
-  def getEscrowStatus = escrowStatus
-
-  def getGatewayRejectionReason = gatewayRejectionReason
-
-  def getId = id
-
-  def getMerchantAccountId = merchantAccountId
-
-  def getOrderId = orderId
-
-  def getPlanId = planId
-
-  def getProcessorAuthorizationCode = processorAuthorizationCode
-
-  def getProcessorResponseCode = processorResponseCode
-
-  def getProcessorResponseText = processorResponseText
-
-  def getPurchaseOrderNumber = purchaseOrderNumber
-
-  def getRefundedTransactionId = refundedTransactionId
-
-  def getServiceFeeAmount = serviceFeeAmount
-
-  def getSettlementBatchId = settlementBatchId
-
-  def getShippingAddress = shippingAddress
-
-  def getStatus = status
-
-  def getStatusHistory = statusHistory
-
-  def getSubscriptionId = subscriptionId
-
-  def getSubscription = subscription
-
-  def getTaxAmount = taxAmount
-
-  def getType = `type`
-
-  def getRecurring = recurring
-
-  def getUpdatedAt = updatedAt
 
   def getVaultBillingAddress(implicit gateway: BraintreeGateway): Option[Address] = {
     for {
@@ -165,5 +88,5 @@ class Transaction(node: NodeWrapper) {
 
   def isTaxExempt = taxExempt
 
-  def isDisbursed = getDisbursementDetails.isValid
+  def isDisbursed = disbursementDetails.isValid
 }

@@ -33,8 +33,8 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
           case Success(transaction) => {
-            transaction.getCreditCard.bin must be === CreditCardNumber.VISA.number.substring(0, 6)
-            transaction.getAmount must be === TransactionAmount.AUTHORIZE.amount
+            transaction.creditCard.bin must be === CreditCardNumber.VISA.number.substring(0, 6)
+            transaction.amount must be === TransactionAmount.AUTHORIZE.amount
           }
           case _ => fail("expected success")
         }
@@ -48,7 +48,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
           case Success(transaction) => {
-            transaction.getMerchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
+            transaction.merchantAccountId must be === NON_DEFAULT_MERCHANT_ACCOUNT_ID
           }
           case _ => fail("expected success")
         }
@@ -64,7 +64,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
           case Success(transaction) => {
-            transaction.getDescriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
+            transaction.descriptor must be === Descriptor(name="123*123456789012345678", phone="3334445555")
           }
           case _ => fail("expected success")
         }
@@ -80,9 +80,9 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
           case Success(transaction) => {
-            transaction.getTaxAmount must be === new BigDecimal("10.00")
+            transaction.taxAmount must be === new BigDecimal("10.00")
             transaction.isTaxExempt must be === true
-            transaction.getPurchaseOrderNumber must be === "12345"
+            transaction.purchaseOrderNumber must be === "12345"
           }
           case _ => fail("expected success")
         }

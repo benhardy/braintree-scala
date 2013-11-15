@@ -94,8 +94,8 @@ class WebhookNotificationSpec extends GatewaySpec with MustMatchers {
         val sampleNotification = gateway.webhookTesting.sampleNotification(WebhookNotifications.Kind.TRANSACTION_DISBURSED, "my_id")
         val notification = gateway.webhookNotification.parse(sampleNotification("signature"), sampleNotification("payload"))
         notification.kind must be === WebhookNotifications.Kind.TRANSACTION_DISBURSED
-        notification.transaction.get.getId must be === "my_id"
-        val actualDate = notification.transaction.get.getDisbursementDetails.disbursementDate.get
+        notification.transaction.get.id must be === "my_id"
+        val actualDate = notification.transaction.get.disbursementDetails.disbursementDate.get
         val expected = CalendarHelper.date(2013, Calendar.JULY, 9).in(actualDate.getTimeZone)
         actualDate must beSameDayAs(expected)
 

@@ -2,10 +2,9 @@ package com.braintreegateway
 
 import com.braintreegateway.util.EnumUtils
 import com.braintreegateway.util.NodeWrapper
-import scala.collection.JavaConversions._
 
 class Subscription(node: NodeWrapper) {
-  val addOns = node.findAll("add-ons/add-on").toList.map { new AddOn(_) }
+  val addOns = node.findAll("add-ons/add-on").map { new AddOn(_) }
   val balance = node.findBigDecimal("balance")
   val billingDayOfMonth = node.findInteger("billing-day-of-month")
   val billingPeriodEndDate = node.findDate("billing-period-end-date")
@@ -30,5 +29,5 @@ class Subscription(node: NodeWrapper) {
   val hasTrialPeriod = node.findBoolean("trial-period")
   val trialDuration = node.findInteger("trial-duration")
   val trialDurationUnit = EnumUtils.findByName(classOf[Subscriptions.DurationUnit], node.findString("trial-duration-unit"))
-  val transactions = node.findAll("transactions/transaction").toList.map{ new Transaction(_) }
+  val transactions = node.findAll("transactions/transaction").map{ new Transaction(_) }
 }

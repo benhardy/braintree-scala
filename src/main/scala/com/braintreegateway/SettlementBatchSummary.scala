@@ -9,10 +9,8 @@ case class SettlementBatchSummary private(records: List[Map[String, String]]) {
 
 object SettlementBatchSummary {
 
-  import scala.collection.JavaConversions._
-
   def apply(root: NodeWrapper) = {
-    val records = root.findAll("records/record").toList.map {
+    val records = root.findAll("records/record").map {
       node => node.findMapOpt("*").toMap
     }
     new SettlementBatchSummary(records)

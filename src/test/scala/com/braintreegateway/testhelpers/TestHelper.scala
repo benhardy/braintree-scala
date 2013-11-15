@@ -65,10 +65,10 @@ object TestHelper {
 
   def includeStatus(status: Status) = Matcher {
     (collection: ResourceCollection[Transaction]) => {
-      val tInfos = collection.map(t => s"${t.getId}:${t.getStatus}").toList
+      val tInfos = collection.map(t => s"${t.id}:${t.status}").toList
       val transactions = "Transaction list " + tInfos.toString
 
-      MatchResult(collection.exists(_.getStatus == status),
+      MatchResult(collection.exists(_.status == status),
         transactions + "does not contain status" + status,
         transactions + "contains " + status)
     }
@@ -78,10 +78,10 @@ object TestHelper {
     (transaction: Transaction) => {
       val response: NodeWrapper = new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
         Environment.DEVELOPMENT.certificateFilenames,
-        BraintreeGateway.VERSION).put(s"/transactions/${transaction.getId}/settle")
+        BraintreeGateway.VERSION).put(s"/transactions/${transaction.id}/settle")
       MatchResult(response.isSuccess,
-        s"transaction ${transaction.getId} did not settle",
-        s"transaction ${transaction.getId} did unexpectedly settle")
+        s"transaction ${transaction.id} did not settle",
+        s"transaction ${transaction.id} did unexpectedly settle")
     }
   }
 
@@ -89,10 +89,10 @@ object TestHelper {
     (transaction: Transaction) => {
       val response: NodeWrapper = new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
         Environment.DEVELOPMENT.certificateFilenames,
-        BraintreeGateway.VERSION).put(s"/transactions/${transaction.getId}/escrow")
+        BraintreeGateway.VERSION).put(s"/transactions/${transaction.id}/escrow")
       MatchResult(response.isSuccess,
-        s"transaction ${transaction.getId} did not escrow",
-        s"transaction ${transaction.getId} did unexpectedly escrow")
+        s"transaction ${transaction.id} did not escrow",
+        s"transaction ${transaction.id} did unexpectedly escrow")
     }
   }
 
