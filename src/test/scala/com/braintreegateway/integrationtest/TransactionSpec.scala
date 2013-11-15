@@ -1462,7 +1462,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
         customer <- gateway.customer.create(customerRequest)
         creditCard = customer.creditCards.get(0)
         request = new SubscriptionRequest().paymentMethodToken(creditCard.token).
-          planId(PlanFixture.PLAN_WITHOUT_TRIAL.getId).addOns.add.
+          planId(PlanFixture.PLAN_WITHOUT_TRIAL.id).addOns.add.
           amount(new BigDecimal("11.00")).inheritedFromId("increase_10").numberOfBillingCycles(5).quantity(2).done.
           add.amount(new BigDecimal("21.00")).inheritedFromId("increase_20").numberOfBillingCycles(6).quantity(3).done.
           done.discounts.add.amount(new BigDecimal("7.50")).inheritedFromId("discount_7").neverExpires(true).quantity(2).done.done
@@ -1474,7 +1474,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
         case Success(tran) => tran
         case _ => fail("expected success")
       }
-      transaction.getPlanId must be === PlanFixture.PLAN_WITHOUT_TRIAL.getId
+      transaction.getPlanId must be === PlanFixture.PLAN_WITHOUT_TRIAL.id
       val addOns = transaction.getAddOns.sortWith((a,b) => a.id < b.id)
 
       addOns.size must be === 2

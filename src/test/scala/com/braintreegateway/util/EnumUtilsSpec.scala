@@ -34,9 +34,6 @@ class EnumUtilsSpec extends FunSpec with MustMatchers {
   }
 
   describe("interactions with DurationUnit") {
-    it("defaults to UNDEFINED for null values") {
-      DurationUnit.fromString(null) must be === DurationUnit.UNDEFINED
-    }
     it("defaults to UNRECOGNIZED for garbage values") {
       DurationUnit.fromString("DERP") must be === DurationUnit.UNRECOGNIZED
     }

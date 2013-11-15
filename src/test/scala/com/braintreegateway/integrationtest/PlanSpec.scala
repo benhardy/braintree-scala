@@ -1,6 +1,7 @@
 package com.braintreegateway.integrationtest
 
 import _root_.org.junit.runner.RunWith
+import _root_.org.scalatest.Inside
 import _root_.org.scalatest.junit.JUnitRunner
 import _root_.org.scalatest.matchers.MustMatchers
 import com.braintreegateway._
@@ -8,11 +9,10 @@ import com.braintreegateway.util.Http
 import gw.BraintreeGateway
 import java.math.BigDecimal
 import java.util.Random
-import scala.collection.JavaConversions._
 import testhelpers.GatewaySpec
 
 @RunWith(classOf[JUnitRunner])
-class PlanSpec extends GatewaySpec with MustMatchers {
+class PlanSpec extends GatewaySpec with MustMatchers with Inside {
 
   describe("plans.all") {
     onGatewayIt("returnsAllPlans") {
@@ -37,26 +37,28 @@ class PlanSpec extends GatewaySpec with MustMatchers {
         http.post("/modifications/create_modification_for_tests", discountRequest)
 
         val plans = gateway.plan.all
-        val actualPlan = plans.filter(_.getId == planId).headOption.get
 
-        actualPlan.getBillingDayOfMonth must be === (Integer valueOf 1)
-        actualPlan.getBillingFrequency must be === (Integer valueOf 1)
-        actualPlan.getCurrencyIsoCode must be === "USD"
-        actualPlan.getDescription must be === "java test description"
-        actualPlan.getName must be === "java test plan"
-        actualPlan.getNumberOfBillingCycles must be === (Integer valueOf 12)
-        actualPlan.getPrice must be === new BigDecimal("100.00")
-        actualPlan.getTrialDuration must be === (Integer valueOf 1)
-        actualPlan.getTrialDurationUnit must be === Plan.DurationUnit.DAY
-        actualPlan.hasTrialPeriod must be === false
+        inside(plans.filter(_.id == planId)) { case actualPlan :: _ =>
 
-        val addOn = actualPlan.getAddOns.get(0)
-        addOn.amount must be === new BigDecimal("100.00")
-        addOn.kind must be === "add_on"
+          actualPlan.billingDayOfMonth must be === (Integer valueOf 1)
+          actualPlan.billingFrequency must be === (Integer valueOf 1)
+          actualPlan.currencyIsoCode must be === "USD"
+          actualPlan.description must be === "java test description"
+          actualPlan.name must be === "java test plan"
+          actualPlan.numberOfBillingCycles must be === (Integer valueOf 12)
+          actualPlan.price must be === new BigDecimal("100.00")
+          actualPlan.trialDuration must be === (Integer valueOf 1)
+          actualPlan.trialDurationUnit must be === Plan.DurationUnit.DAY
+          actualPlan.trialPeriod must be === false
 
-        val discount = actualPlan.getDiscounts.get(0)
-        discount.amount must be === new BigDecimal("100.00")
-        discount.kind must be === "discount"
+          val addOn = actualPlan.addOns.head
+          addOn.amount must be === new BigDecimal("100.00")
+          addOn.kind must be === "add_on"
+
+          val discount = actualPlan.discounts.head
+          discount.amount must be === new BigDecimal("100.00")
+          discount.kind must be === "discount"        }
+
     }
   }
 }
