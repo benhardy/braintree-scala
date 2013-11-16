@@ -2,6 +2,44 @@
 
 The Braintree library provides integration access to the Braintree Gateway.
 
+## Design goals and their status
+
+1. 100% compatible fully featured client library which supports all operations the Java one does
+
+2. Composable gateway operations
+   - use gateway operations in for-comprehensions (monadically)
+   - done for create, update and delete operations
+   - Result type has chainable Success, Failure and Deleted case classes
+   - TODO for find. requires refactoring NotFoundException to a NotFound Result type
+
+3. Elimination of null usage
+   - much work to do here
+   - XML rendering has been refactored to handle Option types
+   - client library needs some awareness of which values can never legally be absent
+   - TODO decide how to handle absent field for something like gateway-generated ids or timestamps:
+     - cause an IllegalStateException, IllegalArgumentException, UnexpectedException?
+     - cause no object to be returned (as None)? (somewhat inconvenient)
+     - let absent required String fields be empty Strings? (half-assed)
+     - make all fields Optional? (inconvenient)
+     - let the user deal with it? (no way)
+     - current behaviour carried over from java is to throw NPE
+
+4. No external dependencies other than the language [done, carried through from original java]
+   - apache.commons.codec is vendored in with this
+   - side effect is using Calendar for dates
+
+4. Take advantage of Scala native XML support (TODO)
+   - so far have only done this to a limited extent
+
+5. Use scala collections [done, except for ResourceCollection (TODO) ]
+
+6. Minimal usage of implicits
+   - to be used mainly for eliminating ceremony or increasing obviousness of operations
+   - e.g. used in CalendarUtils to make Calendar less of a bear to deal with
+
+
+#
+
 ## Dependencies
 
 * none
