@@ -50,6 +50,8 @@ object Http {
     case object POST extends RequestMethod
     case object PUT extends RequestMethod
   }
+
+  val DummyNode = new SimpleNodeWrapper( <none/>.toString)
 }
 
 class Http(authorizationHeader: String, baseMerchantURL: String, certificateFilenames: List[String], version: String) {
@@ -63,47 +65,35 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
   }
 
   def post(url: String): NodeWrapper = {
-    httpRequest(RequestMethod.POST, url, null)
+    httpRequest(RequestMethod.POST, url)
   }
 
   def post(url: String, request: Request): NodeWrapper = {
-    httpRequest(RequestMethod.POST, url, request.toXmlString)
+    httpRequest(RequestMethod.POST, url, Some(request.toXmlString))
   }
 
   def put(url: String): NodeWrapper = {
-    httpRequest(RequestMethod.PUT, url, null)
+    httpRequest(RequestMethod.PUT, url)
   }
 
   def put(url: String, request: Request): NodeWrapper = {
-    httpRequest(RequestMethod.PUT, url, request.toXmlString)
+    httpRequest(RequestMethod.PUT, url, Some(request.toXmlString))
   }
 
-  private def httpRequest(requestMethod: Http.RequestMethod, url: String): NodeWrapper = {
-    httpRequest(requestMethod, url, null)
-  }
-
-  private def httpRequest(requestMethod: Http.RequestMethod, url: String, postBody: String): NodeWrapper = {
+  private def httpRequest(requestMethod: Http.RequestMethod, url: String, postBody: Option[String] = None): NodeWrapper = {
     try {
-      val connection: HttpURLConnection = buildConnection(requestMethod, url)
-      if (connection.isInstanceOf[HttpsURLConnection]) {
-        (connection.asInstanceOf[HttpsURLConnection]).setSSLSocketFactory(getSSLSocketFactory)
-      }
-      if (postBody != null) {
-        connection.getOutputStream.write(postBody.getBytes("UTF-8"))
-        connection.getOutputStream.close
-      }
+      val connection = connectionSetup(requestMethod, url)
+      postBody.map { writePostBody(connection) }
+
       Http.throwExceptionIfErrorStatusCode(connection.getResponseCode)
+      val response = fetchResponse(connection)
+
       if (requestMethod == RequestMethod.DELETE) {
-        return null
+        Http.DummyNode
+      } else {
+        NodeWrapperFactory.create(response)
       }
-      var responseStream: InputStream = if (connection.getResponseCode == 422) connection.getErrorStream else connection.getInputStream
-      if ("gzip".equalsIgnoreCase(connection.getContentEncoding)) {
-        responseStream = new GZIPInputStream(responseStream)
-      }
-      val xml = StringUtils.inputStreamToString(responseStream)
-      responseStream.close
-      NodeWrapperFactory.create(xml)
-    }
+   }
     catch {
       case e: IOException => {
         throw new UnexpectedException(e.getMessage, e)
@@ -111,9 +101,36 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
     }
   }
 
+  def connectionSetup(requestMethod: Http.RequestMethod, url: String): HttpURLConnection = {
+    buildConnection(requestMethod, url) match {
+      case secureConnection: HttpsURLConnection => {
+        secureConnection.setSSLSocketFactory(getSSLSocketFactory)
+        secureConnection
+      }
+      case other => other
+    }
+  }
+
+  def writePostBody(connection: HttpURLConnection)(body: String) {
+    connection.getOutputStream.write(body.getBytes("UTF-8"))
+    connection.getOutputStream.close
+  }
+
+  def fetchResponse(connection: HttpURLConnection): String = {
+    val isFailed = connection.getResponseCode == 422
+    val streamSource = if (isFailed) connection.getErrorStream else connection.getInputStream
+
+    val isCompressed = "gzip".equalsIgnoreCase(connection.getContentEncoding)
+    val responseStream = if (isCompressed) new GZIPInputStream(streamSource) else streamSource
+
+    val xml = StringUtils.inputStreamToString(responseStream)
+    responseStream.close
+    xml
+  }
+
   private def getSSLSocketFactory: SSLSocketFactory = {
     try {
-      val keyStore: KeyStore = KeyStore.getInstance(KeyStore.getDefaultType)
+      val keyStore = KeyStore.getInstance(KeyStore.getDefaultType)
       keyStore.load(null)
       for (certificateFilename <- certificateFilenames) {
         val cf: CertificateFactory = CertificateFactory.getInstance("X.509")
@@ -126,7 +143,7 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
       val tmf = TrustManagerFactory.getInstance(TrustManagerFactory.getDefaultAlgorithm)
       tmf.init(keyStore)
       val sslContext = SSLContext.getInstance("TLS")
-      sslContext.init(kmf.getKeyManagers.asInstanceOf[Array[KeyManager]], tmf.getTrustManagers, SecureRandom.getInstance("SHA1PRNG"))
+      sslContext.init(kmf.getKeyManagers, tmf.getTrustManagers, SecureRandom.getInstance("SHA1PRNG"))
       sslContext.getSocketFactory
     }
     catch {
