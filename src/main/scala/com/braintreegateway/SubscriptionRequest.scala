@@ -9,85 +9,89 @@ import java.util.Calendar
  */
 class SubscriptionRequest extends BaseRequest {
 
-  private var addOnsRequest: ModificationsRequest = null
-  private var billingDayOfMonth: Integer = null
-  private var descriptorRequest: DescriptorRequest[SubscriptionRequest] = null
-  private var discountsRequest: ModificationsRequest = null
-  private var firstBillingDate: Calendar = null
-  private var hasTrialPeriod: java.lang.Boolean = null
-  private var id: String = null
-  private var merchantAccountId: String = null
-  private var neverExpires: java.lang.Boolean = null
-  private var numberOfBillingCycles: Integer = null
-  private var _options: SubscriptionOptionsRequest = null
-  private var paymentMethodToken: String = null
-  private var planId: String = null
-  private var price: BigDecimal = null
-  private var trialDuration: Integer = null
-  private var trialDurationUnit: Subscriptions.DurationUnit = null
+  private var addOnsRequest: Option[ModificationsRequest] = None
+  private var billingDayOfMonth: Option[Integer] = None
+  private var descriptorRequest: Option[DescriptorRequest[SubscriptionRequest]] = None
+  private var discountsRequest: Option[ModificationsRequest] = None
+  private var firstBillingDate: Option[Calendar] = None
+  private var hasTrialPeriod: Option[Boolean] = None
+  private var id: Option[String] = None
+  private var merchantAccountId: Option[String] = None
+  private var neverExpires: Option[Boolean] = None
+  private var numberOfBillingCycles: Option[Integer] = None
+  private var _options: Option[SubscriptionOptionsRequest] = None
+  private var paymentMethodToken: Option[String] = None
+  private var planId: Option[String] = None
+  private var price: Option[BigDecimal] = None
+  private var trialDuration: Option[Integer] = None
+  private var trialDurationUnit: Option[Subscriptions.DurationUnit] = None
 
   def addOns: ModificationsRequest = {
-    addOnsRequest = new ModificationsRequest(this, "addOns")
-    addOnsRequest
+    val subRequest = new ModificationsRequest(this, "addOns")
+    this.addOnsRequest = Some(subRequest)
+    subRequest
   }
 
   def billingDayOfMonth(billingDayOfMonth: Integer): SubscriptionRequest = {
-    this.billingDayOfMonth = billingDayOfMonth
+    this.billingDayOfMonth = Some(billingDayOfMonth)
     this
   }
 
   def descriptor: DescriptorRequest[SubscriptionRequest] = {
-    descriptorRequest = DescriptorRequest.apply(this)
-    descriptorRequest
+    val subRequest = DescriptorRequest.apply(this)
+    this.descriptorRequest = Some(subRequest)
+    subRequest
   }
 
   def discounts: ModificationsRequest = {
-    discountsRequest = new ModificationsRequest(this, "discounts")
-    discountsRequest
+    val subRequest = new ModificationsRequest(this, "discounts")
+    discountsRequest = Some(subRequest)
+    subRequest
   }
 
   def firstBillingDate(firstBillingDate: Calendar): SubscriptionRequest = {
-    this.firstBillingDate = firstBillingDate
+    this.firstBillingDate = Some(firstBillingDate)
     this
   }
 
   def id(id: String): SubscriptionRequest = {
-    this.id = id
+    this.id = Some(id)
     this
   }
 
   def merchantAccountId(merchantAccountId: String): SubscriptionRequest = {
-    this.merchantAccountId = merchantAccountId
+    this.merchantAccountId = Some(merchantAccountId)
     this
   }
 
   def neverExpires(neverExpires: Boolean): SubscriptionRequest = {
-    this.neverExpires = neverExpires
+    this.neverExpires = Some(neverExpires)
     this
   }
 
   def numberOfBillingCycles(numberOfBillingCycles: Integer): SubscriptionRequest = {
-    this.numberOfBillingCycles = numberOfBillingCycles
+    this.numberOfBillingCycles = Some(numberOfBillingCycles)
     this
   }
 
   def options: SubscriptionOptionsRequest = {
-    _options = new SubscriptionOptionsRequest(this)
-    _options
+    val subRequest = new SubscriptionOptionsRequest(this)
+    this._options = Some(subRequest)
+    subRequest
   }
 
   def paymentMethodToken(token: String): SubscriptionRequest = {
-    this.paymentMethodToken = token
+    this.paymentMethodToken = Some(token)
     this
   }
 
   def planId(id: String): SubscriptionRequest = {
-    this.planId = id
+    this.planId = Some(id)
     this
   }
 
   def price(price: BigDecimal): SubscriptionRequest = {
-    this.price = price
+    this.price = Some(price)
     this
   }
 
@@ -96,17 +100,17 @@ class SubscriptionRequest extends BaseRequest {
   }
 
   def trialDuration(trialDuration: Integer): SubscriptionRequest = {
-    this.trialDuration = trialDuration
+    this.trialDuration = Some(trialDuration)
     this
   }
 
   def trialDurationUnit(trialDurationUnit: Subscriptions.DurationUnit): SubscriptionRequest = {
-    this.trialDurationUnit = trialDurationUnit
+    this.trialDurationUnit = Some(trialDurationUnit)
     this
   }
 
   def trialPeriod(hasTrialPeriod: Boolean): SubscriptionRequest = {
-    this.hasTrialPeriod = hasTrialPeriod
+    this.hasTrialPeriod = Some(hasTrialPeriod)
     this
   }
 
@@ -127,6 +131,6 @@ class SubscriptionRequest extends BaseRequest {
         addElement("price", price).
         addElement("trialPeriod", hasTrialPeriod).
         addElement("trialDuration", trialDuration).
-        addLowerCaseElementIfPresent("trialDurationUnit", trialDurationUnit)
+        addElement("trialDurationUnit", trialDurationUnit.map {_.toString.toLowerCase })
   }
 }
