@@ -115,7 +115,7 @@ class RequestBuilder(parent: String) {
     this
   }
 
-  def addElementIf(condition: Boolean, name: String, value: AnyRef): RequestBuilder = {
+  def addElementIf(condition: Boolean, name: String, value: =>AnyRef): RequestBuilder = {
     if (condition) {
       elements(name)= value
     }

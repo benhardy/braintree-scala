@@ -2,79 +2,78 @@ package com.braintreegateway
 
 import scala.math.BigDecimal
 
-// TODO make this idiomatic scala
 // TODO figure out why this isn't in src/main
 class PlanRequest extends BaseRequest {
-  private var id: String = null
-  private var merchantId: String = null
-  private var billingDayOfMonth: Integer = null
-  private var billingFrequency: Integer = null
-  private var currencyIsoCode: String = null
-  private var description: String = null
-  private var name: String = null
-  private var numberOfBillingCycles: Integer = null
-  private var price: BigDecimal = null
-  private var hasTrialPeriod: java.lang.Boolean = null
-  private var trialDuration: Integer = null
-  private var trialDurationUnit: Plan.DurationUnit = null
+  private var id: Option[String] = None
+  private var merchantId: Option[String] = None
+  private var billingDayOfMonth: Option[Int] = None
+  private var billingFrequency: Option[Int] = None
+  private var currencyIsoCode: Option[String] = None
+  private var description: Option[String] = None
+  private var name: Option[String] = None
+  private var numberOfBillingCycles: Option[Int] = None
+  private var price: Option[BigDecimal] = None
+  private var hasTrialPeriod: Option[Boolean] = None
+  private var trialDuration: Option[Int] = None
+  private var trialDurationUnit: Option[Plan.DurationUnit] = None
 
   def id(id: String): PlanRequest = {
-    this.id = id
+    this.id = Some(id)
     this
   }
 
   def billingFrequency(billingFrequency: Int): PlanRequest = {
-    this.billingFrequency = billingFrequency
+    this.billingFrequency = Some(billingFrequency)
     this
   }
 
   def description(description: String): PlanRequest = {
-    this.description = description
+    this.description = Some(description)
     this
   }
 
   def numberOfBillingCycles(numberOfBillingCycles: Int): PlanRequest = {
-    this.numberOfBillingCycles = numberOfBillingCycles
+    this.numberOfBillingCycles = Some(numberOfBillingCycles)
     this
   }
 
   def price(price: BigDecimal): PlanRequest = {
-    this.price = price
+    this.price = Some(price)
     this
   }
 
   def trialPeriod(trialPeriod: Boolean): PlanRequest = {
-    this.hasTrialPeriod = trialPeriod
+    this.hasTrialPeriod = Some(trialPeriod)
     this
   }
 
   def trialDuration(trialDuration: Int): PlanRequest = {
-    this.trialDuration = trialDuration
+    this.trialDuration = Some(trialDuration)
     this
   }
 
   def trialDurationUnit(trialDurationUnit: Plan.DurationUnit): PlanRequest = {
-    this.trialDurationUnit = trialDurationUnit
+    this.trialDurationUnit = Some(trialDurationUnit)
     this
   }
 
   def merchantId(merchantId: String): PlanRequest = {
-    this.merchantId = merchantId
+    this.merchantId = Some(merchantId)
     this
   }
 
   def billingDayOfMonth(billingDayOfMonth: Int): PlanRequest = {
-    this.billingDayOfMonth = billingDayOfMonth
+    this.billingDayOfMonth = Some(billingDayOfMonth)
     this
   }
 
   def currencyIsoCode(currencyIsoCode: String): PlanRequest = {
-    this.currencyIsoCode = currencyIsoCode
+    this.currencyIsoCode = Some(currencyIsoCode)
     this
   }
 
   def name(name: String): PlanRequest = {
-    this.name = name
+    this.name = Some(name)
     this
   }
 
@@ -94,11 +93,9 @@ class PlanRequest extends BaseRequest {
       addElement("numberOfBillingCycles", numberOfBillingCycles).
       addElement("price", price).
       addElement("trialPeriod", hasTrialPeriod).
-      addElement("trialDuration", trialDuration)
+      addElement("trialDuration", trialDuration).
+      addElement("trialDurationUnit", trialDurationUnit.map {_.toString.toLowerCase} )
 
-    if (trialDurationUnit != null) {
-      builder.addElement("trialDurationUnit", trialDurationUnit.toString.toLowerCase)
-    }
     builder
   }
 }
