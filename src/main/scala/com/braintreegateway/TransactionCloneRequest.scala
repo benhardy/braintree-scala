@@ -4,18 +4,19 @@ import scala.math.BigDecimal
 
 class TransactionCloneRequest extends BaseRequest {
   def amount(amount: BigDecimal) = {
-    _amount = amount
+    _amount = Some(amount)
     this
   }
 
   def channel(channel: String) = {
-    _channel = channel
+    _channel = Some(channel)
     this
   }
 
   def options: TransactionOptionsCloneRequest = {
-    _transactionOptionsCloneRequest = new TransactionOptionsCloneRequest(this)
-    _transactionOptionsCloneRequest
+    val subRequest = new TransactionOptionsCloneRequest(this)
+    _transactionOptionsCloneRequest = Some(subRequest)
+    subRequest
   }
 
   override def toXmlString: String = {
@@ -29,7 +30,7 @@ class TransactionCloneRequest extends BaseRequest {
       addElement("options", _transactionOptionsCloneRequest)
   }
 
-  private var _amount: BigDecimal = null
-  private var _channel: String = null
-  private var _transactionOptionsCloneRequest: TransactionOptionsCloneRequest = null
+  private var _amount: Option[BigDecimal] = None
+  private var _channel: Option[String] = None
+  private var _transactionOptionsCloneRequest: Option[TransactionOptionsCloneRequest] = None
 }

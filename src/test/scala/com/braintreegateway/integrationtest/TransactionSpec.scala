@@ -56,7 +56,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("createViaTransparentRedirect") { gateway =>
       val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.options.storeInVault(true).done
-      val trParams = new TransactionRequest().`type`(Transactions.Type.SALE)
+      val trParams = new TransactionRequest().transactionType(Transactions.Type.SALE)
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transaction.transparentRedirectURLForCreate)
       val result = gateway.transaction.confirmTransparentRedirect(queryString)
       result must be ('success)
@@ -621,7 +621,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
   describe("creating transaction with Transparent Redirect") {
     onGatewayIt("populates billing address") { gateway =>
       val request = new TransactionRequest
-      val trParams = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).`type`(Transactions.Type.SALE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.billingAddress.countryName("United States of America").countryCodeAlpha2("US").countryCodeAlpha3("USA").countryCodeNumeric("840").done
+      val trParams = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).transactionType(Transactions.Type.SALE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.billingAddress.countryName("United States of America").countryCodeAlpha2("US").countryCodeAlpha3("USA").countryCodeNumeric("840").done
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
       val result = gateway.transparentRedirect.confirmTransaction(queryString)
       val transaction = result match { case Success(txn) => txn }
@@ -633,7 +633,7 @@ class TransactionSpec extends GatewaySpec with MustMatchers {
 
     onGatewayIt("rejects invalid billing addresses") { gateway =>
       val request = new TransactionRequest
-      val trParams = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).`type`(Transactions.Type.SALE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.billingAddress.countryName("Foo bar!").countryCodeAlpha2("zz").countryCodeAlpha3("zzz").countryCodeNumeric("000").done
+      val trParams = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).transactionType(Transactions.Type.SALE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.billingAddress.countryName("Foo bar!").countryCodeAlpha2("zz").countryCodeAlpha3("zzz").countryCodeNumeric("000").done
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
       val result = gateway.transparentRedirect.confirmTransaction(queryString)
       val errors = result match { case Failure(errors,_,_,_,_,_) => errors }

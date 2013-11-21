@@ -45,7 +45,7 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @return a{ @link Result}
    */
   def credit(request: TransactionRequest): Result[Transaction] = {
-    val response: NodeWrapper = http.post("/transactions", request.`type`(Type.CREDIT))
+    val response: NodeWrapper = http.post("/transactions", request.transactionType(Type.CREDIT))
     Result.transaction(response)
   }
 
@@ -56,7 +56,7 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @return aString representing the trData.
    */
   def creditTrData(trData: TransactionRequest, redirectURL: String): String = {
-    new TrUtil(configuration).buildTrData(trData.`type`(Type.CREDIT), redirectURL)
+    new TrUtil(configuration).buildTrData(trData.transactionType(Type.CREDIT), redirectURL)
   }
 
   /**
@@ -91,7 +91,7 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @return a{ @link Result}.
    */
   def sale(request: TransactionRequest): Result[Transaction] = {
-    val response: NodeWrapper = http.post("/transactions", request.`type`(Type.SALE))
+    val response: NodeWrapper = http.post("/transactions", request.transactionType(Type.SALE))
     Result.transaction(response)
   }
 
@@ -102,7 +102,7 @@ class TransactionGateway(http: Http, configuration: Configuration) {
    * @return aString representing the trData.
    */
   def saleTrData(trData: TransactionRequest, redirectURL: String): String = {
-    new TrUtil(configuration).buildTrData(trData.`type`(Type.SALE), redirectURL)
+    new TrUtil(configuration).buildTrData(trData.transactionType(Type.SALE), redirectURL)
   }
 
   /**

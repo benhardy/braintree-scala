@@ -135,8 +135,8 @@ class TransactionRequest extends Request {
     buildRequest("transaction").toXmlString
   }
 
-  def `type`(`type`: Transactions.Type): TransactionRequest = {
-    this.`type` = `type`
+  def transactionType(transactionType: Transactions.Type): TransactionRequest = {
+    this.transactionType = transactionType
     this
   }
 
@@ -165,7 +165,7 @@ class TransactionRequest extends Request {
       .addElement("venmoSdkPaymentMethodCode", venmoSdkPaymentMethodCode)
       .addElement("serviceFeeAmount", serviceFeeAmount)
       .addElementIf(!custom.isEmpty, "customFields", custom)
-      .addLowerCaseElementIfPresent("type", `type`)
+      .addElement("type", Option(transactionType).map {_.toString.toLowerCase})
   }
 
   private var amount: BigDecimal = null
@@ -187,7 +187,7 @@ class TransactionRequest extends Request {
   private var transactionOptionsRequest: TransactionOptionsRequest = null
   private var taxAmount: BigDecimal = null
   private var taxExempt: java.lang.Boolean = null
-  private var `type`: Transactions.Type = null
+  private var transactionType: Transactions.Type = null
   private var venmoSdkPaymentMethodCode: String = null
   private var serviceFeeAmount: BigDecimal = null
 }

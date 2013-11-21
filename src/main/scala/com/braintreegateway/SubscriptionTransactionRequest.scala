@@ -4,12 +4,12 @@ import scala.math.BigDecimal
 
 class SubscriptionTransactionRequest extends BaseRequest {
   def amount(amount: BigDecimal): SubscriptionTransactionRequest = {
-    this.amount = amount
+    this.amount = Some(amount)
     this
   }
 
   def subscriptionId(subscriptionId: String): SubscriptionTransactionRequest = {
-    this.subscriptionId = subscriptionId
+    this.subscriptionId = Some(subscriptionId)
     this
   }
 
@@ -24,6 +24,6 @@ class SubscriptionTransactionRequest extends BaseRequest {
       addElement("type", Transactions.Type.SALE.toString.toLowerCase)
   }
 
-  private var amount: BigDecimal = null
-  private var subscriptionId: String = null
+  private var amount: Option[BigDecimal] = None
+  private var subscriptionId: Option[String] = None
 }

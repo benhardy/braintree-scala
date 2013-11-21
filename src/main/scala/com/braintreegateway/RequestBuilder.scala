@@ -84,8 +84,8 @@ object RequestBuilder {
     String.format("<%s>%s</%s>", tagName, xml, tagName)
   }
 
-  def wrapInXMLTag(tagName: String, xml: String, `type`: String): String = {
-    String.format("<%s type=\"%s\">%s</%s>", tagName, `type`, xml, tagName)
+  def wrapInXMLTag(tagName: String, xml: String, typeString: String): String = {
+    String.format("<%s type=\"%s\">%s</%s>", tagName, typeString, xml, tagName)
   }
 
   // TODO this needs to begone.
@@ -98,33 +98,21 @@ object RequestBuilder {
 class RequestBuilder(parent: String) {
 
   val topLevelElements = MMap[String, String]()
-  val elements = MMap[String, AnyRef]()
+  val elements = MMap[String, Any]()
 
   def addTopLevelElement(name: String, value: String): RequestBuilder = {
     topLevelElements.put(name, value)
     this
   }
 
-  def addElement(name: String, value: AnyRef): RequestBuilder = {
+  def addElement(name: String, value: Any): RequestBuilder = {
     elements(name) = value
     this
   }
 
-  def addElement(name: String, value: Boolean): RequestBuilder = {
-    elements(name) = java.lang.Boolean.valueOf(value)
-    this
-  }
-
-  def addElementIf(condition: Boolean, name: String, value: =>AnyRef): RequestBuilder = {
+  def addElementIf(condition: Boolean, name: String, value: => Any): RequestBuilder = {
     if (condition) {
       elements(name)= value
-    }
-    this
-  }
-
-  def addLowerCaseElementIfPresent(name: String, value: AnyRef): RequestBuilder = {
-    if (value != null) {
-      elements(name)= value.toString.toLowerCase
     }
     this
   }
@@ -136,11 +124,20 @@ class RequestBuilder(parent: String) {
       val underscoredKey = StringUtils.underscore(key)
       queryString.append(underscoredKey, value)
     }
-    for ((key:String, value:AnyRef) <- elements) {
+    for ((key:String, value:Any) <- elements) {
       val bracketedKeyOffParent = RequestBuilder.parentBracketChildString(parentUnderscored, underscore(key))
-      queryString.append(bracketedKeyOffParent, value)
+      queryString.append(bracketedKeyOffParent, optionize(value))
     }
     queryString.toString
+  }
+
+  // TODO make this unnecessary
+  def optionize(value: Any): Option[_] = {
+    val maybe: Option[_] = value match {
+      case optionAlready: Option[_] => optionAlready
+      case other => Option(other)
+    }
+    maybe
   }
 
   def toXmlString: String = {

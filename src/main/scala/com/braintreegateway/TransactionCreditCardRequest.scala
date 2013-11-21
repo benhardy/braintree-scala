@@ -3,48 +3,48 @@ package com.braintreegateway
 class TransactionCreditCardRequest(override val done: TransactionRequest)
     extends BaseRequest with HasParent[TransactionRequest] {
 
-  private var cardholderName: String = null
-  private var cvv: String = null
-  private var expirationDate: String = null
-  private var expirationMonth: String = null
-  private var expirationYear: String = null
-  private var number: String = null
-  private var token: String = null
+  private var cardholderName: Option[String] = None
+  private var cvv: Option[String] = None
+  private var expirationDate: Option[String] = None
+  private var expirationMonth: Option[String] = None
+  private var expirationYear: Option[String] = None
+  private var number: Option[String] = None
+  private var token: Option[String] = None
 
   def cardholderName(cardholderName: String): this.type = {
-    this.cardholderName = cardholderName
+    this.cardholderName = Some(cardholderName)
     this
   }
 
   def cvv(cvv: String): this.type = {
-    this.cvv = cvv
+    this.cvv = Some(cvv)
     this
   }
 
   def expirationDate(expirationDate: String): this.type = {
-    this.expirationDate = expirationDate
+    this.expirationDate = Some(expirationDate)
     this
   }
 
   def expirationMonth(expirationMonth: String): this.type = {
-    this.expirationMonth = expirationMonth
+    this.expirationMonth = Some(expirationMonth)
     this
   }
 
   def expirationYear(expirationYear: String): this.type = {
-    this.expirationYear = expirationYear
+    this.expirationYear = Some(expirationYear)
     this
   }
 
   def getToken = token
 
   def number(number: String): this.type = {
-    this.number = number
+    this.number = Some(number)
     this
   }
 
   def token(token: String): this.type = {
-    this.token = token
+    this.token = Some(token)
     this
   }
 
@@ -52,7 +52,7 @@ class TransactionCreditCardRequest(override val done: TransactionRequest)
 
   override def toQueryString(root: String) = buildRequest(root).toQueryString
 
-  override def toQueryString =  toQueryString("creditCard")
+  override def toQueryString = toQueryString("creditCard")
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).

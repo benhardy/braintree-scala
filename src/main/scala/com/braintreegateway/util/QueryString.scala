@@ -47,6 +47,9 @@ final class QueryString(content: String = "") {
   def append(key: String, value: AnyRef): QueryString = {
     value match {
       case null => this
+      case None => this
+      case Some(optionalRequest:Request) => appendRequest(key, optionalRequest) // ugly TODO make pretty
+      case Some(x:AnyRef) => appendString(key, x.toString)
       case request: Request => appendRequest(key, request)
       case sMap: Map[_,_] => appendMap(key, sMap)
       case other => appendString(key, other.toString)

@@ -28,7 +28,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("basically works") {
       gateway =>
         val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done.options.storeInVault(true).done
-        val trParams = new TransactionRequest().`type`(Transactions.Type.SALE)
+        val trParams = new TransactionRequest().transactionType(Transactions.Type.SALE)
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
@@ -43,7 +43,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("can specify merchant id") {
       gateway =>
         val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
-        val trParams = new TransactionRequest().`type`(Transactions.Type.SALE).merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID)
+        val trParams = new TransactionRequest().transactionType(Transactions.Type.SALE).merchantAccountId(NON_DEFAULT_MERCHANT_ACCOUNT_ID)
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
@@ -58,7 +58,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
       gateway =>
         val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).
           creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
-        val trParams = new TransactionRequest().`type`(Transactions.Type.SALE).
+        val trParams = new TransactionRequest().transactionType(Transactions.Type.SALE).
           descriptor.name("123*123456789012345678").phone("3334445555").done
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
@@ -74,7 +74,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
       gateway =>
         val request = new TransactionRequest().amount(TransactionAmount.AUTHORIZE).
           creditCard.number(CreditCardNumber.VISA.number).expirationDate("05/2009").done
-        val trParams = new TransactionRequest().`type`(Transactions.Type.SALE).
+        val trParams = new TransactionRequest().transactionType(Transactions.Type.SALE).
           taxAmount(BigDecimal("10.00")).taxExempt(true).purchaseOrderNumber("12345")
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
@@ -187,7 +187,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
     onGatewayIt("doesn't raise error when receiving API error response") {
       gateway =>
         val invalidRequest = new TransactionRequest
-        val trParams = new TransactionRequest().`type`(Transactions.Type.SALE)
+        val trParams = new TransactionRequest().transactionType(Transactions.Type.SALE)
         val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, invalidRequest, gateway.transparentRedirect.url)
         val result = gateway.transparentRedirect.confirmTransaction(queryString)
         result match {
