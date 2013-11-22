@@ -5,23 +5,24 @@ package com.braintreegateway
  */
 class MerchantAccountRequest extends BaseRequest {
 
-  private var _applicantDetails: ApplicantDetailsRequest = null
+  private var _applicantDetails: Option[ApplicantDetailsRequest] = None
   private var tosAccepted: Boolean = false
-  private var masterMerchantAccountId: String = null
-  private var id: String = null
+  private var masterMerchantAccountId: Option[String] = None
+  private var id: Option[String] = None
 
   def id(id: String): MerchantAccountRequest = {
-    this.id = id
+    this.id = Option(id)
     this
   }
 
   def applicantDetails: ApplicantDetailsRequest = {
-    _applicantDetails = new ApplicantDetailsRequest(this)
-    _applicantDetails
+    val subRequest = new ApplicantDetailsRequest(this)
+    this._applicantDetails = Some(subRequest)
+    subRequest
   }
 
   def masterMerchantAccountId(masterMerchantAccountId: String): MerchantAccountRequest = {
-    this.masterMerchantAccountId = masterMerchantAccountId
+    this.masterMerchantAccountId = Option(masterMerchantAccountId)
     this
   }
 

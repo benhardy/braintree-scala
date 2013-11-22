@@ -10,42 +10,45 @@ class TransactionRequest extends Request {
   private val customFields = Map.newBuilder[String, String]
 
   def amount(amount: BigDecimal): TransactionRequest = {
-    this.amount = amount
+    this.amount = Option(amount)
     this
   }
 
   def billingAddress: TransactionAddressRequest = {
-    billingAddressRequest = AddressRequest.transactionBilling(this)
-    billingAddressRequest
+    val subRequest = AddressRequest.transactionBilling(this)
+    billingAddressRequest = Some(subRequest)
+    subRequest
   }
 
   def deviceData(deviceData: String): TransactionRequest = {
-    this.deviceData = deviceData
+    this.deviceData = Option(deviceData)
     this
   }
 
   def channel(channel: String): TransactionRequest = {
-    this.channel = channel
+    this.channel = Option(channel)
     this
   }
 
   def creditCard: TransactionCreditCardRequest = {
-    creditCardRequest = new TransactionCreditCardRequest(this)
-    creditCardRequest
+    val subRequest = new TransactionCreditCardRequest(this)
+    creditCardRequest = Some(subRequest)
+    subRequest
   }
 
   def serviceFeeAmount(fee: BigDecimal): TransactionRequest = {
-    serviceFeeAmount = fee
+    serviceFeeAmount = Option(fee)
     this
   }
 
   def customer: CustomerRequest.ForTransaction = {
-    customerRequest = CustomerRequest.forTransaction(this)
-    customerRequest
+    val subRequest = CustomerRequest.forTransaction(this)
+    customerRequest = Some(subRequest)
+    subRequest
   }
 
   def customerId(customerId: String): TransactionRequest = {
-    this.customerId = customerId
+    this.customerId = Option(customerId)
     this
   }
 
@@ -55,13 +58,14 @@ class TransactionRequest extends Request {
   }
 
   def deviceSessionId(deviceSessionId: String): TransactionRequest = {
-    this.deviceSessionId = deviceSessionId
+    this.deviceSessionId = Option(deviceSessionId)
     this
   }
 
   def descriptor: DescriptorRequest[TransactionRequest] = {
-    descriptorRequest = DescriptorRequest(this)
-    descriptorRequest
+    val subRequest = DescriptorRequest(this)
+    descriptorRequest = Some(subRequest)
+    subRequest
   }
 
   def getKind: String = {
@@ -69,57 +73,59 @@ class TransactionRequest extends Request {
   }
 
   def merchantAccountId(merchantAccountId: String): TransactionRequest = {
-    this.merchantAccountId = merchantAccountId
+    this.merchantAccountId = Option(merchantAccountId)
     this
   }
 
   def options: TransactionOptionsRequest = {
-    transactionOptionsRequest = new TransactionOptionsRequest(this)
-    transactionOptionsRequest
+    val subRequest = new TransactionOptionsRequest(this)
+    transactionOptionsRequest = Some(subRequest)
+    subRequest
   }
 
   def orderId(orderId: String): TransactionRequest = {
-    this.orderId = orderId
+    this.orderId = Option(orderId)
     this
   }
 
   def paymentMethodToken(paymentMethodToken: String): TransactionRequest = {
-    this.paymentMethodToken = paymentMethodToken
+    this.paymentMethodToken = Option(paymentMethodToken)
     this
   }
 
   def purchaseOrderNumber(purchaseOrderNumber: String): TransactionRequest = {
-    this.purchaseOrderNumber = purchaseOrderNumber
+    this.purchaseOrderNumber = Option(purchaseOrderNumber)
     this
   }
 
   def recurring(recurring: Boolean): TransactionRequest = {
-    this.recurring = recurring
+    this.recurring = Some(recurring)
     this
   }
 
   def shippingAddress: TransactionAddressRequest = {
-    shippingAddressRequest = AddressRequest.transactionShipping(this)
-    shippingAddressRequest
+    val subRequest = AddressRequest.transactionShipping(this)
+    shippingAddressRequest = Some(subRequest)
+    subRequest
   }
 
   def shippingAddressId(shippingAddressId: String): TransactionRequest = {
-    this.shippingAddressId = shippingAddressId
+    this.shippingAddressId = Option(shippingAddressId)
     this
   }
 
   def taxAmount(taxAmount: BigDecimal): TransactionRequest = {
-    this.taxAmount = taxAmount
+    this.taxAmount = Option(taxAmount)
     this
   }
 
   def taxExempt(taxExempt: Boolean): TransactionRequest = {
-    this.taxExempt = taxExempt
+    this.taxExempt = Some(taxExempt)
     this
   }
 
   def venmoSdkPaymentMethodCode(venmoSdkPaymentMethodCode: String): TransactionRequest = {
-    this.venmoSdkPaymentMethodCode = venmoSdkPaymentMethodCode
+    this.venmoSdkPaymentMethodCode = Option(venmoSdkPaymentMethodCode)
     this
   }
 
@@ -136,7 +142,7 @@ class TransactionRequest extends Request {
   }
 
   def transactionType(transactionType: Transactions.Type): TransactionRequest = {
-    this.transactionType = transactionType
+    this.transactionType = Option(transactionType)
     this
   }
 
@@ -165,29 +171,29 @@ class TransactionRequest extends Request {
       .addElement("venmoSdkPaymentMethodCode", venmoSdkPaymentMethodCode)
       .addElement("serviceFeeAmount", serviceFeeAmount)
       .addElementIf(!custom.isEmpty, "customFields", custom)
-      .addElement("type", Option(transactionType).map {_.toString.toLowerCase})
+      .addElement("type", transactionType.map {_.toString.toLowerCase})
   }
 
-  private var amount: BigDecimal = null
-  private var billingAddressRequest: TransactionAddressRequest = null
-  private var deviceData: String = null
-  private var creditCardRequest: TransactionCreditCardRequest = null
-  private var channel: String = null
-  private var customerId: String = null
-  private var deviceSessionId: String = null
-  private var customerRequest: CustomerRequest.ForTransaction = null
-  private var merchantAccountId: String = null
-  private var orderId: String = null
-  private var paymentMethodToken: String = null
-  private var purchaseOrderNumber: String = null
-  private var recurring: java.lang.Boolean = null
-  private var shippingAddressId: String = null
-  private var descriptorRequest: DescriptorRequest[TransactionRequest] = null
-  private var shippingAddressRequest: TransactionAddressRequest = null
-  private var transactionOptionsRequest: TransactionOptionsRequest = null
-  private var taxAmount: BigDecimal = null
-  private var taxExempt: java.lang.Boolean = null
-  private var transactionType: Transactions.Type = null
-  private var venmoSdkPaymentMethodCode: String = null
-  private var serviceFeeAmount: BigDecimal = null
+  private var amount: Option[BigDecimal] = None
+  private var billingAddressRequest: Option[TransactionAddressRequest] = None
+  private var deviceData: Option[String] = None
+  private var creditCardRequest: Option[TransactionCreditCardRequest] = None
+  private var channel: Option[String] = None
+  private var customerId: Option[String] = None
+  private var deviceSessionId: Option[String] = None
+  private var customerRequest: Option[CustomerRequest.ForTransaction] = None
+  private var merchantAccountId: Option[String] = None
+  private var orderId: Option[String] = None
+  private var paymentMethodToken: Option[String] = None
+  private var purchaseOrderNumber: Option[String] = None
+  private var recurring: Option[Boolean] = None
+  private var shippingAddressId: Option[String] = None
+  private var descriptorRequest: Option[DescriptorRequest[TransactionRequest]] = None
+  private var shippingAddressRequest: Option[TransactionAddressRequest] = None
+  private var transactionOptionsRequest: Option[TransactionOptionsRequest] = None
+  private var taxAmount: Option[BigDecimal] = None
+  private var taxExempt: Option[Boolean] = None
+  private var transactionType: Option[Transactions.Type] = None
+  private var venmoSdkPaymentMethodCode: Option[String] = None
+  private var serviceFeeAmount: Option[BigDecimal] = None
 }

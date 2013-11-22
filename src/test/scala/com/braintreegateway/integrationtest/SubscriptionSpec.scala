@@ -475,11 +475,21 @@ class SubscriptionSpec extends GatewaySpec with MustMatchers with Inside {
     onGatewayIt("createAddsNewAddOnsAndDiscounts") {
       gateway => (creditCard: CreditCard) =>
         val plan = PlanFixture.ADD_ON_DISCOUNT_PLAN
-        val request = new SubscriptionRequest().paymentMethodToken(creditCard.token).planId(plan.id).
-          addOns.remove("increase_10", "increase_20").
-          add.inheritedFromId("increase_30").amount(BigDecimal("40.00")).neverExpires(false).numberOfBillingCycles(6).quantity(3).done.
-          done.discounts.remove("discount_7", "discount_11").
-          add.inheritedFromId("discount_15").amount(BigDecimal("17.00")).neverExpires(true).numberOfBillingCycles(null).quantity(2).done.done
+        val request = new SubscriptionRequest().
+          paymentMethodToken(creditCard.token).
+          planId(plan.id).
+          addOns.
+            remove("increase_10", "increase_20").
+            add.
+              inheritedFromId("increase_30").amount(BigDecimal("40.00")).neverExpires(false).numberOfBillingCycles(6).quantity(3).
+              done.
+            done.
+          discounts.
+            remove("discount_7", "discount_11").
+            add.
+              inheritedFromId("discount_15").amount(BigDecimal("17.00")).neverExpires(true).quantity(2).
+              done.
+            done
 
         val result = gateway.subscription.create(request)
 

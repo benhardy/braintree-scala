@@ -2,8 +2,10 @@ package com.braintreegateway
 
 class TransactionOptionsCloneRequest(val done: TransactionCloneRequest) extends BaseRequest {
 
+  private var _submitForSettlement: Option[Boolean] = None
+
   def submitForSettlement(submitForSettlement: Boolean) = {
-    _submitForSettlement = submitForSettlement
+    _submitForSettlement = Some(submitForSettlement)
     this
   }
 
@@ -23,6 +25,4 @@ class TransactionOptionsCloneRequest(val done: TransactionCloneRequest) extends 
     new RequestBuilder(root).
       addElement("submitForSettlement", _submitForSettlement)
   }
-
-  private var _submitForSettlement: java.lang.Boolean = null
 }

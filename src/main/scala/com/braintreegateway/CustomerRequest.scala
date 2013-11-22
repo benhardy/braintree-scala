@@ -9,36 +9,37 @@ import com.braintreegateway.gw.TransparentRedirectGateway
 class CustomerRequest extends Request {
   private val customFields = Map.newBuilder[String, String]
 
-  private var deviceData: String = null
-  private var company: String = null
-  private var customerId: String = null
-  private var deviceSessionId: String = null
-  private var email: String = null
-  private var fax: String = null
-  private var firstName: String = null
-  private var id: String = null
-  private var lastName: String = null
-  private var phone: String = null
-  private var website: String = null
-  private var creditCardRequest: CreditCardRequest.ForCustomer = null
+  private var deviceData: Option[String] = None
+  private var company: Option[String] = None
+  private var customerId: Option[String] = None
+  private var deviceSessionId: Option[String] = None
+  private var email: Option[String] = None
+  private var fax: Option[String] = None
+  private var firstName: Option[String] = None
+  private var id: Option[String] = None
+  private var lastName: Option[String] = None
+  private var phone: Option[String] = None
+  private var website: Option[String] = None
+  private var creditCardRequest: Option[CreditCardRequest.ForCustomer] = None
 
   def deviceData(deviceData: String): this.type = {
-    this.deviceData = deviceData
+    this.deviceData = Option(deviceData)
     this
   }
 
   def company(company: String): this.type = {
-    this.company = company
+    this.company = Option(company)
     this
   }
 
   def creditCard = {
-    this.creditCardRequest = CreditCardRequest.forCustomer(this)
-    this.creditCardRequest
+    val subRequest = CreditCardRequest.forCustomer(this)
+    this.creditCardRequest = Some(subRequest)
+    subRequest
   }
 
   def customerId(customerId: String): this.type = {
-    this.customerId = customerId
+    this.customerId = Option(customerId)
     this
   }
 
@@ -48,55 +49,54 @@ class CustomerRequest extends Request {
   }
 
   def deviceSessionId(deviceSessionId: String): this.type = {
-    this.deviceSessionId = deviceSessionId
+    this.deviceSessionId = Option(deviceSessionId)
     this
   }
 
   def email(email: String): this.type = {
-    this.email = email
+    this.email = Option(email)
     this
   }
 
   def fax(fax: String): this.type = {
-    this.fax = fax
+    this.fax = Option(fax)
     this
   }
 
   def firstName(firstName: String): this.type = {
-    this.firstName = firstName
+    this.firstName = Option(firstName)
     this
   }
 
   def getKind: String = {
-    if (this.customerId == null) {
-      TransparentRedirectGateway.CREATE_CUSTOMER
-    }
-    else {
+    if (customerId.isDefined) {
       TransparentRedirectGateway.UPDATE_CUSTOMER
+    } else {
+      TransparentRedirectGateway.CREATE_CUSTOMER
     }
   }
 
   def lastName(lastName: String): this.type = {
-    this.lastName = lastName
+    this.lastName = Option(lastName)
     this
   }
 
   def id(id: String): this.type = {
-    this.id = id
+    this.id = Option(id)
     this
   }
 
-  def getId: String = {
+  def getId: Option[String] = {
     id
   }
 
   def phone(phone: String): this.type = {
-    this.phone = phone
+    this.phone = Option(phone)
     this
   }
 
   def website(website: String): this.type = {
-    this.website = website
+    this.website = Option(website)
     this
   }
 

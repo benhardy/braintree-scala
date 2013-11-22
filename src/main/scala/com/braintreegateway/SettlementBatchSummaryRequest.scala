@@ -13,18 +13,16 @@ object SettlementBatchSummaryRequest {
 
 class SettlementBatchSummaryRequest extends BaseRequest {
 
-  import SettlementBatchSummaryRequest.dateString
-
-  private var settlementDate: Calendar = null
-  private var groupByCustomField: String = null
+  private var settlementDate: Option[Calendar] = None
+  private var groupByCustomField: Option[String] = None
 
   def settlementDate(settlementDate: Calendar): SettlementBatchSummaryRequest = {
-    this.settlementDate = settlementDate
+    this.settlementDate = Option(settlementDate)
     this
   }
 
   def groupByCustomField(groupByCustomField: String): SettlementBatchSummaryRequest = {
-    this.groupByCustomField = groupByCustomField
+    this.groupByCustomField = Option(groupByCustomField)
     this
   }
 
@@ -33,8 +31,10 @@ class SettlementBatchSummaryRequest extends BaseRequest {
   }
 
   protected def buildRequest(root: String): RequestBuilder = {
+    import SettlementBatchSummaryRequest.dateString
+
     new RequestBuilder(root).
-        addElement("settlement-date", dateString(settlementDate)).
-        addElementIf(groupByCustomField != null, "group-by-custom-field", groupByCustomField)
+        addElement("settlement-date", settlementDate map dateString).
+        addElement("group-by-custom-field", groupByCustomField)
   }
 }

@@ -2,40 +2,40 @@ package com.braintreegateway
 
 class CreditCardOptionsRequest[P <: CreditCardRequest](val done: P) extends BaseRequest with HasParent[P] {
 
-  private var verificationMerchantAccountId: String = null
-  private var failOnDuplicatePaymentMethod: java.lang.Boolean = null
-  private var verifyCard: java.lang.Boolean = null
-  private var makeDefault: java.lang.Boolean = null
-  private var updateExistingToken: String = null
-  private var venmoSdkSession: String = null
+  private var verificationMerchantAccountId: Option[String] = None
+  private var failOnDuplicatePaymentMethod: Option[Boolean] = None
+  private var verifyCard: Option[Boolean] = None
+  private var makeDefault: Option[Boolean] = None
+  private var updateExistingToken: Option[String] = None
+  private var venmoSdkSession: Option[String] = None
 
   def verificationMerchantAccountId(verificationMerchantAccountId: String): this.type = {
-    this.verificationMerchantAccountId = verificationMerchantAccountId
+    this.verificationMerchantAccountId = Option(verificationMerchantAccountId)
     this
   }
 
   def failOnDuplicatePaymentMethod(failOnDuplicatePaymentMethod: Boolean): this.type = {
-    this.failOnDuplicatePaymentMethod = failOnDuplicatePaymentMethod
+    this.failOnDuplicatePaymentMethod = Option(failOnDuplicatePaymentMethod)
     this
   }
 
   def verifyCard(verifyCard: Boolean): this.type = {
-    this.verifyCard = verifyCard
+    this.verifyCard = Option(verifyCard)
     this
   }
 
   def makeDefault(makeDefault: Boolean): this.type = {
-    this.makeDefault = makeDefault
+    this.makeDefault = Option(makeDefault)
     this
   }
 
   def updateExistingToken(token: String): this.type = {
-    this.updateExistingToken = token
+    this.updateExistingToken = Option(token)
     this
   }
 
   def venmoSdkSession(venmoSdkSession: String): this.type = {
-    this.venmoSdkSession = venmoSdkSession
+    this.venmoSdkSession = Option(venmoSdkSession)
     this
   }
 
@@ -56,7 +56,7 @@ class CreditCardOptionsRequest[P <: CreditCardRequest](val done: P) extends Base
       .addElement("failOnDuplicatePaymentMethod", failOnDuplicatePaymentMethod)
       .addElement("verifyCard", verifyCard)
       .addElement("verificationMerchantAccountId", verificationMerchantAccountId)
-      .addElementIf(makeDefault != null && makeDefault.booleanValue, "makeDefault", makeDefault)
+      .addElement("makeDefault", makeDefault)
       .addElement("updateExistingToken", updateExistingToken)
       .addElement("venmoSdkSession", venmoSdkSession)
   }

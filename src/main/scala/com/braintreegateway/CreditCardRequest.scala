@@ -7,111 +7,112 @@ import com.braintreegateway.gw.TransparentRedirectGateway
  */
 sealed class CreditCardRequest extends Request {
 
-  private var billingAddressRequest: CreditCardAddressRequest[this.type] = null
-  private var billingAddressId: String = null
-  private var deviceData: String = null
-  private var cardholderName: String = null
-  private var customerId: String = null
-  private var cvv: String = null
-  private var deviceSessionId: String = null
-  private var expirationDate: String = null
-  private var expirationMonth: String = null
-  private var expirationYear: String = null
-  private var number: String = null
-  private var optionsRequest: CreditCardOptionsRequest[this.type] = null
-  private var token: String = null
-  private var paymentMethodToken: String = null
-  private var venmoSdkPaymentMethodCode: String = null
+  private var billingAddressRequest: Option[CreditCardAddressRequest[this.type]] = None
+  private var billingAddressId: Option[String] = None
+  private var deviceData: Option[String] = None
+  private var cardholderName: Option[String] = None
+  private var customerId: Option[String] = None
+  private var cvv: Option[String] = None
+  private var deviceSessionId: Option[String] = None
+  private var expirationDate: Option[String] = None
+  private var expirationMonth: Option[String] = None
+  private var expirationYear: Option[String] = None
+  private var number: Option[String] = None
+  private var optionsRequest: Option[CreditCardOptionsRequest[this.type]] = None
+  private var token: Option[String] = None
+  private var paymentMethodToken: Option[String] = None
+  private var venmoSdkPaymentMethodCode: Option[String] = None
 
   def billingAddress: CreditCardAddressRequest[this.type] = {
-    billingAddressRequest = AddressRequest.creditCard[this.type](this)
-    billingAddressRequest
+    val subRequest = AddressRequest.creditCard[this.type](this)
+    billingAddressRequest = Some(subRequest)
+    subRequest
   }
 
   def billingAddressId(billingAddressId: String): this.type = {
-    this.billingAddressId = billingAddressId
+    this.billingAddressId = Option(billingAddressId)
     this
   }
 
   def deviceData(deviceData: String): this.type = {
-    this.deviceData = deviceData
+    this.deviceData = Option(deviceData)
     this
   }
 
   def cardholderName(cardholderName: String): this.type = {
-    this.cardholderName = cardholderName
+    this.cardholderName = Option(cardholderName)
     this
   }
 
   def customerId(customerId: String): this.type = {
-    this.customerId = customerId
+    this.customerId = Option(customerId)
     this
   }
 
   def cvv(cvv: String): this.type = {
-    this.cvv = cvv
+    this.cvv = Option(cvv)
     this
   }
 
   def deviceSessionId(deviceSessionId: String): this.type = {
-    this.deviceSessionId = deviceSessionId
+    this.deviceSessionId = Option(deviceSessionId)
     this
   }
 
   def expirationDate(expirationDate: String): this.type = {
-    this.expirationDate = expirationDate
+    this.expirationDate = Option(expirationDate)
     this
   }
 
   def expirationMonth(expirationMonth: String): this.type = {
-    this.expirationMonth = expirationMonth
+    this.expirationMonth = Option(expirationMonth)
     this
   }
 
   def expirationYear(expirationYear: String): this.type = {
-    this.expirationYear = expirationYear
+    this.expirationYear = Option(expirationYear)
     this
   }
 
-  def getCustomerId: String = {
+  def getCustomerId: Option[String] = {
     customerId
   }
 
   def getKind: String = {
-    if (this.paymentMethodToken == null) {
-      TransparentRedirectGateway.CREATE_PAYMENT_METHOD
-    }
-    else {
+    if (paymentMethodToken.isDefined) {
       TransparentRedirectGateway.UPDATE_PAYMENT_METHOD
+    } else {
+      TransparentRedirectGateway.CREATE_PAYMENT_METHOD
     }
   }
 
-  def getToken: String = {
+  def getToken: Option[String] = {
     token
   }
 
   def number(number: String): this.type = {
-    this.number = number
+    this.number = Option(number)
     this
   }
 
   def venmoSdkPaymentMethodCode(venmoSdkPaymentMethodCode: String): this.type = {
-    this.venmoSdkPaymentMethodCode = venmoSdkPaymentMethodCode
+    this.venmoSdkPaymentMethodCode = Option(venmoSdkPaymentMethodCode)
     this
   }
 
   def options: CreditCardOptionsRequest[this.type] = {
-    this.optionsRequest = new CreditCardOptionsRequest[this.type](this)
-    optionsRequest
+    val subRequest = new CreditCardOptionsRequest[this.type](this)
+    this.optionsRequest = Some(subRequest)
+    subRequest
   }
 
   def paymentMethodToken(paymentMethodToken: String): this.type = {
-    this.paymentMethodToken = paymentMethodToken
+    this.paymentMethodToken = Option(paymentMethodToken)
     this
   }
 
   def token(token: String): this.type = {
-    this.token = token
+    this.token = Option(token)
     this
   }
 

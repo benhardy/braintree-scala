@@ -25,7 +25,7 @@ class TransparentRedirectRequest(configuration: Configuration, queryString: Stri
 
   override def toXmlString = RequestBuilder.buildXmlElementString("id", id)
 
-  override def toQueryString(parent: String) = null
+  override def toQueryString(parent: String) = throw new UnsupportedOperationException
 
-  override def toQueryString: String = null
+  override def toQueryString: String = throw new UnsupportedOperationException
 }

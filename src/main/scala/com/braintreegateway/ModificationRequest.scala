@@ -4,13 +4,13 @@ import scala.math.BigDecimal
 
 abstract class ModificationRequest(parent: ModificationsRequest) extends BaseRequest {
 
-  private var amount: BigDecimal = null
-  private var numberOfBillingCycles: Integer = null
-  private var quantity: Integer = null
-  private var neverExpires: java.lang.Boolean = null
+  private var amount: Option[BigDecimal] = None
+  private var numberOfBillingCycles: Option[Int] = None
+  private var quantity: Option[Int] = None
+  private var neverExpires: Option[Boolean] = None
 
   def amount(amount: BigDecimal): this.type = {
-    this.amount = amount
+    this.amount = Option(amount)
     this
   }
 
@@ -18,18 +18,18 @@ abstract class ModificationRequest(parent: ModificationsRequest) extends BaseReq
     parent
   }
 
-  def numberOfBillingCycles(numberOfBillingCycles: Integer): this.type = {
-    this.numberOfBillingCycles = numberOfBillingCycles
+  def numberOfBillingCycles(numberOfBillingCycles: Int): this.type = {
+    this.numberOfBillingCycles = Some(numberOfBillingCycles)
     this
   }
 
-  def neverExpires(neverExpires: java.lang.Boolean): this.type = {
-    this.neverExpires = neverExpires
+  def neverExpires(neverExpires: Boolean): this.type = {
+    this.neverExpires = Some(neverExpires)
     this
   }
 
-  def quantity(quantity: Integer): this.type = {
-    this.quantity = quantity
+  def quantity(quantity: Int): this.type = {
+    this.quantity = Some(quantity)
     this
   }
 

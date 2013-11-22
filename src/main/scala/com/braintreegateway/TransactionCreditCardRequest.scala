@@ -12,39 +12,39 @@ class TransactionCreditCardRequest(override val done: TransactionRequest)
   private var token: Option[String] = None
 
   def cardholderName(cardholderName: String): this.type = {
-    this.cardholderName = Some(cardholderName)
+    this.cardholderName = Option(cardholderName)
     this
   }
 
   def cvv(cvv: String): this.type = {
-    this.cvv = Some(cvv)
+    this.cvv = Option(cvv)
     this
   }
 
   def expirationDate(expirationDate: String): this.type = {
-    this.expirationDate = Some(expirationDate)
+    this.expirationDate = Option(expirationDate)
     this
   }
 
   def expirationMonth(expirationMonth: String): this.type = {
-    this.expirationMonth = Some(expirationMonth)
+    this.expirationMonth = Option(expirationMonth)
     this
   }
 
   def expirationYear(expirationYear: String): this.type = {
-    this.expirationYear = Some(expirationYear)
+    this.expirationYear = Option(expirationYear)
     this
   }
 
   def getToken = token
 
   def number(number: String): this.type = {
-    this.number = Some(number)
+    this.number = Option(number)
     this
   }
 
   def token(token: String): this.type = {
-    this.token = Some(token)
+    this.token = Option(token)
     this
   }
 

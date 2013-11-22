@@ -8,18 +8,9 @@ import com.braintreegateway.SandboxValues.CreditCardNumber
 import com.braintreegateway.SandboxValues.TransactionAmount
 import com.braintreegateway.gw.{Success, Failure}
 import com.braintreegateway.testhelpers.{GatewaySpec, MerchantAccountTestConstants, TestHelper}
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import com.braintreegateway.gw.Failure
-import com.braintreegateway.gw.Success
-import gw.Failure
-import gw.Success
 import scala.math.BigDecimal
 
 import MerchantAccountTestConstants._
-import com.braintreegateway.Transactions.Type
 
 @RunWith(classOf[JUnitRunner])
 class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
@@ -36,7 +27,7 @@ class TransparentRedirectSpec extends GatewaySpec with MustMatchers {
             transaction.creditCard.bin must be === CreditCardNumber.VISA.number.substring(0, 6)
             transaction.amount must be === TransactionAmount.AUTHORIZE
           }
-          case _ => fail("expected success")
+          case other => fail("expected success, got " + other)
         }
     }
 

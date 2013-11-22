@@ -2,70 +2,71 @@ package com.braintreegateway
 
 class ApplicantDetailsRequest(val done: MerchantAccountRequest) extends BaseRequest with HasParent[MerchantAccountRequest] {
 
-  private var companyName: String = null
-  private var firstName: String = null
-  private var lastName: String = null
-  private var email: String = null
-  private var phone: String = null
-  private var _address: ApplicantDetailsAddressRequest = null
-  private var dateOfBirth: String = null
-  private var ssn: String = null
-  private var taxId: String = null
-  private var routingNumber: String = null
-  private var accountNumber: String = null
+  private var companyName: Option[String] = None
+  private var firstName: Option[String] = None
+  private var lastName: Option[String] = None
+  private var email: Option[String] = None
+  private var phone: Option[String] = None
+  private var _address: Option[ApplicantDetailsAddressRequest] = None
+  private var dateOfBirth: Option[String] = None
+  private var ssn: Option[String] = None
+  private var taxId: Option[String] = None
+  private var routingNumber: Option[String] = None
+  private var accountNumber: Option[String] = None
   
   def companyName(companyName: String): ApplicantDetailsRequest = {
-    this.companyName = companyName
+    this.companyName = Option(companyName)
     this
   }
 
   def firstName(firstName: String): ApplicantDetailsRequest = {
-    this.firstName = firstName
+    this.firstName = Option(firstName)
     this
   }
 
   def lastName(lastName: String): ApplicantDetailsRequest = {
-    this.lastName = lastName
+    this.lastName = Option(lastName)
     this
   }
 
   def email(email: String): ApplicantDetailsRequest = {
-    this.email = email
+    this.email = Option(email)
     this
   }
 
   def phone(phone: String): ApplicantDetailsRequest = {
-    this.phone = phone
+    this.phone = Option(phone)
     this
   }
 
   def address: ApplicantDetailsAddressRequest = {
-    this._address = AddressRequest.applicantDetails(this)
-    _address
+    val subRequest = AddressRequest.applicantDetails(this)
+    this._address = Some(subRequest)
+    subRequest
   }
 
   def dateOfBirth(dob: String): ApplicantDetailsRequest = {
-    this.dateOfBirth = dob
+    this.dateOfBirth = Option(dob)
     this
   }
 
   def ssn(ssn: String): ApplicantDetailsRequest = {
-    this.ssn = ssn
+    this.ssn = Option(ssn)
     this
   }
 
   def taxId(taxId: String): ApplicantDetailsRequest = {
-    this.taxId = taxId
+    this.taxId = Option(taxId)
     this
   }
 
   def routingNumber(routingNumber: String): ApplicantDetailsRequest = {
-    this.routingNumber = routingNumber
+    this.routingNumber = Option(routingNumber)
     this
   }
 
   def accountNumber(accountNumber: String): ApplicantDetailsRequest = {
-    this.accountNumber = accountNumber
+    this.accountNumber = Option(accountNumber)
     this
   }
 

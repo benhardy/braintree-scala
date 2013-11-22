@@ -3,19 +3,24 @@ package com.braintreegateway
 import scala.math.BigDecimal
 
 class TransactionCloneRequest extends BaseRequest {
+
+  private var _amount: Option[BigDecimal] = None
+  private var _channel: Option[String] = None
+  private var _transactionOptionsCloneRequest: Option[TransactionOptionsCloneRequest] = None
+
   def amount(amount: BigDecimal) = {
-    _amount = Some(amount)
+    this._amount = Option(amount)
     this
   }
 
   def channel(channel: String) = {
-    _channel = Some(channel)
+    this._channel = Option(channel)
     this
   }
 
   def options: TransactionOptionsCloneRequest = {
     val subRequest = new TransactionOptionsCloneRequest(this)
-    _transactionOptionsCloneRequest = Some(subRequest)
+    this._transactionOptionsCloneRequest = Some(subRequest)
     subRequest
   }
 
@@ -29,8 +34,4 @@ class TransactionCloneRequest extends BaseRequest {
       addElement("channel", _channel).
       addElement("options", _transactionOptionsCloneRequest)
   }
-
-  private var _amount: Option[BigDecimal] = None
-  private var _channel: Option[String] = None
-  private var _transactionOptionsCloneRequest: Option[TransactionOptionsCloneRequest] = None
 }

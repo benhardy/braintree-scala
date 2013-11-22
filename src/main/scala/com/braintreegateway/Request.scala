@@ -23,7 +23,7 @@ abstract class BaseRequest extends Request {
 
   def toQueryString: String = throw new UnsupportedOperationException()
 
-  def getKind: String = null
+  def getKind: String = ""
 }
 
 trait HasParent[P <: Request] {

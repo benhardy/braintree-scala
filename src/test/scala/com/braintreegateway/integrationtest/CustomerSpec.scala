@@ -226,7 +226,6 @@ class CustomerSpec extends GatewaySpec with MustMatchers with Inside {
       val trCreateUrl = gateway.transparentRedirect.url
       val queryString = TestHelper.simulateFormPostForTR(gateway, trParams, request, trCreateUrl)
       val result = gateway.transparentRedirect.confirmCustomer(queryString)
-      result must be('success)     // todo probably redundant
       inside(result) {
         case Success(customer) => {
           customer.firstName must be === "John"

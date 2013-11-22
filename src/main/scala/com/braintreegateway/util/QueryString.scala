@@ -40,11 +40,7 @@ final class QueryString(content: String = "") {
 
   private val builder = new StringBuilder(content)
 
-  def append(key: String, value: Int): QueryString = {
-    append(key, value.toString)
-  }
-
-  def append(key: String, value: AnyRef): QueryString = {
+  def append(key: String, value: Any): QueryString = {
     value match {
       case null => this
       case None => this

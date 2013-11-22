@@ -68,10 +68,9 @@ object RequestBuilder {
   }
 
   def buildQueryStringElement(name: String, value: String): String = {
-    if (value != null) {
-      QueryString.encodeParam(name, value)
-    }
-    else {
+    Option(value) map {
+      QueryString.encodeParam(name, _)
+    } getOrElse {
       ""
     }
   }
@@ -102,6 +101,13 @@ class RequestBuilder(parent: String) {
 
   def addTopLevelElement(name: String, value: String): RequestBuilder = {
     topLevelElements.put(name, value)
+    this
+  }
+
+  def addTopLevelElement(name: String, value: Option[String]): RequestBuilder = {
+    if (value.isDefined) {
+      topLevelElements.put(name, value.get)
+    }
     this
   }
 

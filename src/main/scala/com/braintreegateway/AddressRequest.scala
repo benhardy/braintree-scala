@@ -5,79 +5,78 @@ package com.braintreegateway
  */
 class AddressRequest extends BaseRequest {
 
-  // TODO clean up nulls and vars
-  private var countryCodeAlpha2: String = null
-  private var countryCodeAlpha3: String = null
-  private var countryCodeNumeric: String = null
-  private var countryName: String = null
-  private var extendedAddress: String = null
-  private var firstName: String = null
-  private var lastName: String = null
-  private var locality: String = null
-  private var postalCode: String = null
-  private var region: String = null
-  private var streetAddress: String = null
-  private var company: String = null
+  private var countryCodeAlpha2: Option[String] = None
+  private var countryCodeAlpha3: Option[String] = None
+  private var countryCodeNumeric: Option[String] = None
+  private var countryName: Option[String] = None
+  private var extendedAddress: Option[String] = None
+  private var firstName: Option[String] = None
+  private var lastName: Option[String] = None
+  private var locality: Option[String] = None
+  private var postalCode: Option[String] = None
+  private var region: Option[String] = None
+  private var streetAddress: Option[String] = None
+  private var company: Option[String] = None
 
   protected def tagName = "address"
 
   def company(company: String): this.type = {
-    this.company = company
+    this.company = Option(company)
     this
   }
 
   def countryCodeAlpha2(countryCodeAlpha2: String): this.type = {
-    this.countryCodeAlpha2 = countryCodeAlpha2
+    this.countryCodeAlpha2 = Option(countryCodeAlpha2)
     this
   }
 
   def countryCodeAlpha3(countryCodeAlpha3: String): this.type = {
-    this.countryCodeAlpha3 = countryCodeAlpha3
+    this.countryCodeAlpha3 = Option(countryCodeAlpha3)
     this
   }
 
   def countryCodeNumeric(countryCodeNumeric: String): this.type = {
-    this.countryCodeNumeric = countryCodeNumeric
+    this.countryCodeNumeric = Option(countryCodeNumeric)
     this
   }
 
   def countryName(countryName: String): this.type = {
-    this.countryName = countryName
+    this.countryName = Option(countryName)
     this
   }
 
   def extendedAddress(extendedAddress: String): this.type = {
-    this.extendedAddress = extendedAddress
+    this.extendedAddress = Option(extendedAddress)
     this
   }
 
   def firstName(firstName: String): this.type = {
-    this.firstName = firstName
+    this.firstName = Option(firstName)
     this
   }
 
   def lastName(lastName: String): this.type = {
-    this.lastName = lastName
+    this.lastName = Option(lastName)
     this
   }
 
   def locality(locality: String): this.type = {
-    this.locality = locality
+    this.locality = Option(locality)
     this
   }
 
   def postalCode(postalCode: String): this.type = {
-    this.postalCode = postalCode
+    this.postalCode = Option(postalCode)
     this
   }
 
   def region(region: String): this.type = {
-    this.region = region
+    this.region = Option(region)
     this
   }
 
   def streetAddress(streetAddress: String): this.type = {
-    this.streetAddress = streetAddress
+    this.streetAddress = Option(streetAddress)
     this
   }
 
@@ -123,13 +122,14 @@ class ApplicantDetailsAddressRequest(parent: ApplicantDetailsRequest)
  * may not have a parent).
  */
 class CreditCardAddressRequest[P <: CreditCardRequest](val parent: P) extends AddressRequestWithParent[P](parent) {
-  private var optionsRequest: CreditCardAddressOptionsRequest[CreditCardAddressRequest[P]] = null
+  private var optionsRequest: Option[CreditCardAddressOptionsRequest[CreditCardAddressRequest[P]]] = None
 
   protected override def tagName = "billingAddress"
 
   def options = {
-    optionsRequest = new CreditCardAddressOptionsRequest[CreditCardAddressRequest[P]](this)
-    optionsRequest
+    val subRequest = new CreditCardAddressOptionsRequest[CreditCardAddressRequest[P]](this)
+    optionsRequest = Some(subRequest)
+    subRequest
   }
 
   protected override def buildRequest(root: String): RequestBuilder = {

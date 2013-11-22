@@ -4,52 +4,52 @@ import scala.math.BigDecimal
 
 class FakeModificationRequest extends BaseRequest {
 
-  private var amount: BigDecimal = null
-  private var description: String = null
-  private var id: String = null
-  private var kind: String = null
-  private var name: String = null
-  private var neverExpires: java.lang.Boolean = null
-  private var numberOfBillingCycles: Integer = null
-  private var planId: String = null
+  private var amount: Option[BigDecimal] = None
+  private var description: Option[String] = None
+  private var id: Option[String] = None
+  private var kind: Option[String] = None
+  private var name: Option[String] = None
+  private var neverExpires: Option[Boolean] = None
+  private var numberOfBillingCycles: Option[Int] = None
+  private var planId: Option[String] = None
 
   def amount(amount: BigDecimal): FakeModificationRequest = {
-    this.amount = amount
+    this.amount = Option(amount)
     this
   }
 
   def kind(kind: String): FakeModificationRequest = {
-    this.kind = kind
+    this.kind = Option(kind)
     this
   }
 
   def name(name: String): FakeModificationRequest = {
-    this.name = name
+    this.name = Option(name)
     this
   }
 
   def description(description: String): FakeModificationRequest = {
-    this.description = description
+    this.description = Option(description)
     this
   }
 
   def id(id: String): FakeModificationRequest = {
-    this.id = id
+    this.id = Option(id)
     this
   }
 
   def numberOfBillingCycles(numberOfBillingCycles: Integer): FakeModificationRequest = {
-    this.numberOfBillingCycles = numberOfBillingCycles
+    this.numberOfBillingCycles = Option(numberOfBillingCycles)
     this
   }
 
   def neverExpires(neverExpires: Boolean): FakeModificationRequest = {
-    this.neverExpires = neverExpires
+    this.neverExpires = Some(neverExpires)
     this
   }
 
   def planId(planId: String): FakeModificationRequest = {
-    this.planId = planId
+    this.planId = Option(planId)
     this
   }
 

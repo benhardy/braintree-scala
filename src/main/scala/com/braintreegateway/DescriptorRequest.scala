@@ -2,13 +2,16 @@ package com.braintreegateway
 
 class DescriptorRequest[P <: Request](val done:P) extends BaseRequest with HasParent[P] {
 
+  protected var name: Option[String] = None
+  protected var phone: Option[String] = None
+
   def name(name: String): this.type = {
-    this.name = name
+    this.name = Option(name)
     this
   }
 
   def phone(phone: String): this.type = {
-    this.phone = phone
+    this.phone = Option(phone)
     this
   }
 
@@ -23,9 +26,6 @@ class DescriptorRequest[P <: Request](val done:P) extends BaseRequest with HasPa
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).addElement("name", name).addElement("phone", phone)
   }
-
-  protected var name: String = null
-  protected var phone: String = null
 }
 
 object DescriptorRequest {

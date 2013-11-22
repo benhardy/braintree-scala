@@ -2,7 +2,6 @@ package com.braintreegateway
 
 class SubscriptionOptionsRequest(val done:SubscriptionRequest) extends BaseRequest with HasParent[SubscriptionRequest] {
 
-  // TODO use options or straight up defaults
   private var doNotInheritAddOnsOrDiscounts: Option[Boolean] = None
   private var prorateCharges: Option[Boolean] = None
   private var replaceAllAddOnsAndDiscounts: Option[Boolean] = None

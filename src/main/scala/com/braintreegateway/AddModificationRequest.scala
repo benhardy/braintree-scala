@@ -2,10 +2,10 @@ package com.braintreegateway
 
 class AddModificationRequest(parent: ModificationsRequest) extends ModificationRequest(parent) {
 
-  private var inheritedFromId: String = null
+  private var inheritedFromId: Option[String] = None
 
   def inheritedFromId(inheritedFromId: String): AddModificationRequest = {
-    this.inheritedFromId = inheritedFromId
+    this.inheritedFromId = Option(inheritedFromId)
     this
   }
 

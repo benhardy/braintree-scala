@@ -19,8 +19,7 @@ case class ValidationError(attribute: String, code: ValidationErrorCode, message
  * errors by object and field. For Example:
  *
  * <pre>
- * TransactionRequest request = new TransactionRequest().
- * amount(null).
+ * TransactionRequest request = new TransactionRequest();
  * Result<Transaction> result = gateway.transaction().sale(request);
  * Assert.assertFalse(result.isSuccess());
  * ValidationErrors errors = result.getErrors();

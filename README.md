@@ -37,7 +37,9 @@ The Braintree library provides integration access to the Braintree Gateway.
    - to be used mainly for eliminating ceremony or increasing obviousness of operations
    - e.g. used in CalendarUtils to make Calendar less of a bear to deal with
 
-
+7. Decide whether to be compatible with Scala 2.8/2.9
+   - Currently only really using String interpolation features in Scala 2.10
+   - may use macros in future but for now YAGNI
 #
 
 ## Dependencies

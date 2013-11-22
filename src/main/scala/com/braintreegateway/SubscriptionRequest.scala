@@ -10,7 +10,7 @@ import java.util.Calendar
 class SubscriptionRequest extends BaseRequest {
 
   private var addOnsRequest: Option[ModificationsRequest] = None
-  private var billingDayOfMonth: Option[Integer] = None
+  private var billingDayOfMonth: Option[Int] = None
   private var descriptorRequest: Option[DescriptorRequest[SubscriptionRequest]] = None
   private var discountsRequest: Option[ModificationsRequest] = None
   private var firstBillingDate: Option[Calendar] = None
@@ -18,12 +18,12 @@ class SubscriptionRequest extends BaseRequest {
   private var id: Option[String] = None
   private var merchantAccountId: Option[String] = None
   private var neverExpires: Option[Boolean] = None
-  private var numberOfBillingCycles: Option[Integer] = None
+  private var numberOfBillingCycles: Option[Int] = None
   private var _options: Option[SubscriptionOptionsRequest] = None
   private var paymentMethodToken: Option[String] = None
   private var planId: Option[String] = None
   private var price: Option[BigDecimal] = None
-  private var trialDuration: Option[Integer] = None
+  private var trialDuration: Option[Int] = None
   private var trialDurationUnit: Option[Subscriptions.DurationUnit] = None
 
   def addOns: ModificationsRequest = {
@@ -32,7 +32,7 @@ class SubscriptionRequest extends BaseRequest {
     subRequest
   }
 
-  def billingDayOfMonth(billingDayOfMonth: Integer): SubscriptionRequest = {
+  def billingDayOfMonth(billingDayOfMonth: Int): SubscriptionRequest = {
     this.billingDayOfMonth = Some(billingDayOfMonth)
     this
   }
@@ -50,17 +50,17 @@ class SubscriptionRequest extends BaseRequest {
   }
 
   def firstBillingDate(firstBillingDate: Calendar): SubscriptionRequest = {
-    this.firstBillingDate = Some(firstBillingDate)
+    this.firstBillingDate = Option(firstBillingDate)
     this
   }
 
   def id(id: String): SubscriptionRequest = {
-    this.id = Some(id)
+    this.id = Option(id)
     this
   }
 
   def merchantAccountId(merchantAccountId: String): SubscriptionRequest = {
-    this.merchantAccountId = Some(merchantAccountId)
+    this.merchantAccountId = Option(merchantAccountId)
     this
   }
 
@@ -69,7 +69,7 @@ class SubscriptionRequest extends BaseRequest {
     this
   }
 
-  def numberOfBillingCycles(numberOfBillingCycles: Integer): SubscriptionRequest = {
+  def numberOfBillingCycles(numberOfBillingCycles: Int): SubscriptionRequest = {
     this.numberOfBillingCycles = Some(numberOfBillingCycles)
     this
   }
@@ -81,17 +81,17 @@ class SubscriptionRequest extends BaseRequest {
   }
 
   def paymentMethodToken(token: String): SubscriptionRequest = {
-    this.paymentMethodToken = Some(token)
+    this.paymentMethodToken = Option(token)
     this
   }
 
   def planId(id: String): SubscriptionRequest = {
-    this.planId = Some(id)
+    this.planId = Option(id)
     this
   }
 
   def price(price: BigDecimal): SubscriptionRequest = {
-    this.price = Some(price)
+    this.price = Option(price)
     this
   }
 
@@ -99,13 +99,13 @@ class SubscriptionRequest extends BaseRequest {
     buildRequest("subscription").toXmlString
   }
 
-  def trialDuration(trialDuration: Integer): SubscriptionRequest = {
+  def trialDuration(trialDuration: Int): SubscriptionRequest = {
     this.trialDuration = Some(trialDuration)
     this
   }
 
   def trialDurationUnit(trialDurationUnit: Subscriptions.DurationUnit): SubscriptionRequest = {
-    this.trialDurationUnit = Some(trialDurationUnit)
+    this.trialDurationUnit = Option(trialDurationUnit)
     this
   }
 
