@@ -105,6 +105,8 @@ abstract class NodeWrapper {
 
   def findStringOpt(expression: String): Option[String]
 
+  def apply(expression: String) = findStringOpt(expression)
+
   def getElementName: String
 
   def isSuccess: Boolean = {

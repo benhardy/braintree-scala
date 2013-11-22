@@ -34,7 +34,7 @@ final class CreditCardVerification(node: NodeWrapper) {
   val avsPostalCodeResponseCode = node.findString("avs-postal-code-response-code")
   val avsStreetAddressResponseCode = node.findString("avs-street-address-response-code")
   val cvvResponseCode = node.findString("cvv-response-code")
-  val gatewayRejectionReason = EnumUtils.findByName(classOf[Transactions.GatewayRejectionReason], node.findString("gateway-rejection-reason"))
+  val gatewayRejectionReason = EnumUtils.findByNameOpt(classOf[Transactions.GatewayRejectionReason])(node("gateway-rejection-reason"))
   val processorResponseCode = node.findString("processor-response-code")
   val processorResponseText = node.findString("processor-response-text")
   val merchantAccountId = node.findString("merchant-account-id")

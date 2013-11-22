@@ -19,8 +19,8 @@ class Transaction(node: NodeWrapper) {
   val cvvResponseCode = node.findString("cvv-response-code")
   val disbursementDetails = new DisbursementDetails(node.findFirst("disbursement-details"))
   val descriptor = Descriptor.apply(node.findFirst("descriptor"))
-  val escrowStatus = EnumUtils.findByName(classOf[Transactions.EscrowStatus], node.findString("escrow-status"))
-  val gatewayRejectionReason = EnumUtils.findByName(classOf[Transactions.GatewayRejectionReason], node.findString("gateway-rejection-reason"))
+  val escrowStatus = EnumUtils.findByNameOpt(classOf[Transactions.EscrowStatus])(node("escrow-status"))
+  val gatewayRejectionReason = EnumUtils.findByNameOpt(classOf[Transactions.GatewayRejectionReason])(node("gateway-rejection-reason"))
   val id = node.findString("id")
   val merchantAccountId = node.findString("merchant-account-id")
   val orderId = node.findString("order-id")
@@ -35,13 +35,14 @@ class Transaction(node: NodeWrapper) {
   val serviceFeeAmount = node.findBigDecimal("service-fee-amount")
   val settlementBatchId = node.findString("settlement-batch-id")
   val shippingAddress = new Address(node.findFirst("shipping"))
-  val status = EnumUtils.findByName(classOf[Transactions.Status], node.findString("status"))
+  val status = EnumUtils.findByNameOpt(classOf[Transactions.Status])(node("status"))
   val subscription = new Subscription(node.findFirst("subscription"))
   val subscriptionId = node.findString("subscription-id")
   val taxAmount = node.findBigDecimal("tax-amount")
   val taxExempt = node.findBoolean("tax-exempt")
-  val transactionType = EnumUtils.findByName(classOf[Transactions.Type], node.findString("type"))
+  val transactionType = EnumUtils.findByNameOpt(classOf[Transactions.Type])(node("type"))
   val updatedAt = node.findDateTime("updated-at")
+
   val refundIds = node.findAll("refund-ids/item").map {
     _.findString(".")
   }

@@ -5,8 +5,8 @@ import com.braintreegateway.util.NodeWrapper
 
 class StatusEvent(node: NodeWrapper) {
   val amount = node.findBigDecimal("amount")
-  val status = EnumUtils.findByName(classOf[Transactions.Status], node.findString("status"))
+  val status = EnumUtils.findByNameOpt(classOf[Transactions.Status])(node("status"))
   val timestamp = node.findDateTime("timestamp")
-  val source = EnumUtils.findByName(classOf[Transactions.Source], node.findString("source"))
+  val source = EnumUtils.findByNameOpt(classOf[Transactions.Source])(node("source"))
   val user = node.findString("user")
 }

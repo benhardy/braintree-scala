@@ -7,7 +7,7 @@ import com.braintreegateway.ValidationErrors.NoValidationErrors
 
 final class WebhookNotification(node: NodeWrapper) {
 
-  val kind = EnumUtils.findByName(classOf[WebhookNotifications.Kind], node.findString("kind"))
+  val kind = EnumUtils.findByNameOpt(classOf[WebhookNotifications.Kind])(node("kind"))
   val timestamp = node.findDateTime("timestamp")
 
   val subjectNode = node.findFirst("subject")

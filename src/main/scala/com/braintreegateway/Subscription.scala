@@ -25,9 +25,9 @@ class Subscription(node: NodeWrapper) {
   val paymentMethodToken = node.findString("payment-method-token")
   val planId = node.findString("plan-id")
   val price = node.findBigDecimal("price")
-  val status = EnumUtils.findByName(classOf[Subscriptions.Status], node.findString("status"))
+  val status = EnumUtils.findByNameOpt(classOf[Subscriptions.Status])(node("status"))
   val hasTrialPeriod = node.findBoolean("trial-period")
   val trialDuration = node.findInteger("trial-duration")
-  val trialDurationUnit = EnumUtils.findByName(classOf[Subscriptions.DurationUnit], node.findString("trial-duration-unit"))
+  val trialDurationUnit = EnumUtils.findByNameOpt(classOf[Subscriptions.DurationUnit])(node("trial-duration-unit"))
   val transactions = node.findAll("transactions/transaction").map{ new Transaction(_) }
 }
