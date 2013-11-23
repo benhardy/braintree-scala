@@ -17,9 +17,7 @@ class SubscriptionTransactionRequest extends BaseRequest {
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("transaction").toXmlString
-  }
+  override val xmlName = "transaction"
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).

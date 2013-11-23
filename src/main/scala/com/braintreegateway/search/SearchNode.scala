@@ -7,7 +7,7 @@ class SearchNode[P <: SearchRequest[P]](nodeName: String, parent: P) {
   }
 
   protected def assembleMultiValueCriteria(items: List[_]): P = {
-    parent.addMultipleValueCriteria(this.nodeName, new SearchCriteria(items))
+    parent.addMultipleValueCriteria(this.nodeName, new SearchCriteria(this.nodeName, items))
   }
 
   private def defaultWithEmptyString(value: String): String = {

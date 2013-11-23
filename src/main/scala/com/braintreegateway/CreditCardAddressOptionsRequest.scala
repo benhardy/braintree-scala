@@ -1,5 +1,7 @@
 package com.braintreegateway
 
+import xml.Elem
+
 class CreditCardAddressOptionsRequest[P <: CreditCardAddressRequest[_]](parent: P) extends BaseRequest {
 
   private var updateExisting: Option[Boolean] = None
@@ -19,9 +21,7 @@ class CreditCardAddressOptionsRequest[P <: CreditCardAddressRequest[_]](parent: 
     buildRequest(root).toQueryString
   }
 
-  override def toXmlString: String = {
-    buildRequest("options").toXmlString
-  }
+  override val xmlName = "options"
 
   protected def buildRequest(root: String): RequestBuilder = {
     val start = new RequestBuilder(root)

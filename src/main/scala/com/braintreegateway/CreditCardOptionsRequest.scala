@@ -39,9 +39,7 @@ class CreditCardOptionsRequest[P <: CreditCardRequest](val done: P) extends Base
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("options").toXmlString
-  }
+  override val xmlName = "options"
 
   override def toQueryString: String = {
     toQueryString("options")

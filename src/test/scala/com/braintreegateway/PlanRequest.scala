@@ -77,11 +77,9 @@ class PlanRequest extends BaseRequest {
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("plan").toXmlString
-  }
+  override val xmlName = "plan"
 
-  private def buildRequest(root: String): RequestBuilder = {
+  override def buildRequest(root: String): RequestBuilder = {
     val builder = new RequestBuilder(root).
       addElement("id", id).
       addElement("merchantId", merchantId).

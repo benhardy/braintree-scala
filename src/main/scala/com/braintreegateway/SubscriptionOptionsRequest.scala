@@ -33,9 +33,7 @@ class SubscriptionOptionsRequest(val done:SubscriptionRequest) extends BaseReque
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("options").toXmlString
-  }
+  override def xmlName = "options"
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).

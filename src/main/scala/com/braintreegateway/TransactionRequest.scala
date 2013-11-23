@@ -6,7 +6,7 @@ import scala.math.BigDecimal
 /**
  * Provides a fluent interface to build up requests around {@link Transaction Transactions}.
  */
-class TransactionRequest extends Request {
+class TransactionRequest extends BaseRequest {
   private val customFields = Map.newBuilder[String, String]
 
   def amount(amount: BigDecimal): TransactionRequest = {
@@ -68,7 +68,7 @@ class TransactionRequest extends Request {
     subRequest
   }
 
-  def getKind: String = {
+  override def getKind: String = {
     TransparentRedirectGateway.CREATE_TRANSACTION
   }
 
@@ -129,22 +129,20 @@ class TransactionRequest extends Request {
     this
   }
 
-  def toQueryString: String = {
+  override def toQueryString: String = {
     toQueryString("transaction")
   }
 
-  def toQueryString(root: String): String = {
+  override def toQueryString(root: String): String = {
     buildRequest(root).toQueryString
-  }
-
-  def toXmlString: String = {
-    buildRequest("transaction").toXmlString
   }
 
   def transactionType(transactionType: Transactions.Type): TransactionRequest = {
     this.transactionType = Option(transactionType)
     this
   }
+
+  override val xmlName = "transaction"
 
   protected def buildRequest(root: String): RequestBuilder = {
     val custom = customFields.result()

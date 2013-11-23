@@ -185,10 +185,8 @@ case class SimpleNodeWrapper(
 
   private def childNodes: List[SimpleNodeWrapper] = {
     content.flatMap {
-      _ match {
-        case x: SimpleNodeWrapper => Some(x)
-        case _ => None
-      }
+      case x: SimpleNodeWrapper => Some(x)
+      case _ => None
     }
   }
 

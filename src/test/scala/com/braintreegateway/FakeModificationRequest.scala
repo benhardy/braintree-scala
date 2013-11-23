@@ -53,9 +53,7 @@ class FakeModificationRequest extends BaseRequest {
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("modification").toXmlString
-  }
+  override val xmlName = "modification"
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).

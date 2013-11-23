@@ -78,9 +78,7 @@ class ApplicantDetailsRequest(val done: MerchantAccountRequest) extends BaseRequ
     buildRequest(root).toQueryString
   }
 
-  override def toXmlString: String = {
-    buildRequest("applicant_details").toXmlString
-  }
+  override val xmlName = "applicant_details"
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).

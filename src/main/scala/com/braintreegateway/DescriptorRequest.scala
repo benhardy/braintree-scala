@@ -5,6 +5,8 @@ class DescriptorRequest[P <: Request](val done:P) extends BaseRequest with HasPa
   protected var name: Option[String] = None
   protected var phone: Option[String] = None
 
+  override val xmlName = "descriptor"
+
   def name(name: String): this.type = {
     this.name = Option(name)
     this
@@ -15,16 +17,14 @@ class DescriptorRequest[P <: Request](val done:P) extends BaseRequest with HasPa
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("descriptor").toXmlString
-  }
-
   override def toQueryString(root: String): String = {
     buildRequest(root).toQueryString
   }
 
   protected def buildRequest(root: String): RequestBuilder = {
-    new RequestBuilder(root).addElement("name", name).addElement("phone", phone)
+    new RequestBuilder(root).
+      addElement("name", name).
+      addElement("phone", phone)
   }
 }
 

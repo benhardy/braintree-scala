@@ -1,6 +1,7 @@
 package com.braintreegateway
 
 import scala.math.BigDecimal
+import xml.Elem
 
 abstract class ModificationRequest(parent: ModificationsRequest) extends BaseRequest {
 
@@ -33,9 +34,7 @@ abstract class ModificationRequest(parent: ModificationsRequest) extends BaseReq
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("modification").toXmlString
-  }
+  override val xmlName = "modification"
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).addElement("amount", amount).

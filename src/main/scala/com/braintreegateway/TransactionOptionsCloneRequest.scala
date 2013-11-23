@@ -9,9 +9,7 @@ class TransactionOptionsCloneRequest(val done: TransactionCloneRequest) extends 
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("options").toXmlString
-  }
+  override val xmlName = "options"
 
   override def toQueryString: String = {
     toQueryString("options")

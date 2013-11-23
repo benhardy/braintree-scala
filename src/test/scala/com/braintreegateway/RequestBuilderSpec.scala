@@ -10,11 +10,11 @@ class RequestBuilderSpec extends FunSpec with MustMatchers {
 
   class OpenTestBuilder extends RequestBuilder("open") {
     def publicBuildXmlElement(name: String, value: AnyRef): String = {
-      RequestBuilder.buildXmlElementString(name, value)
+      RequestBuilder.buildXmlElement(name, value).get.toString
     }
 
     def formatMap(name: String, map: Map[String, AnyRef]): String = {
-      RequestBuilder.formatAsXML(name, map)
+      RequestBuilder.formatAsXml(name, map).toString
     }
   }
 
@@ -22,8 +22,8 @@ class RequestBuilderSpec extends FunSpec with MustMatchers {
     it("produces xml from builder") {
       val builder = new RequestBuilder("myparent")
       builder.addElement("name", "value")
-      val result = builder.toXmlString
-      result must be === "<myparent><name>value</name></myparent>"
+      val result = builder.toXml.get
+      result must be === <myparent><name>value</name></myparent>
     }
   }
 
@@ -31,7 +31,7 @@ class RequestBuilderSpec extends FunSpec with MustMatchers {
     it("converts lists to XML") {
       val builder = new OpenTestBuilder
       val items = List("Chicken", "Rabbit")
-      val element: String = builder.publicBuildXmlElement("animals", items)
+      val element = builder.publicBuildXmlElement("animals", items)
       element must be === "<animals type=\"array\"><item>Chicken</item><item>Rabbit</item></animals>"
     }
   }

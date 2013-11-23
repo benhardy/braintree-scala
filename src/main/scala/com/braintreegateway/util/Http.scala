@@ -14,6 +14,7 @@ import java.security.cert.Certificate
 import java.security.cert.CertificateFactory
 import java.util.zip.GZIPInputStream
 import com.braintreegateway.util.Http.RequestMethod
+import xml.Elem
 
 object Http {
   def throwExceptionIfErrorStatusCode(statusCode: Int, message: Option[String] = None) {
@@ -69,7 +70,7 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
   }
 
   def post(url: String, request: Request): NodeWrapper = {
-    httpRequest(RequestMethod.POST, url, Some(request.toXmlString))
+    httpRequest(RequestMethod.POST, url, request.toXml)
   }
 
   def put(url: String): NodeWrapper = {
@@ -77,10 +78,10 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
   }
 
   def put(url: String, request: Request): NodeWrapper = {
-    httpRequest(RequestMethod.PUT, url, Some(request.toXmlString))
+    httpRequest(RequestMethod.PUT, url, request.toXml)
   }
 
-  private def httpRequest(requestMethod: Http.RequestMethod, url: String, postBody: Option[String] = None): NodeWrapper = {
+  private def httpRequest(requestMethod: Http.RequestMethod, url: String, postBody: Option[Elem] = None): NodeWrapper = {
     try {
       val connection = connectionSetup(requestMethod, url)
       postBody.map { writePostBody(connection) }
@@ -111,8 +112,8 @@ class Http(authorizationHeader: String, baseMerchantURL: String, certificateFile
     }
   }
 
-  def writePostBody(connection: HttpURLConnection)(body: String) {
-    connection.getOutputStream.write(body.getBytes("UTF-8"))
+  def writePostBody(connection: HttpURLConnection)(body: Elem) {
+    connection.getOutputStream.write(body.toString.getBytes("UTF-8"))
     connection.getOutputStream.close
   }
 

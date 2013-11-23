@@ -5,7 +5,7 @@ import com.braintreegateway.gw.Configuration
 import com.braintreegateway.util.Http
 import com.braintreegateway.util.TrUtil
 
-class TransparentRedirectRequest(configuration: Configuration, queryString: String) extends BaseRequest {
+class TransparentRedirectRequest(configuration: Configuration, queryString: String) extends Request {
 
   val paramMap = queryString.split("&").map { pair =>
     val items = pair.split("=")
@@ -23,7 +23,7 @@ class TransparentRedirectRequest(configuration: Configuration, queryString: Stri
 
   def getId = id
 
-  override def toXmlString = RequestBuilder.buildXmlElementString("id", id)
+  override def toXml = RequestBuilder.buildXmlElement("id", id)
 
   override def toQueryString(parent: String) = throw new UnsupportedOperationException
 

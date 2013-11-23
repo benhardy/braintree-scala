@@ -24,9 +24,7 @@ class TransactionCloneRequest extends BaseRequest {
     subRequest
   }
 
-  override def toXmlString: String = {
-    buildRequest("transactionClone").toXmlString
-  }
+  override val xmlName = "transactionClone"
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).

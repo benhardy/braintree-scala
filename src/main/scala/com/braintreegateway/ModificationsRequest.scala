@@ -33,9 +33,7 @@ final class ModificationsRequest(parent: SubscriptionRequest, name: String) exte
     updateModificationRequest
   }
 
-  override def toXmlString: String = {
-    buildRequest(name).toXmlString
-  }
+  override def xmlName = name
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).

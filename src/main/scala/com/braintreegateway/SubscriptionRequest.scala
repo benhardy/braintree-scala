@@ -95,10 +95,6 @@ class SubscriptionRequest extends BaseRequest {
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("subscription").toXmlString
-  }
-
   def trialDuration(trialDuration: Int): SubscriptionRequest = {
     this.trialDuration = Some(trialDuration)
     this
@@ -113,6 +109,8 @@ class SubscriptionRequest extends BaseRequest {
     this.hasTrialPeriod = Some(hasTrialPeriod)
     this
   }
+
+  override val xmlName = "subscription"
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root).

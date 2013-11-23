@@ -1,29 +1,31 @@
 package com.braintreegateway
 
+import util.ToXml
+
 /**
  * Base functionality for fluent interface request builders.
  */
-trait Request {
-  // TODO (big) have this actually return xml.Elem objects
-  def toXmlString:String
-
+trait Request extends ToXml{
   def toQueryString(parent:String): String
 
   def toQueryString: String
 
-  def getKind: String
+  def getKind: String = ???
 }
 
 // this class appears mostly useless TODO can we ditch it?
 abstract class BaseRequest extends Request {
-  // TODO (big) have this actually return xml.Elem objects
-  def toXmlString:String = throw new UnsupportedOperationException()
+
+  def xmlName: String
+
+  protected def buildRequest(root: String): RequestBuilder
+
+  final def toXml = buildRequest(xmlName).toXml
 
   def toQueryString(parent:String): String = throw new UnsupportedOperationException()
 
   def toQueryString: String = throw new UnsupportedOperationException()
 
-  def getKind: String = ""
 }
 
 trait HasParent[P <: Request] {

@@ -1,23 +1,18 @@
 package com.braintreegateway.search
 
-import com.braintreegateway.BaseRequest
-import com.braintreegateway.RequestBuilder
+import com.braintreegateway.{Request, RequestBuilder}
+import xml.{TopScope, Null, Elem}
 
-class SearchCriteria private(val xml: String) extends BaseRequest {
-
-  def this(items: List[_]) = {
-    this(items.foldLeft(new StringBuilder) {
-      (buf, item) => buf.append(
-        RequestBuilder.buildXmlElementString("item", item.toString)
-      )
-    }.toString)
+class SearchCriteria private(val xml: Elem) extends Request {
+  def this(listName:String, items: List[_]) = {
+    this(new Elem(null, listName, Null, TopScope, true, SearchCriteria.createChildItems(items): _*))
   }
 
   def this(searchType: String, value: AnyRef) = {
-    this(RequestBuilder.buildXmlElementString(searchType, value))
+    this(RequestBuilder.buildXmlElement(searchType, value).get)
   }
 
-  override def toXmlString = xml
+  override def toXml = Some(xml)
 
   override def toQueryString(parent: String): String = {
     throw new UnsupportedOperationException
@@ -26,4 +21,16 @@ class SearchCriteria private(val xml: String) extends BaseRequest {
   override def toQueryString: String = {
     throw new UnsupportedOperationException
   }
+}
+
+object SearchCriteria {
+
+
+  def createChildItems(items: List[Any]): Seq[Elem] = {
+    (for {
+      item:Any <- items
+      elem <- RequestBuilder.buildXmlElement("item", item)
+    } yield elem).toSeq
+  }
+
 }

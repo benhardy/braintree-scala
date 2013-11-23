@@ -16,7 +16,7 @@ class SubscriptionOptionsRequestSpec extends FunSpec with MustMatchers with Insi
         revertSubscriptionOnProrationFailure(false).
         startImmediately(true)
 
-      val xmlString = request.toXmlString
+      val xmlString = request.toXml.get.toString
 
       val options = XML.loadString(xmlString)
       options.label must be === "options"
@@ -31,9 +31,8 @@ class SubscriptionOptionsRequestSpec extends FunSpec with MustMatchers with Insi
       val request = new SubscriptionOptionsRequest(new SubscriptionRequest).
         startImmediately(true)
 
-      val xmlString = request.toXmlString
+      val options = request.toXml.get
 
-      val options = XML.loadString(xmlString)
       options.label must be === "options"
       (options \\ "doNotInheritAddOnsOrDiscounts") must be ('empty)
       (options \\ "prorateCharges") must be ('empty)

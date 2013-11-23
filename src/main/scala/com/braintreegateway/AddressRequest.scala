@@ -19,6 +19,7 @@ class AddressRequest extends BaseRequest {
   private var company: Option[String] = None
 
   protected def tagName = "address"
+  def xmlName = tagName
 
   def company(company: String): this.type = {
     this.company = Option(company)
@@ -86,10 +87,6 @@ class AddressRequest extends BaseRequest {
 
   override def toQueryString(root: String): String = {
     buildRequest(root).toQueryString
-  }
-
-  override def toXmlString: String = {
-    buildRequest(this.tagName).toXmlString
   }
 
   protected def buildRequest(root: String): RequestBuilder = {

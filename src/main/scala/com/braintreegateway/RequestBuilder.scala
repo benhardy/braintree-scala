@@ -1,70 +1,61 @@
 package com.braintreegateway
 
-import com.braintreegateway.util.QueryString
-import com.braintreegateway.util.StringUtils
+import util.{ToXml, QueryString, StringUtils}
 import java.text.SimpleDateFormat
 
-import xml._
+import xml.Elem
 import scala.collection.mutable.{Map => MMap}
 
 import StringUtils.underscore
 import java.util.{TimeZone, Calendar}
 
+import com.braintreegateway.util.XmlUtil._
 
 object RequestBuilder {
-  def buildXMLElement(element: AnyRef): String = {
-    buildXmlElementString("", element)
-  }
 
-  @SuppressWarnings(Array("unchecked"))
-  def buildXmlElementString(name: String, element: AnyRef): String = {
-    element match {
-      case null => "" // TODO eventually remove this when nobody is making it
-      case None => ""
-      case Some(x:AnyRef) => buildXmlElementString(name, x)
-      case Some(x:Boolean) => buildXmlElementString(name, x.toString)
-      case request: Request => request.toXmlString
-      case calendar: Calendar => calendarElement(name, calendar).toString
-      case scalaMutableMap: MMap[String, AnyRef] => {
-        formatAsXML(name, scalaMutableMap.toMap)
+  def buildXmlElement(tagName:String, data:Any): Option[Elem] = {
+    data match {
+      case null => None
+      case None => None
+      case Some(item) => buildXmlElement(tagName, item) // unpack
+      case xmlAble: ToXml => xmlAble.toXml
+      case calendar: Calendar => Some(calendarElement(tagName, calendar))
+      case scalaMutableMap: MMap[String, Any] => {
+        Some(formatAsXml(tagName, scalaMutableMap.toMap))
       }
       case scalaMap: Map[String, AnyRef] => {
-        formatAsXML(name, scalaMap)
+        Some(formatAsXml(tagName, scalaMap))
       }
-      case list: List[AnyRef] => {
-        val xml = new StringBuilder
-        for (item <- list) {
-          xml.append(buildXmlElementString("item", item))
-        }
-        wrapInXMLTag(name, xml.toString, "array")
-      }
-      case x => {
-        val someValue = Option(x).map { item => xmlEscape(item.toString) }.getOrElse("")
-        val xmlName = xmlEscape(name)
-        "<%s>%s</%s>".format(xmlName, someValue, xmlName)
-      }
+      case list: List[Any] => Some(listToXml(tagName, list))
+      case other => Some(tag(tagName).content(other.toString))
     }
   }
 
+  def listToXml(tagName:String, list: List[Any]) = {
+    val children = for {
+      item <- list
+      elem <- buildXmlElement("item", item)
+    } yield elem
 
-  def calendarElement(name: String, calendar: Calendar): xml.Elem = {
+    tag(tagName).withType("array").content(children)
+  }
+
+  def calendarElement(name: String, calendar: Calendar) = {
 
     val dateFormat: SimpleDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss'Z'")
     dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"))
-
     val content = dateFormat.format(calendar.getTime)
-    val attributes = new UnprefixedAttribute("type", "datetime", Null)
-    Elem(null, name, attributes, TopScope, true, Text(content))
+
+    tag(name).withType("datetime").content(content)
   }
 
-  def formatAsXML(name: String, map: Map[String, AnyRef]): String = {
-    val xml = new StringBuilder
-    xml.append(String.format("<%s>", name))
-    for ((key,value) <- map) {
-      xml.append(buildXmlElementString(key, value))
-    }
-    xml.append(String.format("</%s>", name))
-    xml.toString
+  def formatAsXml(tagName: String, map: Map[String, Any]): Elem = {
+    val children = for {
+      (key, value) <- map
+      elem <- buildXmlElement(key, value)
+    } yield elem
+
+    tag(tagName).content(children)
   }
 
   def buildQueryStringElement(name: String, value: String): String = {
@@ -78,23 +69,9 @@ object RequestBuilder {
   def parentBracketChildString(parent: String, child: String): String = {
     String.format("%s[%s]", parent, child)
   }
-
-  def wrapInXMLTag(tagName: String, xml: String): String = {
-    String.format("<%s>%s</%s>", tagName, xml, tagName)
-  }
-
-  def wrapInXMLTag(tagName: String, xml: String, typeString: String): String = {
-    String.format("<%s type=\"%s\">%s</%s>", tagName, typeString, xml, tagName)
-  }
-
-  // TODO this needs to begone.
-  def xmlEscape(input: String): String = {
-    input.replaceAll("&", "&amp;").replaceAll("<", "&lt;").
-      replaceAll(">", "&gt;").replaceAll("'", "&apos;").replaceAll("\"", "&quot;")
-  }
 }
 
-class RequestBuilder(parent: String) {
+class RequestBuilder(parent: String) extends ToXml {
 
   val topLevelElements = MMap[String, String]()
   val elements = MMap[String, Any]()
@@ -146,13 +123,13 @@ class RequestBuilder(parent: String) {
     maybe
   }
 
-  def toXmlString: String = {
-    val builder = new StringBuilder
-    builder.append(String.format("<%s>", parent))
-    for ((key:String, value:AnyRef) <- elements) {
-      builder.append(RequestBuilder.buildXmlElementString(key, value))
-    }
-    builder.append(String.format("</%s>", parent))
-    builder.toString
+  def toXml = {
+    val children = for {
+      (key: String, value: AnyRef) <- elements if value != null
+      elem <- RequestBuilder.buildXmlElement(key, value)
+    } yield elem
+
+    val elem = tag(parent).content(children)
+    Some(elem)
   }
 }

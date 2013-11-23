@@ -5,7 +5,7 @@ import com.braintreegateway.gw.TransparentRedirectGateway
 /**
  * Provides a fluent interface to build up requests around {@link CreditCard CreditCards}.
  */
-sealed class CreditCardRequest extends Request {
+sealed class CreditCardRequest extends BaseRequest {
 
   private var billingAddressRequest: Option[CreditCardAddressRequest[this.type]] = None
   private var billingAddressId: Option[String] = None
@@ -78,7 +78,7 @@ sealed class CreditCardRequest extends Request {
     customerId
   }
 
-  def getKind: String = {
+  override def getKind: String = {
     if (paymentMethodToken.isDefined) {
       TransparentRedirectGateway.UPDATE_PAYMENT_METHOD
     } else {
@@ -116,15 +116,13 @@ sealed class CreditCardRequest extends Request {
     this
   }
 
-  def toXmlString: String = {
-    buildRequest("creditCard").toXmlString
-  }
+  override val xmlName = "creditCard"
 
-  def toQueryString: String = {
+  override def toQueryString: String = {
     toQueryString("creditCard")
   }
 
-  def toQueryString(root: String): String = {
+  override def toQueryString(root: String): String = {
     buildRequest(root).addTopLevelElement("paymentMethodToken", paymentMethodToken).toQueryString
   }
 

@@ -48,7 +48,7 @@ class TransactionCreditCardRequest(override val done: TransactionRequest)
     this
   }
 
-  override def toXmlString = buildRequest("creditCard").toXmlString
+  override val xmlName = "creditCard"
 
   override def toQueryString(root: String) = buildRequest(root).toQueryString
 

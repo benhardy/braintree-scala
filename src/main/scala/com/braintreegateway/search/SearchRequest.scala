@@ -1,12 +1,13 @@
 package com.braintreegateway.search
 
-import com.braintreegateway.BaseRequest
-import com.braintreegateway.RequestBuilder
+import com.braintreegateway.Request
+import com.braintreegateway.util.XmlUtil._
+
 import collection.mutable.{Map => MMap}
 import collection.mutable.{HashMap, ListBuffer}
+import xml.Elem
 
-
-abstract class SearchRequest[R <: SearchRequest[R]] extends BaseRequest {
+abstract class SearchRequest[R <: SearchRequest[R]] extends Request {
 
   val criteria = MMap.newBuilder[String, SearchCriteria]
   val rangeCriteria = new HashMap[String, ListBuffer[SearchCriteria]]
@@ -42,35 +43,45 @@ abstract class SearchRequest[R <: SearchRequest[R]] extends BaseRequest {
     getThis
   }
 
-  override def toQueryString(parent: String): String = {
-    null
+  override def toQueryString(parent: String) = ??? // not used here
+
+  override def toQueryString = ???  // not used here
+
+  override def toXml: Option[Elem] = {
+    val children = (criteriaAsXml ++ rangeCriteriaAsXml ++
+        multiValueCriteriaAsXml ++ keyValueCriteriaAsXml).toSeq
+
+    val elem = tag("search").content(children)
+    Some(elem)
   }
 
-  override def toQueryString: String = {
-    null
+  def criteriaAsXml = {
+    for {
+      (key, value) <- criteria.result
+      xml <- value.toXml
+    } yield tag(key).content(xml)
   }
 
-  override def toXmlString: String = {
-    val builder = new StringBuilder
-    builder.append("<search>")
-    for ((key, value) <- criteria.result) {
-      builder.append(RequestBuilder.wrapInXMLTag(key, value.toXmlString))
+  def keyValueCriteriaAsXml = {
+    for {
+      (key, value) <- keyValueCriteria.result
+    } yield tag(key).content(value)
+  }
+
+  def rangeCriteriaAsXml = {
+    for {
+      (key, criteria) <- rangeCriteria.result
+    } yield tag(key).content(criteriaXml(criteria.toList))
+  }
+
+  def criteriaXml(criteria:List[SearchCriteria]) = criteria flatMap (_.toXml)
+
+  def multiValueCriteriaAsXml = {
+    for {
+      (key, value) <- multiValueCriteria.result
+    } yield {
+      tag(key).withType("array").content(value.toXml.get \ "item")
     }
-    for ((key:String, criteria:ListBuffer[SearchCriteria]) <- rangeCriteria.result) {
-      builder.append("<%s>".format(RequestBuilder.xmlEscape(key)))
-      for (criterium <- criteria.toList) {
-        builder.append(criterium.toXmlString)
-      }
-      builder.append(String.format("</%s>", RequestBuilder.xmlEscape(key)))
-    }
-    for ((key, value) <- multiValueCriteria.result) {
-      builder.append(RequestBuilder.wrapInXMLTag(key, value.toXmlString, "array"))
-    }
-    for ((key, value) <- keyValueCriteria.result) {
-      builder.append(RequestBuilder.wrapInXMLTag(key, value))
-    }
-    builder.append("</search>")
-    builder.toString
   }
 
   protected def textNode(nodeName: String) = new TextNode[R](nodeName, getThis)

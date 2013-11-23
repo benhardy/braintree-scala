@@ -6,7 +6,7 @@ import com.braintreegateway.gw.TransparentRedirectGateway
  * Provides a fluent interface to build up requests around {@link Customer Customers}.
  */
 
-class CustomerRequest extends Request {
+class CustomerRequest extends BaseRequest {
   private val customFields = Map.newBuilder[String, String]
 
   private var deviceData: Option[String] = None
@@ -68,7 +68,7 @@ class CustomerRequest extends Request {
     this
   }
 
-  def getKind: String = {
+  override def getKind: String = {
     if (customerId.isDefined) {
       TransparentRedirectGateway.UPDATE_CUSTOMER
     } else {
@@ -100,15 +100,13 @@ class CustomerRequest extends Request {
     this
   }
 
-  def toXmlString: String = {
-    buildRequest("customer").toXmlString
-  }
+  override val xmlName = "customer"
 
-  def toQueryString: String = {
+  override def toQueryString: String = {
     toQueryString("customer")
   }
 
-  def toQueryString(root: String): String = {
+  override def toQueryString(root: String): String = {
     buildRequest(root).addTopLevelElement("customerId", customerId).toQueryString
   }
 

@@ -26,9 +26,7 @@ class SettlementBatchSummaryRequest extends BaseRequest {
     this
   }
 
-  override def toXmlString: String = {
-    buildRequest("settlement-batch-summary").toXmlString
-  }
+  override val xmlName = "settlement-batch-summary"
 
   protected def buildRequest(root: String): RequestBuilder = {
     import SettlementBatchSummaryRequest.dateString

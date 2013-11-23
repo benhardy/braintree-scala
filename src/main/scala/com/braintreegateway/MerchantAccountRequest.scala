@@ -39,11 +39,7 @@ class MerchantAccountRequest extends BaseRequest {
     buildRequest(root).toQueryString
   }
 
-  override def toXmlString: String = {
-    val req = buildRequest("merchant_account")
-    val res = req.toXmlString
-    res
-  }
+  override val xmlName = "merchant_account"
 
   protected def buildRequest(root: String): RequestBuilder = {
     new RequestBuilder(root)
