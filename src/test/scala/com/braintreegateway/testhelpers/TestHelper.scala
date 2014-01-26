@@ -77,7 +77,7 @@ object TestHelper {
   def settle(gateway: BraintreeGateway) = Matcher {
     (transaction: Transaction) => {
       val response: NodeWrapper = new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
-        Environment.DEVELOPMENT.certificateFilenames,
+        Environment.INTEGRATION_TEST.certificateFilenames,
         BraintreeGateway.VERSION).put(s"/transactions/${transaction.id}/settle")
       MatchResult(response.isSuccess,
         s"transaction ${transaction.id} did not settle",
@@ -88,7 +88,7 @@ object TestHelper {
   def escrow(gateway: BraintreeGateway) = Matcher {
     (transaction: Transaction) => {
       val response: NodeWrapper = new Http(gateway.authorizationHeader, gateway.baseMerchantURL,
-        Environment.DEVELOPMENT.certificateFilenames,
+        Environment.INTEGRATION_TEST.certificateFilenames,
         BraintreeGateway.VERSION).put(s"/transactions/${transaction.id}/escrow")
       MatchResult(response.isSuccess,
         s"transaction ${transaction.id} did not escrow",

@@ -12,9 +12,6 @@ object Environment {
     gatewayPort.getOrElse("3000")
   }
 
-  /** For Braintree internal development. */
-  final val DEVELOPMENT: Environment = new Environment("http://localhost:" + developmentPort, Nil)
-
   /** For production. */
   final val PRODUCTION: Environment = new Environment("https://www.braintreegateway.com:443",
     List("ssl/www_braintreegateway_com.ca.der", "ssl/securetrust.ca.der"))
@@ -25,4 +22,6 @@ object Environment {
       "ssl/sandbox_braintreegateway_com.ca.der",
       "ssl/sandbox-godaddy-intermediate.ca.der")
   )
+
+  val INTEGRATION_TEST = SANDBOX
 }
