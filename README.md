@@ -81,7 +81,7 @@ Client Library version 2.24.0.
           amount(BigDecimal("1000.00")).
           creditCard.
             number("4111111111111111").
-            expirationDate("05/2009").
+            expirationDate("05/2015").
             done
 
         val result = gateway.transaction.sale(request)
