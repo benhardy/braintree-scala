@@ -55,7 +55,8 @@ Client Library version 2.24.0.
 7. Decide whether to be compatible with Scala 2.8/2.9
    - Currently only really using String interpolation features in Scala 2.10
    - may use macros in future but for now YAGNI
-#
+
+8. Restore rest of integration tests
 
 ## Dependencies
 
@@ -63,8 +64,8 @@ Client Library version 2.24.0.
 
 ## Quick Start Example
 
-    import com.braintreegateway._
-    import com.braintreegateway.gw._
+    import net.bhardy.braintree.scala._
+    import net.bhardy.braintree.scala.gw._
     import scala.math.BigDecimal
 
     object BraintreeExample {
