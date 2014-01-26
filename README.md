@@ -1,10 +1,24 @@
-# Braintree Scala Client Library
+# Scala Client Library for Braintree Payment gateway
 
 The Braintree library provides integration access to the Braintree Gateway.
 
+This is a fork and translation of Braintree's Java Client Library, and is a
+work in progress.
+
+## Important Notes
+
+This software is not a product of Braintree Payments and as such they are not
+liable for its support.
+
+## Compatibility
+
+This library currently has the same level of functionality as Braintree's Java
+Client Library version 2.24.0.
+
 ## Design goals and their status
 
-1. 100% compatible fully featured client library which supports all operations the Java one does
+1. 100% compatible fully featured client library which supports all operations the Java one does.
+   (Currently a few releases behind)
 
 2. Composable gateway operations
    - use gateway operations in for-comprehensions (monadically)
@@ -27,6 +41,7 @@ The Braintree library provides integration access to the Braintree Gateway.
 4. No external dependencies other than the language [done, carried through from original java]
    - apache.commons.codec is vendored in with this
    - side effect is using Calendar for dates
+   - considering making a forked that uses more normal dependency management and Joda Time
 
 4. Take advantage of Scala native XML support (TODO)
    - so far have only done this to a limited extent
@@ -44,7 +59,7 @@ The Braintree library provides integration access to the Braintree Gateway.
 
 ## Dependencies
 
-* none
+* none other than Scala itself.  (currently)
 
 ## Quick Start Example
 
@@ -56,9 +71,9 @@ The Braintree library provides integration access to the Braintree Gateway.
       def main(args: Array[String]) {
         val gateway = new BraintreeGateway(
             Environment.SANDBOX,
-            "the_merchant_id",
-            "the_public_key",
-            "the_private_key"
+            "your_merchant_id",
+            "your_public_key",
+            "your_private_key"
         )
 
         val request = new TransactionRequest().
@@ -70,6 +85,8 @@ The Braintree library provides integration access to the Braintree Gateway.
 
         val result = gateway.transaction.sale(request)
 
+        // you can use pattern matching to pull information out of results easily
+        // or just use result.isSuccess to check success
         result match {
           case Success(transaction) => {
             println("Success!: created transaction with id ${transaction.id}")
@@ -81,6 +98,8 @@ The Braintree library provides integration access to the Braintree Gateway.
           }
         }
       }
+
+      // example error message generator, you don't have to do this
 
       def errorMessageFromValidation(errors: ValidationErrors): String = {
         errors.getAllDeepValidationErrors.map { error =>
@@ -99,13 +118,13 @@ The Braintree library provides integration access to the Braintree Gateway.
 
 ## Documentation
 
- * TODO
+ * 
 
 ## SBT
 
   With SBT installed, this package can be built simply by running this command:
 
-     mvn package
+     sbt package
 
   The resulting jar file will be produced in the directory named "target" under a subset of the scala version in use.
 
