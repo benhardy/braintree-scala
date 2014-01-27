@@ -3,7 +3,7 @@
 The Braintree library provides integration access to the Braintree Gateway.
 
 This is a fork and translation of Braintree's Java Client Library, and is a
-work in progress.
+work in progress. API is subject to change until version 1.0 is released.
 
 ## Important Notes
 
@@ -119,7 +119,49 @@ Client Library version 2.24.0.
 
 ## Documentation
 
- * 
+ * TODO, but in the meantime, the Braintree's Java docs can provide some guidance as to
+   what options are available: https://www.braintreepayments.com/docs/java
+
+At a high level, in your application, create a single instance of the BraintreeGateway
+object using your supplied merchant id, public key and private key. Then use that as a starting
+point for request operations. It contains factories for other gateways which can process
+various kinds of Request objects.
+
+Operations can be composed monadically and used in for-comprehensions, e.g: create a customer
+then a transaction for that customer:
+
+    val result = for {
+        customer <- gateway.customer.create(
+            new CustomerRequest().
+                firstName("Michael").
+                lastName("Angelo").
+                company("Some Company")
+        )
+        sale <- gateway.transaction.sale(
+            new TransactionRequest().
+                amount(BigDecimal("1000.00")).
+                customerId(customer.id).
+                creditCard.
+                    cardholderName("Bob the Builder").
+                    number(cardNumber).
+                    expirationDate("05/2015").
+                    done.
+                options.
+                    storeInVault(true).
+                    done
+        )
+    } yield sale
+
+If the first operation fails, the second operation will not execute. If either fails,
+a Failure state will be yielded.
+
+All operations will return some kind of Result object, which has only three possible
+implementations: Success, Failure and Deleted (so you can pattern match).
+Success contains a target (a created or modified object).
+Failure contains Validation errors and other useful information.
+Deleted is a kind of success that yeilds nothing.
+See the Result class for more details.
+
 
 ## SBT
 
